@@ -1,0 +1,3420 @@
+{
+  "version": "1.0.0",
+  "metadata": {
+    "region": "Metro Manila, Philippines",
+    "currency": "PHP",
+    "lastUpdated": "2025-01-01",
+    "schemaVersion": "2.0.0",
+    "polylineNote": "polylineCoordinates define the static display shape of each edge. Fixed \u2014 never changes with traffic. Use mkDirectionsTransportType with MKDirections for live ETA only."
+  },
+  "stations": [
+    {
+      "id": "MRT_NORTH_AVE",
+      "name": "North Avenue",
+      "shortName": "North Ave",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.652221952015479,
+        "lng": 121.03250871525358
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm",
+        "convenience_store"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_QUEZON_AVE",
+      "name": "Quezon Avenue",
+      "shortName": "Quezon Ave",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.64278400022219,
+        "lng": 121.03868096338894
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_GMA_KAMUNING",
+      "name": "GMA-Kamuning",
+      "shortName": "GMA-Kamuning",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.635265523829325,
+        "lng": 121.04338350832155
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_ARANETA_CUBAO",
+      "name": "Araneta Center-Cubao",
+      "shortName": "Cubao",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.619542292102919,
+        "lng": 121.05122783841642
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "LRT2_CUBAO"
+      ],
+      "amenities": [
+        "elevator",
+        "atm",
+        "convenience_store",
+        "food_court"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_SANTOLAN",
+      "name": "Santolan",
+      "shortName": "Santolan",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.60736872649956,
+        "lng": 121.05670689956077
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_ORTIGAS",
+      "name": "Ortigas",
+      "shortName": "Ortigas",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.587904834959982,
+        "lng": 121.05683612408205
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_SHAW_BLVD",
+      "name": "Shaw Boulevard",
+      "shortName": "Shaw Blvd",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.581387706896939,
+        "lng": 121.05392325619968
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_BONI",
+      "name": "Boni",
+      "shortName": "Boni",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.573598091820946,
+        "lng": 121.0481912148279
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_GUADALUPE",
+      "name": "Guadalupe",
+      "shortName": "Guadalupe",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.566768565667696,
+        "lng": 121.04551065284313
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_BUENDIA",
+      "name": "Buendia",
+      "shortName": "Buendia",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.554662072954798,
+        "lng": 121.03460914249948
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_AYALA",
+      "name": "Ayala",
+      "shortName": "Ayala",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.549302526542709,
+        "lng": 121.02815505207789
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm",
+        "convenience_store"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_MAGALLANES",
+      "name": "Magallanes",
+      "shortName": "Magallanes",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.542150190370245,
+        "lng": 121.01971955077397
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "MRT_TAFT_AVE",
+      "name": "Taft Avenue",
+      "shortName": "Taft Ave",
+      "line": "MRT-3",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.537726999414861,
+        "lng": 121.00215856590214
+      },
+      "isTerminal": true,
+      "isInterchange": true,
+      "interchangesWith": [
+        "LRT1_EDSA"
+      ],
+      "amenities": [
+        "elevator",
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "LRT1_BACLARAN",
+      "name": "Baclaran",
+      "shortName": "Baclaran",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5345,
+        "lng": 120.9989
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_EDSA",
+      "name": "EDSA",
+      "shortName": "EDSA",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5388,
+        "lng": 121.0006
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "MRT_TAFT_AVE"
+      ],
+      "amenities": [
+        "elevator",
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_LIBERTAD",
+      "name": "Libertad",
+      "shortName": "Libertad",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5437,
+        "lng": 121.0028
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_GIL_PUYAT",
+      "name": "Gil Puyat",
+      "shortName": "Gil Puyat",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5504,
+        "lng": 121.0079
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_VITO_CRUZ",
+      "name": "Vito Cruz",
+      "shortName": "Vito Cruz",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5567,
+        "lng": 121.0122
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_QUIRINO",
+      "name": "Quirino",
+      "shortName": "Quirino",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5628,
+        "lng": 121.0156
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_PEDRO_GIL",
+      "name": "Pedro Gil",
+      "shortName": "Pedro Gil",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5681,
+        "lng": 121.0194
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_UN_AVE",
+      "name": "United Nations",
+      "shortName": "UN Ave",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5741,
+        "lng": 121.0231
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_CENTRAL",
+      "name": "Central Terminal",
+      "shortName": "Central",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5928,
+        "lng": 120.9822
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_CARRIEDO",
+      "name": "Carriedo",
+      "shortName": "Carriedo",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.5994,
+        "lng": 120.9839
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_DOROTEO_JOSE",
+      "name": "Doroteo Jose",
+      "shortName": "Doroteo Jose",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6061,
+        "lng": 120.9872
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "LRT2_RECTO"
+      ],
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_BAMBANG",
+      "name": "Bambang",
+      "shortName": "Bambang",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.61,
+        "lng": 120.9889
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_TAYUMAN",
+      "name": "Tayuman",
+      "shortName": "Tayuman",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6161,
+        "lng": 120.9922
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_BLUMENTRITT",
+      "name": "Blumentritt",
+      "shortName": "Blumentritt",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6222,
+        "lng": 120.9956
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_ABAD_SANTOS",
+      "name": "Abad Santos",
+      "shortName": "Abad Santos",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6283,
+        "lng": 120.9989
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_R_PAPA",
+      "name": "R. Papa",
+      "shortName": "R. Papa",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6344,
+        "lng": 121.0022
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_5TH_AVE",
+      "name": "5th Avenue",
+      "shortName": "5th Ave",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6406,
+        "lng": 121.0056
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_MONUMENTO",
+      "name": "Monumento",
+      "shortName": "Monumento",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6544,
+        "lng": 120.9839
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm",
+        "convenience_store"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_BALINTAWAK",
+      "name": "Balintawak",
+      "shortName": "Balintawak",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6628,
+        "lng": 120.9833
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT1_ROOSEVELT",
+      "name": "Roosevelt",
+      "shortName": "Roosevelt",
+      "line": "LRT-1",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6711,
+        "lng": 120.9828
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "04:30",
+        "close": "21:30"
+      }
+    },
+    {
+      "id": "LRT2_RECTO",
+      "name": "Recto",
+      "shortName": "Recto",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6011,
+        "lng": 120.9844
+      },
+      "isTerminal": true,
+      "isInterchange": true,
+      "interchangesWith": [
+        "LRT1_DOROTEO_JOSE"
+      ],
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_LEGARDA",
+      "name": "Legarda",
+      "shortName": "Legarda",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6011,
+        "lng": 120.9889
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_PUREZA",
+      "name": "Pureza",
+      "shortName": "Pureza",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6011,
+        "lng": 121.0022
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_V_MAPA",
+      "name": "V. Mapa",
+      "shortName": "V. Mapa",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6011,
+        "lng": 121.0139
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_J_RUIZ",
+      "name": "J. Ruiz",
+      "shortName": "J. Ruiz",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6044,
+        "lng": 121.0189
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_GILMORE",
+      "name": "Gilmore",
+      "shortName": "Gilmore",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6111,
+        "lng": 121.0256
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_BETTY_GO_BELMONTE",
+      "name": "Betty Go-Belmonte",
+      "shortName": "Betty Go",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6144,
+        "lng": 121.0322
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_CUBAO",
+      "name": "Cubao",
+      "shortName": "Cubao",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6194,
+        "lng": 121.0522
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "MRT_ARANETA_CUBAO"
+      ],
+      "amenities": [
+        "elevator",
+        "atm",
+        "convenience_store"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_ANONAS",
+      "name": "Anonas",
+      "shortName": "Anonas",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6194,
+        "lng": 121.0644
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_KATIPUNAN",
+      "name": "Katipunan",
+      "shortName": "Katipunan",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6278,
+        "lng": 121.0756
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_SANTOLAN",
+      "name": "Santolan",
+      "shortName": "Santolan",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6361,
+        "lng": 121.0878
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_MARIKINA",
+      "name": "Marikina-Pasig",
+      "shortName": "Marikina",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6394,
+        "lng": 121.0978
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "LRT2_ANTIPOLO",
+      "name": "Antipolo",
+      "shortName": "Antipolo",
+      "line": "LRT-2",
+      "type": "train",
+      "coordinates": {
+        "lat": 14.6256,
+        "lng": 121.1211
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [
+        "elevator",
+        "atm"
+      ],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_EDSA_MEGAMALL",
+      "name": "EDSA-Megamall",
+      "shortName": "Megamall",
+      "line": "EDSA_BUS",
+      "type": "bus",
+      "coordinates": {
+        "lat": 14.5861,
+        "lng": 121.0561
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "STOP_EDSA_AYALA",
+      "name": "EDSA-Ayala",
+      "shortName": "EDSA-Ayala",
+      "line": "EDSA_BUS",
+      "type": "bus",
+      "coordinates": {
+        "lat": 14.5497,
+        "lng": 121.0278
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "MRT_AYALA"
+      ],
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "STOP_COMMONWEALTH_TANDANG_SORA",
+      "name": "Commonwealth-Tandang Sora",
+      "shortName": "Tandang Sora",
+      "line": "COMMONWEALTH_BUS",
+      "type": "bus",
+      "coordinates": {
+        "lat": 14.6789,
+        "lng": 121.0578
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_QUIAPO",
+      "name": "Quiapo",
+      "shortName": "Quiapo",
+      "line": "JEEPNEY_QUIAPO",
+      "type": "jeepney",
+      "coordinates": {
+        "lat": 14.5994,
+        "lng": 120.9839
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    },
+    {
+      "id": "STOP_SM_NORTH_EDSA",
+      "name": "SM North EDSA",
+      "shortName": "SM North",
+      "line": "JEEPNEY_NORTH",
+      "type": "jeepney",
+      "coordinates": {
+        "lat": 14.6569,
+        "lng": 121.0322
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "MRT_NORTH_AVE"
+      ],
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_BGC_HIGH_STREET",
+      "name": "BGC High Street",
+      "shortName": "BGC",
+      "line": "EJEEPNEY_BGC",
+      "type": "jeepney",
+      "coordinates": {
+        "lat": 14.5494,
+        "lng": 121.0528
+      },
+      "isTerminal": false,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "06:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_BGC_MARKET_MARKET",
+      "name": "Market Market",
+      "shortName": "Market Market",
+      "line": "EJEEPNEY_BGC",
+      "type": "jeepney",
+      "coordinates": {
+        "lat": 14.5506,
+        "lng": 121.0506
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "06:00",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_MAKATI_CBD",
+      "name": "Makati CBD",
+      "shortName": "Makati CBD",
+      "line": "JEEPNEY_MAKATI",
+      "type": "jeepney",
+      "coordinates": {
+        "lat": 14.55,
+        "lng": 121.0244
+      },
+      "isTerminal": false,
+      "isInterchange": true,
+      "interchangesWith": [
+        "MRT_AYALA"
+      ],
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:30",
+        "close": "22:00"
+      }
+    },
+    {
+      "id": "STOP_MANILA_TRICYCLE_HUB",
+      "name": "Manila Tricycle Hub",
+      "shortName": "Manila Tricycle",
+      "line": "TRICYCLE_MANILA",
+      "type": "tricycle",
+      "coordinates": {
+        "lat": 14.59,
+        "lng": 120.98
+      },
+      "isTerminal": true,
+      "isInterchange": false,
+      "amenities": [],
+      "operatingHours": {
+        "open": "05:00",
+        "close": "23:00"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "E_MRT_NORTH_QUEZON",
+      "from": "MRT_NORTH_AVE",
+      "to": "MRT_QUEZON_AVE",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 3,
+      "distanceKm": 0.95,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.8,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.650041550325959,
+          "lng": 121.03377129103662
+        },
+        {
+          "lat": 14.648224981006894,
+          "lng": 121.0349444732757
+        },
+        {
+          "lat": 14.645552955876333,
+          "lng": 121.0366600713532
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_QUEZON_GMA",
+      "from": "MRT_QUEZON_AVE",
+      "to": "MRT_GMA_KAMUNING",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.78,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.640302179054915,
+          "lng": 121.04004290032636
+        },
+        {
+          "lat": 14.638378204220889,
+          "lng": 121.04130044459347
+        },
+        {
+          "lat": 14.63779743454833,
+          "lng": 121.04166690416643
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_GMA_CUBAO",
+      "from": "MRT_GMA_KAMUNING",
+      "to": "MRT_ARANETA_CUBAO",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 4,
+      "distanceKm": 1.56,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.9,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.633244890630278,
+          "lng": 121.04469072077671
+        },
+        {
+          "lat": 14.63273636654517,
+          "lng": 121.04499730027914
+        },
+        {
+          "lat": 14.630559404549345,
+          "lng": 121.04600174718163
+        },
+        {
+          "lat": 14.629221326955312,
+          "lng": 121.04661202321049
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_CUBAO_SANTOLAN",
+      "from": "MRT_ARANETA_CUBAO",
+      "to": "MRT_SANTOLAN",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.61,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.61822226911477,
+          "lng": 121.05171018669212
+        },
+        {
+          "lat": 14.616649873811358,
+          "lng": 121.05243958652191
+        },
+        {
+          "lat": 14.61301343002986,
+          "lng": 121.05410756701569
+        },
+        {
+          "lat": 14.610215118406444,
+          "lng": 121.0553598047999
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_SANTOLAN_ORTIGAS",
+      "from": "MRT_SANTOLAN",
+      "to": "MRT_ORTIGAS",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 5,
+      "distanceKm": 3.06,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.602795417432132,
+          "lng": 121.05877105300331
+        },
+        {
+          "lat": 14.602251580238898,
+          "lng": 121.05901610702884
+        },
+        {
+          "lat": 14.601514868421487,
+          "lng": 121.05929383492206
+        },
+        {
+          "lat": 14.600730726087155,
+          "lng": 121.05951274985168
+        },
+        {
+          "lat": 14.600202360911972,
+          "lng": 121.05962135099713
+        },
+        {
+          "lat": 14.599719294165117,
+          "lng": 121.05968717769409
+        },
+        {
+          "lat": 14.599172525013795,
+          "lng": 121.05975574717087
+        },
+        {
+          "lat": 14.598492448725858,
+          "lng": 121.05975725610114
+        },
+        {
+          "lat": 14.597519863699565,
+          "lng": 121.05971267736847
+        },
+        {
+          "lat": 14.597066273784243,
+          "lng": 121.05965371164685
+        },
+        {
+          "lat": 14.596565341404593,
+          "lng": 121.05954909354494
+        },
+        {
+          "lat": 14.596237671991831,
+          "lng": 121.0594542704137
+        },
+        {
+          "lat": 14.595377380789857,
+          "lng": 121.05904978170976
+        },
+        {
+          "lat": 14.594696310099199,
+          "lng": 121.05880021767182
+        },
+        {
+          "lat": 14.593803486289465,
+          "lng": 121.05850544120051
+        },
+        {
+          "lat": 14.592907990677457,
+          "lng": 121.0582237677526
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_ORTIGAS_SHAW",
+      "from": "MRT_ORTIGAS",
+      "to": "MRT_SHAW_BLVD",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.75,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.75,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.585755330056214,
+          "lng": 121.05605116683053
+        },
+        {
+          "lat": 14.584762505747438,
+          "lng": 121.05572657213561
+        },
+        {
+          "lat": 14.583728996882034,
+          "lng": 121.0552732791987
+        },
+        {
+          "lat": 14.582510911806718,
+          "lng": 121.05449005350427
+        },
+        {
+          "lat": 14.581688105557587,
+          "lng": 121.05392898888134
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_SHAW_BONI",
+      "from": "MRT_SHAW_BLVD",
+      "to": "MRT_BONI",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.75,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.57998189916334,
+          "lng": 121.05275430516646
+        },
+        {
+          "lat": 14.579005706345516,
+          "lng": 121.05206056717853
+        },
+        {
+          "lat": 14.57576711129598,
+          "lng": 121.04964870838951
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_BONI_GUADALUPE",
+      "from": "MRT_BONI",
+      "to": "MRT_GUADALUPE",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 1.0,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.75,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.573220327066878,
+          "lng": 121.04773683843133
+        },
+        {
+          "lat": 14.572122243093753,
+          "lng": 121.04720972235184
+        },
+        {
+          "lat": 14.571085380726746,
+          "lng": 121.04665242662556
+        },
+        {
+          "lat": 14.569151681913377,
+          "lng": 121.04610627696745
+        },
+        {
+          "lat": 14.568089866291647,
+          "lng": 121.04581200955742
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_GUADALUPE_BUENDIA",
+      "from": "MRT_GUADALUPE",
+      "to": "MRT_BUENDIA",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.39,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.564649074682103,
+          "lng": 121.04485705861906
+        },
+        {
+          "lat": 14.564005521516728,
+          "lng": 121.044598104696
+        },
+        {
+          "lat": 14.56343282462612,
+          "lng": 121.04427262960803
+        },
+        {
+          "lat": 14.562849535167436,
+          "lng": 121.04387725806389
+        },
+        {
+          "lat": 14.561642975183027,
+          "lng": 121.04280058666623
+        },
+        {
+          "lat": 14.560379695202839,
+          "lng": 121.04138188832808
+        },
+        {
+          "lat": 14.559757206740729,
+          "lng": 121.04060255004194
+        },
+        {
+          "lat": 14.558248580371362,
+          "lng": 121.03878283296937
+        },
+        {
+          "lat": 14.556432435860668,
+          "lng": 121.03677278935746
+        },
+        {
+          "lat": 14.554972714571443,
+          "lng": 121.03498122067924
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_BUENDIA_AYALA",
+      "from": "MRT_BUENDIA",
+      "to": "MRT_AYALA",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.72,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.85,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.554199101555568,
+          "lng": 121.03402744252948
+        },
+        {
+          "lat": 14.552997942221033,
+          "lng": 121.03259474936546
+        },
+        {
+          "lat": 14.551036698725968,
+          "lng": 121.03025380699762
+        },
+        {
+          "lat": 14.550074580068316,
+          "lng": 121.02911711614986
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_AYALA_MAGALLANES",
+      "from": "MRT_AYALA",
+      "to": "MRT_MAGALLANES",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.95,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.547325028180458,
+          "lng": 121.02583439065073
+        },
+        {
+          "lat": 14.545308727841576,
+          "lng": 121.02347892271817
+        },
+        {
+          "lat": 14.542839863516948,
+          "lng": 121.02055256275408
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_MAGALLANES_TAFT",
+      "from": "MRT_MAGALLANES",
+      "to": "MRT_TAFT_AVE",
+      "mode": "train",
+      "line": "MRT-3",
+      "travelTimeMinutes": 3,
+      "distanceKm": 2.03,
+      "baseFare": 13,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.85,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.54169797182747,
+          "lng": 121.01899148621065
+        },
+        {
+          "lat": 14.541130803737275,
+          "lng": 121.0181506412334
+        },
+        {
+          "lat": 14.539959133438163,
+          "lng": 121.01579619872682
+        },
+        {
+          "lat": 14.539120323486982,
+          "lng": 121.01309816686029
+        },
+        {
+          "lat": 14.538749354021691,
+          "lng": 121.01089403046868
+        },
+        {
+          "lat": 14.538089362528323,
+          "lng": 121.00561001284137
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_BACLARAN_EDSA",
+      "from": "LRT1_BACLARAN",
+      "to": "LRT1_EDSA",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.6,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.85,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5345,
+          "lng": 120.9989
+        },
+        {
+          "lat": 14.5388,
+          "lng": 121.0006
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_EDSA_LIBERTAD",
+      "from": "LRT1_EDSA",
+      "to": "LRT1_LIBERTAD",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.5,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.8,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5388,
+          "lng": 121.0006
+        },
+        {
+          "lat": 14.5437,
+          "lng": 121.0028
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_LIBERTAD_GILPUYAT",
+      "from": "LRT1_LIBERTAD",
+      "to": "LRT1_GIL_PUYAT",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.75,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.75,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5437,
+          "lng": 121.0028
+        },
+        {
+          "lat": 14.5504,
+          "lng": 121.0079
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_GILPUYAT_VITOCRUZ",
+      "from": "LRT1_GIL_PUYAT",
+      "to": "LRT1_VITO_CRUZ",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.68,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5504,
+          "lng": 121.0079
+        },
+        {
+          "lat": 14.5567,
+          "lng": 121.0122
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_VITOCRUZ_QUIRINO",
+      "from": "LRT1_VITO_CRUZ",
+      "to": "LRT1_QUIRINO",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.69,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5567,
+          "lng": 121.0122
+        },
+        {
+          "lat": 14.5628,
+          "lng": 121.0156
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_QUIRINO_PEDROGIL",
+      "from": "LRT1_QUIRINO",
+      "to": "LRT1_PEDRO_GIL",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.64,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5628,
+          "lng": 121.0156
+        },
+        {
+          "lat": 14.5681,
+          "lng": 121.0194
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_PEDROGIL_UNAVENUE",
+      "from": "LRT1_PEDRO_GIL",
+      "to": "LRT1_UN_AVE",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.67,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5681,
+          "lng": 121.0194
+        },
+        {
+          "lat": 14.5741,
+          "lng": 121.0231
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_UNAVENUE_CENTRAL",
+      "from": "LRT1_UN_AVE",
+      "to": "LRT1_CENTRAL",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.58,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5741,
+          "lng": 121.0231
+        },
+        {
+          "lat": 14.5828,
+          "lng": 121.0194
+        },
+        {
+          "lat": 14.5928,
+          "lng": 120.9822
+        },
+        {
+          "lat": 14.5928,
+          "lng": 120.9822
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_CENTRAL_CARRIEDO",
+      "from": "LRT1_CENTRAL",
+      "to": "LRT1_CARRIEDO",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.71,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.8,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5928,
+          "lng": 120.9822
+        },
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_CARRIEDO_DOROTEO",
+      "from": "LRT1_CARRIEDO",
+      "to": "LRT1_DOROTEO_JOSE",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.72,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.85,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        },
+        {
+          "lat": 14.6061,
+          "lng": 120.9872
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_DOROTEO_BAMBANG",
+      "from": "LRT1_DOROTEO_JOSE",
+      "to": "LRT1_BAMBANG",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.42,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.75,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6061,
+          "lng": 120.9872
+        },
+        {
+          "lat": 14.61,
+          "lng": 120.9889
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_BAMBANG_TAYUMAN",
+      "from": "LRT1_BAMBANG",
+      "to": "LRT1_TAYUMAN",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.69,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.61,
+          "lng": 120.9889
+        },
+        {
+          "lat": 14.6161,
+          "lng": 120.9922
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_TAYUMAN_BLUMENTRITT",
+      "from": "LRT1_TAYUMAN",
+      "to": "LRT1_BLUMENTRITT",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.69,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6161,
+          "lng": 120.9922
+        },
+        {
+          "lat": 14.6222,
+          "lng": 120.9956
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_BLUMENTRITT_ABAD",
+      "from": "LRT1_BLUMENTRITT",
+      "to": "LRT1_ABAD_SANTOS",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.71,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6222,
+          "lng": 120.9956
+        },
+        {
+          "lat": 14.6283,
+          "lng": 120.9989
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_ABAD_RPAPA",
+      "from": "LRT1_ABAD_SANTOS",
+      "to": "LRT1_R_PAPA",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.72,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6283,
+          "lng": 120.9989
+        },
+        {
+          "lat": 14.6344,
+          "lng": 121.0022
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_RPAPA_5THAVE",
+      "from": "LRT1_R_PAPA",
+      "to": "LRT1_5TH_AVE",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.72,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.55,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6344,
+          "lng": 121.0022
+        },
+        {
+          "lat": 14.6406,
+          "lng": 121.0056
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_5THAVE_MONUMENTO",
+      "from": "LRT1_5TH_AVE",
+      "to": "LRT1_MONUMENTO",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 1.53,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6406,
+          "lng": 121.0056
+        },
+        {
+          "lat": 14.6456,
+          "lng": 121.0044
+        },
+        {
+          "lat": 14.6511,
+          "lng": 120.9917
+        },
+        {
+          "lat": 14.6544,
+          "lng": 120.9839
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_MONUMENTO_BALINTAWAK",
+      "from": "LRT1_MONUMENTO",
+      "to": "LRT1_BALINTAWAK",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.94,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6544,
+          "lng": 120.9839
+        },
+        {
+          "lat": 14.6628,
+          "lng": 120.9833
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT1_BALINTAWAK_ROOSEVELT",
+      "from": "LRT1_BALINTAWAK",
+      "to": "LRT1_ROOSEVELT",
+      "mode": "train",
+      "line": "LRT-1",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.94,
+      "baseFare": 12,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.55,
+      "reliability": 0.82,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6628,
+          "lng": 120.9833
+        },
+        {
+          "lat": 14.6711,
+          "lng": 120.9828
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_RECTO_LEGARDA",
+      "from": "LRT2_RECTO",
+      "to": "LRT2_LEGARDA",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.5,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6011,
+          "lng": 120.9844
+        },
+        {
+          "lat": 14.6011,
+          "lng": 120.9889
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_LEGARDA_PUREZA",
+      "from": "LRT2_LEGARDA",
+      "to": "LRT2_PUREZA",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.44,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6011,
+          "lng": 120.9889
+        },
+        {
+          "lat": 14.6011,
+          "lng": 120.9956
+        },
+        {
+          "lat": 14.6011,
+          "lng": 121.0022
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_PUREZA_VMAPA",
+      "from": "LRT2_PUREZA",
+      "to": "LRT2_V_MAPA",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.22,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6011,
+          "lng": 121.0022
+        },
+        {
+          "lat": 14.6011,
+          "lng": 121.0139
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_VMAPA_JRUIZ",
+      "from": "LRT2_V_MAPA",
+      "to": "LRT2_J_RUIZ",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.56,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6011,
+          "lng": 121.0139
+        },
+        {
+          "lat": 14.6044,
+          "lng": 121.0189
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_JRUIZ_GILMORE",
+      "from": "LRT2_J_RUIZ",
+      "to": "LRT2_GILMORE",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.83,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6044,
+          "lng": 121.0189
+        },
+        {
+          "lat": 14.6111,
+          "lng": 121.0256
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_GILMORE_BETTYGO",
+      "from": "LRT2_GILMORE",
+      "to": "LRT2_BETTY_GO_BELMONTE",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 2,
+      "distanceKm": 0.78,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6111,
+          "lng": 121.0256
+        },
+        {
+          "lat": 14.6144,
+          "lng": 121.0322
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_BETTYGO_CUBAO",
+      "from": "LRT2_BETTY_GO_BELMONTE",
+      "to": "LRT2_CUBAO",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 2.22,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.8,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6144,
+          "lng": 121.0322
+        },
+        {
+          "lat": 14.6167,
+          "lng": 121.0411
+        },
+        {
+          "lat": 14.6194,
+          "lng": 121.0522
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_CUBAO_ANONAS",
+      "from": "LRT2_CUBAO",
+      "to": "LRT2_ANONAS",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 2,
+      "distanceKm": 1.33,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.65,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6194,
+          "lng": 121.0522
+        },
+        {
+          "lat": 14.6194,
+          "lng": 121.0644
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_ANONAS_KATIPUNAN",
+      "from": "LRT2_ANONAS",
+      "to": "LRT2_KATIPUNAN",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.33,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.6,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6194,
+          "lng": 121.0644
+        },
+        {
+          "lat": 14.6278,
+          "lng": 121.0756
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_KATIPUNAN_SANTOLAN",
+      "from": "LRT2_KATIPUNAN",
+      "to": "LRT2_SANTOLAN",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.44,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.55,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6278,
+          "lng": 121.0756
+        },
+        {
+          "lat": 14.6361,
+          "lng": 121.0878
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_SANTOLAN_MARIKINA",
+      "from": "LRT2_SANTOLAN",
+      "to": "LRT2_MARIKINA",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 3,
+      "distanceKm": 1.11,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.5,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6361,
+          "lng": 121.0878
+        },
+        {
+          "lat": 14.6394,
+          "lng": 121.0978
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_LRT2_MARIKINA_ANTIPOLO",
+      "from": "LRT2_MARIKINA",
+      "to": "LRT2_ANTIPOLO",
+      "mode": "train",
+      "line": "LRT-2",
+      "travelTimeMinutes": 6,
+      "distanceKm": 2.56,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.45,
+      "reliability": 0.88,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6394,
+          "lng": 121.0978
+        },
+        {
+          "lat": 14.6317,
+          "lng": 121.1094
+        },
+        {
+          "lat": 14.6278,
+          "lng": 121.1156
+        },
+        {
+          "lat": 14.6256,
+          "lng": 121.1211
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_INTERCHANGE_MRT_TAFT_LRT1_EDSA",
+      "from": "MRT_TAFT_AVE",
+      "to": "LRT1_EDSA",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 5,
+      "distanceKm": 0.15,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.9,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5369,
+          "lng": 121.0006
+        },
+        {
+          "lat": 14.5388,
+          "lng": 121.0006
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_INTERCHANGE_MRT_CUBAO_LRT2_CUBAO",
+      "from": "MRT_ARANETA_CUBAO",
+      "to": "LRT2_CUBAO",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 8,
+      "distanceKm": 0.3,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.85,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6231,
+          "lng": 121.0524
+        },
+        {
+          "lat": 14.6194,
+          "lng": 121.0522
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_INTERCHANGE_LRT1_DOROTEO_LRT2_RECTO",
+      "from": "LRT1_DOROTEO_JOSE",
+      "to": "LRT2_RECTO",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 5,
+      "distanceKm": 0.2,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.8,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6061,
+          "lng": 120.9872
+        },
+        {
+          "lat": 14.6011,
+          "lng": 120.9844
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_BUS_EDSA_MEGAMALL_AYALA",
+      "from": "STOP_EDSA_MEGAMALL",
+      "to": "STOP_EDSA_AYALA",
+      "mode": "bus",
+      "line": "EDSA_BUS",
+      "travelTimeMinutes": 25,
+      "distanceKm": 4.2,
+      "baseFare": 20,
+      "farePerKm": 1.85,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.85,
+      "reliability": 0.65,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5861,
+          "lng": 121.0561
+        },
+        {
+          "lat": 14.5789,
+          "lng": 121.0544
+        },
+        {
+          "lat": 14.5692,
+          "lng": 121.0478
+        },
+        {
+          "lat": 14.5608,
+          "lng": 121.0378
+        },
+        {
+          "lat": 14.5497,
+          "lng": 121.0278
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_JEEPNEY_QUIAPO_CUBAO",
+      "from": "STOP_QUIAPO",
+      "to": "MRT_ARANETA_CUBAO",
+      "mode": "jeepney",
+      "line": "JEEPNEY_QUIAPO_CUBAO",
+      "travelTimeMinutes": 35,
+      "distanceKm": 5.5,
+      "baseFare": 13,
+      "farePerKm": 1.8,
+      "acceptedPayments": [
+        "cash"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.9,
+      "reliability": 0.6,
+      "bidirectional": false,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        },
+        {
+          "lat": 14.6033,
+          "lng": 120.9894
+        },
+        {
+          "lat": 14.6111,
+          "lng": 121.0133
+        },
+        {
+          "lat": 14.6172,
+          "lng": 121.0322
+        },
+        {
+          "lat": 14.6183,
+          "lng": 121.0433
+        },
+        {
+          "lat": 14.6231,
+          "lng": 121.0524
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_EJEEPNEY_BGC_AYALA",
+      "from": "STOP_BGC_HIGH_STREET",
+      "to": "STOP_EDSA_AYALA",
+      "mode": "jeepney",
+      "line": "EJEEPNEY_BGC",
+      "travelTimeMinutes": 15,
+      "distanceKm": 1.8,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "gcash",
+        "maya",
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.8,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5494,
+          "lng": 121.0528
+        },
+        {
+          "lat": 14.55,
+          "lng": 121.0456
+        },
+        {
+          "lat": 14.5497,
+          "lng": 121.0356
+        },
+        {
+          "lat": 14.5497,
+          "lng": 121.0278
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_JEEPNEY_MAKATI_QUIAPO",
+      "from": "STOP_MAKATI_CBD",
+      "to": "STOP_QUIAPO",
+      "mode": "jeepney",
+      "line": "JEEPNEY_MAKATI",
+      "travelTimeMinutes": 40,
+      "distanceKm": 6.2,
+      "baseFare": 13,
+      "farePerKm": 1.8,
+      "acceptedPayments": [
+        "cash"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.9,
+      "reliability": 0.55,
+      "bidirectional": false,
+      "polylineCoordinates": [
+        {
+          "lat": 14.55,
+          "lng": 121.0244
+        },
+        {
+          "lat": 14.5567,
+          "lng": 121.0178
+        },
+        {
+          "lat": 14.5678,
+          "lng": 121.0094
+        },
+        {
+          "lat": 14.5828,
+          "lng": 121.0006
+        },
+        {
+          "lat": 14.5944,
+          "lng": 120.99
+        },
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_TRICYCLE_MANILA_QUIAPO",
+      "from": "STOP_MANILA_TRICYCLE_HUB",
+      "to": "STOP_QUIAPO",
+      "mode": "tricycle",
+      "line": "TRICYCLE_MANILA",
+      "travelTimeMinutes": 12,
+      "distanceKm": 1.2,
+      "baseFare": 15,
+      "farePerKm": 3.0,
+      "acceptedPayments": [
+        "cash"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.4,
+      "reliability": 0.75,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.59,
+          "lng": 120.98
+        },
+        {
+          "lat": 14.5944,
+          "lng": 120.9817
+        },
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        }
+      ],
+      "mkDirectionsTransportType": "automobile"
+    },
+    {
+      "id": "E_BUS_COMMONWEALTH_CUBAO",
+      "from": "STOP_COMMONWEALTH_TANDANG_SORA",
+      "to": "MRT_ARANETA_CUBAO",
+      "mode": "bus",
+      "line": "COMMONWEALTH_BUS",
+      "travelTimeMinutes": 30,
+      "distanceKm": 7.8,
+      "baseFare": 20,
+      "farePerKm": 1.85,
+      "acceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.8,
+      "reliability": 0.6,
+      "bidirectional": false,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6789,
+          "lng": 121.0578
+        },
+        {
+          "lat": 14.675,
+          "lng": 121.0489
+        },
+        {
+          "lat": 14.6678,
+          "lng": 121.0456
+        },
+        {
+          "lat": 14.6511,
+          "lng": 121.0489
+        },
+        {
+          "lat": 14.6231,
+          "lng": 121.0524
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    },
+    {
+      "id": "E_MRT_NORTH_SMNORTH",
+      "from": "MRT_NORTH_AVE",
+      "to": "STOP_SM_NORTH_EDSA",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 6,
+      "distanceKm": 0.25,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.5,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6519,
+          "lng": 121.0322
+        },
+        {
+          "lat": 14.6569,
+          "lng": 121.0322
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_MRT_AYALA_MAKATICBD",
+      "from": "MRT_AYALA",
+      "to": "STOP_MAKATI_CBD",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 7,
+      "distanceKm": 0.3,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.6,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5497,
+          "lng": 121.0278
+        },
+        {
+          "lat": 14.55,
+          "lng": 121.0244
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_LRT1_EDSA_EDSABUS",
+      "from": "LRT1_EDSA",
+      "to": "STOP_EDSA_AYALA",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 5,
+      "distanceKm": 0.1,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.6,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5388,
+          "lng": 121.0006
+        },
+        {
+          "lat": 14.5497,
+          "lng": 121.0278
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_MRT_ORTIGAS_MEGAMALL",
+      "from": "MRT_ORTIGAS",
+      "to": "STOP_EDSA_MEGAMALL",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 5,
+      "distanceKm": 0.15,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.5,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5876,
+          "lng": 121.0567
+        },
+        {
+          "lat": 14.5861,
+          "lng": 121.0561
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_LRT1_DOROTEO_QUIAPO",
+      "from": "LRT1_DOROTEO_JOSE",
+      "to": "STOP_QUIAPO",
+      "mode": "walk",
+      "line": "INTERCHANGE",
+      "travelTimeMinutes": 5,
+      "distanceKm": 0.15,
+      "baseFare": 0,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "isAirConditioned": false,
+      "crowdFactor": 0.7,
+      "reliability": 1.0,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.6061,
+          "lng": 120.9872
+        },
+        {
+          "lat": 14.5994,
+          "lng": 120.9839
+        }
+      ],
+      "mkDirectionsTransportType": "walking"
+    },
+    {
+      "id": "E_EJEEPNEY_AYALA_BGC",
+      "from": "STOP_EDSA_AYALA",
+      "to": "STOP_BGC_HIGH_STREET",
+      "mode": "jeepney",
+      "line": "EJEEPNEY_BGC",
+      "travelTimeMinutes": 15,
+      "distanceKm": 1.8,
+      "baseFare": 15,
+      "farePerKm": 0,
+      "acceptedPayments": [
+        "gcash",
+        "maya",
+        "beep_card",
+        "cash"
+      ],
+      "isAirConditioned": true,
+      "crowdFactor": 0.7,
+      "reliability": 0.8,
+      "bidirectional": true,
+      "polylineCoordinates": [
+        {
+          "lat": 14.5497,
+          "lng": 121.0278
+        },
+        {
+          "lat": 14.5497,
+          "lng": 121.0356
+        },
+        {
+          "lat": 14.55,
+          "lng": 121.0456
+        },
+        {
+          "lat": 14.5494,
+          "lng": 121.0528
+        }
+      ],
+      "mkDirectionsTransportType": "transit"
+    }
+  ],
+  "peakHourMultipliers": {
+    "morningPeak": {
+      "timeRange": {
+        "start": "07:00",
+        "end": "09:00"
+      },
+      "travelTimeMultiplier": 1.4,
+      "modes": [
+        "bus",
+        "jeepney",
+        "tricycle"
+      ]
+    },
+    "eveningPeak": {
+      "timeRange": {
+        "start": "17:00",
+        "end": "20:00"
+      },
+      "travelTimeMultiplier": 1.5,
+      "modes": [
+        "bus",
+        "jeepney",
+        "tricycle"
+      ]
+    },
+    "trainPeak": {
+      "timeRange": {
+        "start": "07:00",
+        "end": "09:30"
+      },
+      "travelTimeMultiplier": 1.2,
+      "modes": [
+        "train"
+      ]
+    }
+  },
+  "fareMatrix": {
+    "MRT-3": {
+      "type": "flat_with_distance",
+      "minimumFare": 13,
+      "maximumFare": 28,
+      "brackets": [
+        {
+          "maxStations": 4,
+          "fare": 13
+        },
+        {
+          "maxStations": 7,
+          "fare": 16
+        },
+        {
+          "maxStations": 10,
+          "fare": 20
+        },
+        {
+          "maxStations": 13,
+          "fare": 28
+        }
+      ]
+    },
+    "LRT-1": {
+      "type": "flat_with_distance",
+      "minimumFare": 12,
+      "maximumFare": 30,
+      "brackets": [
+        {
+          "maxStations": 4,
+          "fare": 12
+        },
+        {
+          "maxStations": 8,
+          "fare": 15
+        },
+        {
+          "maxStations": 13,
+          "fare": 20
+        },
+        {
+          "maxStations": 20,
+          "fare": 30
+        }
+      ]
+    },
+    "LRT-2": {
+      "type": "flat_with_distance",
+      "minimumFare": 15,
+      "maximumFare": 35,
+      "brackets": [
+        {
+          "maxStations": 3,
+          "fare": 15
+        },
+        {
+          "maxStations": 6,
+          "fare": 20
+        },
+        {
+          "maxStations": 11,
+          "fare": 25
+        },
+        {
+          "maxStations": 14,
+          "fare": 35
+        }
+      ]
+    }
+  },
+  "transportModes": {
+    "train": {
+      "id": "train",
+      "displayName": "Train",
+      "pluralName": "Trains",
+      "sfSymbol": "tram.fill",
+      "colorHex": "#219DF0",
+      "mapLineWidthPt": 5,
+      "mapLineDash": [],
+      "mkDirectionsTransportType": "transit",
+      "isUserSelectable": true,
+      "isAlwaysAllowed": false,
+      "lines": [
+        "MRT-3",
+        "LRT-1",
+        "LRT-2"
+      ],
+      "defaultAcceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "notes": "Beep Card required for stored-value tap; single-journey tokens accepted on all lines"
+    },
+    "bus": {
+      "id": "bus",
+      "displayName": "Bus",
+      "pluralName": "Buses",
+      "sfSymbol": "bus.fill",
+      "colorHex": "#33C758",
+      "mapLineWidthPt": 4,
+      "mapLineDash": [],
+      "mkDirectionsTransportType": "transit",
+      "isUserSelectable": true,
+      "isAlwaysAllowed": false,
+      "lines": [
+        "EDSA_BUS",
+        "COMMONWEALTH_BUS"
+      ],
+      "defaultAcceptedPayments": [
+        "beep_card",
+        "cash"
+      ],
+      "notes": "EDSA Carousel and point-to-point buses use Beep Card or exact cash"
+    },
+    "jeepney": {
+      "id": "jeepney",
+      "displayName": "Jeepney",
+      "pluralName": "Jeepneys",
+      "sfSymbol": "car.2.fill",
+      "colorHex": "#FDAD12",
+      "mapLineWidthPt": 4,
+      "mapLineDash": [],
+      "mkDirectionsTransportType": "transit",
+      "isUserSelectable": true,
+      "isAlwaysAllowed": false,
+      "lines": [
+        "JEEPNEY_QUIAPO_CUBAO",
+        "JEEPNEY_MAKATI",
+        "EJEEPNEY_BGC"
+      ],
+      "defaultAcceptedPayments": [
+        "cash"
+      ],
+      "eJeepneyAcceptedPayments": [
+        "gcash",
+        "maya",
+        "beep_card",
+        "cash"
+      ],
+      "notes": "Traditional jeepneys are cash only. E-Jeepneys (EJEEPNEY_* lines) accept GCash, Maya, and Beep Card"
+    },
+    "tricycle": {
+      "id": "tricycle",
+      "displayName": "Tricycle",
+      "pluralName": "Tricycles",
+      "sfSymbol": "bicycle",
+      "colorHex": "#E84C3D",
+      "mapLineWidthPt": 3,
+      "mapLineDash": [],
+      "mkDirectionsTransportType": "automobile",
+      "isUserSelectable": true,
+      "isAlwaysAllowed": false,
+      "lines": [
+        "TRICYCLE_MANILA"
+      ],
+      "defaultAcceptedPayments": [
+        "cash"
+      ],
+      "notes": "Cash only. Operates within a fixed barangay franchise zone; not allowed on national roads"
+    },
+    "walk": {
+      "id": "walk",
+      "displayName": "Walk",
+      "pluralName": "Walk",
+      "sfSymbol": "figure.walk",
+      "colorHex": "#8E8E93",
+      "mapLineWidthPt": 2,
+      "mapLineDash": [
+        6,
+        4
+      ],
+      "mkDirectionsTransportType": "walking",
+      "isUserSelectable": false,
+      "isAlwaysAllowed": true,
+      "lines": [
+        "INTERCHANGE"
+      ],
+      "defaultAcceptedPayments": [
+        "cash",
+        "gcash",
+        "maya",
+        "card",
+        "beep_card"
+      ],
+      "notes": "Interchange transfer walks. Always included regardless of mode filter. Operating-hours check is bypassed for walk edges"
+    }
+  },
+  "paymentMethods": {
+    "cash": {
+      "id": "cash",
+      "displayName": "Cash",
+      "sfSymbol": "banknote",
+      "colorHex": "#34C759",
+      "isDefault": true,
+      "acceptedByModes": [
+        "train",
+        "bus",
+        "jeepney",
+        "tricycle",
+        "walk"
+      ],
+      "notes": "Universally accepted. Exact change preferred on jeepneys and tricycles"
+    },
+    "beep_card": {
+      "id": "beep_card",
+      "displayName": "Beep Card",
+      "sfSymbol": "creditcard.fill",
+      "colorHex": "#007AFF",
+      "isDefault": false,
+      "acceptedByModes": [
+        "train",
+        "bus",
+        "jeepney",
+        "walk"
+      ],
+      "notes": "AFC stored-value card. Required for MRT-3, LRT-1, LRT-2, EDSA Carousel. Also accepted on E-Jeepneys"
+    },
+    "gcash": {
+      "id": "gcash",
+      "displayName": "GCash",
+      "sfSymbol": "g.circle.fill",
+      "colorHex": "#0074E4",
+      "isDefault": false,
+      "acceptedByModes": [
+        "jeepney",
+        "walk"
+      ],
+      "notes": "Accepted on E-Jeepney lines only. QR scan on vehicle terminal"
+    },
+    "maya": {
+      "id": "maya",
+      "displayName": "Maya",
+      "sfSymbol": "m.circle.fill",
+      "colorHex": "#00BFA5",
+      "isDefault": false,
+      "acceptedByModes": [
+        "jeepney",
+        "walk"
+      ],
+      "notes": "Accepted on E-Jeepney lines only. QR scan on vehicle terminal"
+    },
+    "card": {
+      "id": "card",
+      "displayName": "Card",
+      "sfSymbol": "creditcard",
+      "colorHex": "#FF9500",
+      "isDefault": false,
+      "acceptedByModes": [
+        "walk"
+      ],
+      "notes": "Credit/debit card. Currently only used for interchange walks where no fare is charged. Not yet accepted on revenue-service vehicles"
+    }
+  }
+}
