@@ -1,3 +1,10 @@
+//
+//  APIClient.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import Foundation
 
 final class APIClient {
@@ -34,6 +41,7 @@ final class APIClient {
                 throw APIError.decodingFailed(error)
             }
         case 401:
+            NotificationCenter.default.post(name: .sessionExpired, object: nil)
             throw APIError.unauthorized
         case 403:
             throw APIError.forbidden

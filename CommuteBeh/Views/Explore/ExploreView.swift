@@ -1,3 +1,10 @@
+//
+//  ExploreView.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import SwiftUI
 import MapKit
 
@@ -112,7 +119,7 @@ final class ExploreViewModel {
         fetchProgress = 0
         fetchTotal = 0
 
-        switch GraphLoader.load(from: "transit_graph_v3") {
+        switch await GraphLoader.ensureLoaded() {
         case .success(let graph):
             layers = buildLayers(from: graph)
 
@@ -242,13 +249,11 @@ final class ExploreViewModel {
     }
 
     private func removeFromGraph(lineID: String) async throws {
-        let docsURL = GraphLoader.documentsURL()
-        let sourceURL: URL
-        if let d = docsURL, FileManager.default.fileExists(atPath: d.path) {
-            sourceURL = d
-        } else if let b = Bundle.main.url(forResource: "transit_graph_v3", withExtension: "json") {
-            sourceURL = b
-        } else { throw URLError(.fileDoesNotExist) }
+        guard let docsURL = GraphLoader.documentsURL(),
+              FileManager.default.fileExists(atPath: docsURL.path) else {
+            throw URLError(.fileDoesNotExist)
+        }
+        let sourceURL = docsURL
 
         let data = try Data(contentsOf: sourceURL)
         guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -277,10 +282,7 @@ final class ExploreViewModel {
         }
 
         let out = try JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted, .sortedKeys])
-        let target = docsURL ?? FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("transit_graph_v3.json")
-        try out.write(to: target, options: .atomic)
+        try out.write(to: docsURL, options: .atomic)
 
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }

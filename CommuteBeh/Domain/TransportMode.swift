@@ -1,3 +1,10 @@
+//
+//  TransportMode.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 // CommuteEngine.swift
 // Commute Navigator — Metro Manila Multimodal A* Route Planner
 //
@@ -176,6 +183,38 @@ struct TransitGraph: Codable {
     let transportModes: [String: TransportModeConfig]
     /// Keyed by payment id string (e.g. "cash", "beep_card", "gcash", "maya", "card")
     let paymentMethods: [String: PaymentMethodConfig]
+    /// Backend-controlled flag. When false, A* ignores station operating hours entirely.
+    /// Defaults to true for backwards compatibility with cached graphs that lack this key.
+    let enforceOperatingHours: Bool
+
+    init(version: String, stations: [Station], edges: [TransitEdge],
+         peakHourMultipliers: PeakHours, transportModes: [String: TransportModeConfig],
+         paymentMethods: [String: PaymentMethodConfig], enforceOperatingHours: Bool = true) {
+        self.version = version
+        self.stations = stations
+        self.edges = edges
+        self.peakHourMultipliers = peakHourMultipliers
+        self.transportModes = transportModes
+        self.paymentMethods = paymentMethods
+        self.enforceOperatingHours = enforceOperatingHours
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        // Backend returns version as an Int (e.g. 1); local re-encoded files store it as a String.
+        // Accept both so downloads and cached reads work without separate code paths.
+        if let intV = try? c.decode(Int.self, forKey: .version) {
+            version = String(intV)
+        } else {
+            version = try c.decode(String.self, forKey: .version)
+        }
+        stations             = try c.decode([Station].self,                       forKey: .stations)
+        edges                = try c.decode([TransitEdge].self,                   forKey: .edges)
+        peakHourMultipliers  = try c.decode(PeakHours.self,                       forKey: .peakHourMultipliers)
+        transportModes       = try c.decode([String: TransportModeConfig].self,   forKey: .transportModes)
+        paymentMethods       = try c.decode([String: PaymentMethodConfig].self,   forKey: .paymentMethods)
+        enforceOperatingHours = try c.decodeIfPresent(Bool.self, forKey: .enforceOperatingHours) ?? true
+    }
 }
 
 // MARK: - Route Request / Result
@@ -380,6 +419,8 @@ actor TransitGraphEngine {
     /// Mode IDs where `isAlwaysAllowed = true` (e.g. "walk").
     /// Derived once at init from JSON so A* never hard-codes mode strings.
     private let alwaysAllowedModes: Set<String>
+    /// When false, all station operating-hours checks are skipped entirely.
+    private let enforceOperatingHours: Bool
 
     // MARK: Init
 
@@ -441,22 +482,47 @@ actor TransitGraphEngine {
                 .filter(\.isAlwaysAllowed)
                 .map(\.id)
         )
+        enforceOperatingHours = graph.enforceOperatingHours
     }
 
     // MARK: - Public API
 
-    func findRoute(_ request: RouteRequest) -> RouteResult? {
+    enum RouteError: Error {
+        case stationsClosed(closeTime: String)
+        case noPath
+    }
+
+    func findRoute(_ request: RouteRequest) -> Result<RouteResult, RouteError> {
         guard stationMap[request.originID] != nil,
               stationMap[request.destinationID] != nil else {
-            return nil
+            return .failure(.noPath)
         }
 
         guard request.originID != request.destinationID else {
-            return RouteResult(legs: [], totalTimeMinutes: 0, totalFare: 0,
-                               totalDistanceKm: 0, transfers: 0, modes: [])
+            return .success(RouteResult(legs: [], totalTimeMinutes: 0, totalFare: 0,
+                                        totalDistanceKm: 0, transfers: 0, modes: []))
         }
 
-        return astar(request: request)
+        // Pre-flight: if operating hours are enforced and the origin or destination
+        // station is outside its window at the requested departure time, report that
+        // specifically so the UI can show "Stations closed" instead of a generic error.
+        if enforceOperatingHours {
+            let depHour   = Calendar.current.component(.hour,   from: request.departureTime)
+            let depMinute = Calendar.current.component(.minute, from: request.departureTime)
+            let departureMinutes = depHour * 60 + depMinute
+
+            for stationID in [request.originID, request.destinationID] {
+                guard let station = stationMap[stationID] else { continue }
+                if !stationOpen(station, arrivalMinutes: departureMinutes, isAlwaysAllowed: false) {
+                    return .failure(.stationsClosed(closeTime: station.operatingHours.close))
+                }
+            }
+        }
+
+        if let result = astar(request: request) {
+            return .success(result)
+        }
+        return .failure(.noPath)
     }
 
     // MARK: Station lookup helpers (used by ViewModel)
@@ -523,16 +589,15 @@ actor TransitGraphEngine {
     }
 
     /// Returns true if a traveller arriving `arrivalMinutes` minutes after midnight
-    /// can still use `station` (i.e. the station has not yet closed).
-    /// Walk edges bypass this — returns true unconditionally for them.
+    /// can still use `station` (i.e. the station is within its operating window).
+    /// Walk/interchange edges bypass this — returns true unconditionally for them.
     private func stationOpen(_ station: Station, arrivalMinutes: Int, isAlwaysAllowed: Bool) -> Bool {
         guard !isAlwaysAllowed else { return true }
-        let close = minutesSinceMidnight(station.operatingHours.close)
-        // Handle overnight edge: if close < open, station closes the next day —
-        // treat as 24-hr for simplicity (safe approximation).
         let open  = minutesSinceMidnight(station.operatingHours.open)
-        if close < open { return true }   // overnight-service station; always passable
-        return arrivalMinutes < close
+        let close = minutesSinceMidnight(station.operatingHours.close)
+        // Overnight service (e.g. close=00:00 < open=05:00): always passable.
+        if close <= open { return true }
+        return arrivalMinutes >= open && arrivalMinutes < close
     }
 
     private func astar(request: RouteRequest) -> RouteResult? {
@@ -619,20 +684,19 @@ actor TransitGraphEngine {
                 let tentativeG = (gScore[currentID] ?? .infinity) + effectiveMinutes
 
                 // ── Operating-hours filter ──────────────────────────────────
-                // Compute the wall-clock minute at which the traveller would
-                // arrive at the neighbour station if this edge were taken.
-                // If the station has already closed by then, this edge is pruned.
-                if let neighborStation = stationMap[neighbor] {
+                // Skipped entirely when enforceOperatingHours is false (admin override).
+                if enforceOperatingHours, let neighborStation = stationMap[neighbor] {
                     let arrivalMinutes = departureMinutes + Int(tentativeG)
                     guard stationOpen(neighborStation, arrivalMinutes: arrivalMinutes, isAlwaysAllowed: isAlwaysAllowed) else {
                         continue   // station closed at estimated arrival — skip this edge
                     }
                 }
 
-                if tentativeG < (gScore[neighbor] ?? .infinity) {
+                if tentativeG < (gScore[neighbor] ?? .infinity),
+                   let neighborCoords = stationMap[neighbor]?.coordinates {
                     gScore[neighbor] = tentativeG
                     cameFrom[neighbor] = (parent: currentID, edge: edge)
-                    let h = heuristic(from: stationMap[neighbor]!.coordinates, to: destCoords)
+                    let h = heuristic(from: neighborCoords, to: destCoords)
                     openHeap.push(AStarNode(
                         stationID: neighbor,
                         gCost: tentativeG,
@@ -941,16 +1005,12 @@ enum GraphLoadError: Error {
 }
 
 struct GraphLoader {
-    // Checks Documents directory first so user-created routes (written by
-    // CreateLoopView) override the read-only bundle copy.
+    /// Loads the graph from the Documents cache only. Returns `.failure(.fileNotFound)`
+    /// if no cached file exists — callers should call `ensureLoaded()` instead when
+    /// they want an automatic network fetch on first launch.
     static func load(from fileName: String = "transit_graph_v3") -> Result<TransitGraph, GraphLoadError> {
-        let url: URL
-        if let docsURL = documentsURL(for: fileName),
-           FileManager.default.fileExists(atPath: docsURL.path) {
-            url = docsURL
-        } else if let bundleURL = Bundle.main.url(forResource: fileName, withExtension: "json") {
-            url = bundleURL
-        } else {
+        guard let url = documentsURL(for: fileName),
+              FileManager.default.fileExists(atPath: url.path) else {
             return .failure(.fileNotFound)
         }
         do {
@@ -962,11 +1022,53 @@ struct GraphLoader {
         }
     }
 
+    /// Like `load()` but fetches the graph from the backend when no valid local copy
+    /// exists. Handles both missing files and stale/corrupt caches by re-downloading.
+    static func ensureLoaded(from fileName: String = "transit_graph_v3") async -> Result<TransitGraph, GraphLoadError> {
+        switch load(from: fileName) {
+        case .success(let g): return .success(g)
+        case .failure:
+            // fileNotFound: first launch. decodingFailed: corrupt or pre-fix cache.
+            // Either way, fetch a fresh copy from the backend.
+            guard let data = try? await GraphService.shared.fetchGraph(),
+                  let url = documentsURL(for: fileName) else {
+                return .failure(.fileNotFound)
+            }
+            try? data.write(to: url)
+            return load(from: fileName)
+        }
+    }
+
     static func documentsURL(for fileName: String = "transit_graph_v3") -> URL? {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)
             .first?
             .appendingPathComponent("\(fileName).json")
+    }
+}
+
+// MARK: - Station Cache
+// Lightweight [Station] cache persisted to Documents.
+// Loaded synchronously on ViewModel init so search works before the full
+// routing engine finishes its async setup.
+
+struct StationCache {
+    private static let fileName = "stations_cache"
+
+    static func save(_ stations: [Station]) {
+        guard let url = GraphLoader.documentsURL(for: fileName),
+              let data = try? JSONEncoder().encode(stations) else { return }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    static func load() -> [Station] {
+        guard let url = GraphLoader.documentsURL(for: fileName),
+              FileManager.default.fileExists(atPath: url.path),
+              let data = try? Data(contentsOf: url),
+              let stations = try? JSONDecoder().decode([Station].self, from: data) else {
+            return []
+        }
+        return stations.sorted { $0.name < $1.name }
     }
 }
 
@@ -1000,6 +1102,9 @@ final class CommuteViewModel {
     // MARK: Init
 
     init() {
+        // Populate stations immediately from disk cache so search works before
+        // the async engine finishes loading (or on subsequent launches).
+        self.allStations = StationCache.load()
         Task { await setupEngine() }
         NotificationCenter.default.addObserver(
             forName: Notification.Name("TransitDataDidUpdate"),
@@ -1012,15 +1117,21 @@ final class CommuteViewModel {
 
     @MainActor
     private func setupEngine() async {
-        switch GraphLoader.load() {
+        switch await GraphLoader.ensureLoaded() {
         case .success(let graph):
             let eng = TransitGraphEngine(graph: graph)
             self.engine = eng
-            self.allStations = await eng.allStations()
+            let stations = await eng.allStations()
+            self.allStations = stations
             self.availableModes = await eng.selectableModes()
             self.availablePayments = await eng.selectablePayments()
-        case .failure(let error):
-            self.errorMessage = "Failed to load transit data: \(error)"
+            StationCache.save(stations)
+            let loadedVersion = graph.version
+            Task.detached(priority: .background) {
+                await GraphService.shared.syncIfNeeded(loadedVersion: loadedVersion)
+            }
+        case .failure:
+            self.errorMessage = "Couldn't load transit data. Check your connection and try again."
         }
     }
 
@@ -1056,11 +1167,26 @@ final class CommuteViewModel {
 
         isLoading = false
 
-        if let result {
-            routeResult = result
-        } else {
-            errorMessage = "No route found. Try different payment methods or transport modes."
+        switch result {
+        case .success(let route):
+            routeResult = route
+        case .failure(.stationsClosed(let closeTime)):
+            errorMessage = "Stations are closed at this time. MRT/LRT service ends at \(formattedTime(closeTime))."
+        case .failure(.noPath):
+            errorMessage = "No route found between these stations."
         }
+    }
+
+    // MARK: Helpers
+
+    private func formattedTime(_ hhmm: String) -> String {
+        let parts = hhmm.split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else { return hhmm }
+        let hour = parts[0]
+        let minute = parts[1]
+        let period = hour < 12 ? "AM" : "PM"
+        let h = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return minute == 0 ? "\(h):00 \(period)" : "\(h):\(String(format: "%02d", minute)) \(period)"
     }
 
     // MARK: Station Search
