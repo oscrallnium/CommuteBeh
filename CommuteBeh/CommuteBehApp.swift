@@ -22,6 +22,7 @@ struct CommuteBehApp: App {
             }
         }
     }
+
 }
 
 struct MainTabView: View {

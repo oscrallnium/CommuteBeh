@@ -29,6 +29,10 @@ final class AdminService {
         return resp.data
     }
 
+    func deleteRoute(lineId: String) async throws {
+        _ = try await client.request(.deleteRoute(lineId: lineId), responseType: EmptyResponse.self)
+    }
+
     func fetchSettings() async throws -> AdminSettings {
         let resp: APIResponse<AdminSettings> = try await client.request(
             .adminSettings,

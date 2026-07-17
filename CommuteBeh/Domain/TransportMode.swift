@@ -20,6 +20,7 @@
 // • Peak-hour multipliers are applied lazily during edge cost calculation
 // • Fare calculation is a pure function; no side effects
 
+import CoreLocation
 import Foundation
 import SwiftUI
 
@@ -220,25 +221,43 @@ struct TransitGraph: Codable {
 // MARK: - Route Request / Result
 
 struct RouteRequest {
+    enum CostStrategy { case balanced, fastest, cheapest }
+
+    /// Virtual station IDs injected when routing from/to a raw coordinate.
+    static let virtualOriginID: StationID = "__ORIGIN__"
+    static let virtualDestID: StationID   = "__DEST__"
+
     let originID: StationID
     let destinationID: StationID
+    /// Non-nil when the user tapped the map or used GPS for the start point.
+    /// When set, originID must equal `virtualOriginID`.
+    let originCoordinate: Coordinates?
+    /// Non-nil when the user tapped the map or used GPS for the end point.
+    /// When set, destinationID must equal `virtualDestID`.
+    let destinationCoordinate: Coordinates?
     let preferredPayments: Set<PaymentMethod>   // empty = accept any
     let allowedModes: Set<TransportMode>         // empty = allow all (except walk is always allowed)
     let departureTime: Date                      // used for peak-hour factor
+    let costStrategy: CostStrategy
 
-    // Convenience: "now" defaults
     init(
         from originID: StationID,
         to destinationID: StationID,
+        originCoordinate: Coordinates? = nil,
+        destinationCoordinate: Coordinates? = nil,
         preferredPayments: Set<PaymentMethod> = [],
         allowedModes: Set<TransportMode> = [],
-        departureTime: Date = .now
+        departureTime: Date = .now,
+        costStrategy: CostStrategy = .balanced
     ) {
         self.originID = originID
         self.destinationID = destinationID
+        self.originCoordinate = originCoordinate
+        self.destinationCoordinate = destinationCoordinate
         self.preferredPayments = preferredPayments
         self.allowedModes = allowedModes
         self.departureTime = departureTime
+        self.costStrategy = costStrategy
     }
 }
 
@@ -321,6 +340,13 @@ struct RouteResult {
     let modes: [TransportMode]
 
     var isEmpty: Bool { legs.isEmpty }
+}
+
+struct RouteOption: Identifiable {
+    enum Label { case fastest, cheapest, balanced }
+    let id = UUID()
+    let result: RouteResult
+    let label: Label
 }
 
 // MARK: - A* Internals
@@ -419,6 +445,8 @@ actor TransitGraphEngine {
     /// Mode IDs where `isAlwaysAllowed = true` (e.g. "walk").
     /// Derived once at init from JSON so A* never hard-codes mode strings.
     private let alwaysAllowedModes: Set<String>
+    /// ID of the always-allowed walk mode (used for synthetic access-walk edges).
+    private let walkModeID: String
     /// When false, all station operating-hours checks are skipped entirely.
     private let enforceOperatingHours: Bool
 
@@ -482,6 +510,7 @@ actor TransitGraphEngine {
                 .filter(\.isAlwaysAllowed)
                 .map(\.id)
         )
+        walkModeID = graph.transportModes.values.first(where: \.isAlwaysAllowed)?.id ?? "walk"
         enforceOperatingHours = graph.enforceOperatingHours
     }
 
@@ -493,9 +522,33 @@ actor TransitGraphEngine {
     }
 
     func findRoute(_ request: RouteRequest) -> Result<RouteResult, RouteError> {
-        guard stationMap[request.originID] != nil,
-              stationMap[request.destinationID] != nil else {
-            return .failure(.noPath)
+        var extraAdj: [StationID: [TransitEdge]] = [:]
+        var extraStations: [StationID: Station] = [:]
+
+        // Build virtual origin node when routing from a raw coordinate.
+        if let coord = request.originCoordinate {
+            let vStation = makeVirtualStation(
+                id: RouteRequest.virtualOriginID, coord: coord, name: "Your Location")
+            extraStations[RouteRequest.virtualOriginID] = vStation
+            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualOriginID, outgoing: true)
+            extraAdj.merge(adj) { $0 + $1 }
+        }
+
+        // Build virtual destination node when routing to a raw coordinate.
+        if let coord = request.destinationCoordinate {
+            let vStation = makeVirtualStation(
+                id: RouteRequest.virtualDestID, coord: coord, name: "Your Destination")
+            extraStations[RouteRequest.virtualDestID] = vStation
+            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualDestID, outgoing: false)
+            extraAdj.merge(adj) { $0 + $1 }
+            extraAdj[RouteRequest.virtualDestID, default: []] = extraAdj[RouteRequest.virtualDestID] ?? []
+        }
+
+        // Station existence check — skip virtual IDs (they won't be in stationMap).
+        for stationID in [request.originID, request.destinationID] {
+            guard stationID.hasPrefix("__") || stationMap[stationID] != nil else {
+                return .failure(.noPath)
+            }
         }
 
         guard request.originID != request.destinationID else {
@@ -503,15 +556,13 @@ actor TransitGraphEngine {
                                         totalDistanceKm: 0, transfers: 0, modes: []))
         }
 
-        // Pre-flight: if operating hours are enforced and the origin or destination
-        // station is outside its window at the requested departure time, report that
-        // specifically so the UI can show "Stations closed" instead of a generic error.
+        // Pre-flight operating hours — skip for virtual nodes (always passable).
         if enforceOperatingHours {
             let depHour   = Calendar.current.component(.hour,   from: request.departureTime)
             let depMinute = Calendar.current.component(.minute, from: request.departureTime)
             let departureMinutes = depHour * 60 + depMinute
 
-            for stationID in [request.originID, request.destinationID] {
+            for stationID in [request.originID, request.destinationID] where !stationID.hasPrefix("__") {
                 guard let station = stationMap[stationID] else { continue }
                 if !stationOpen(station, arrivalMinutes: departureMinutes, isAlwaysAllowed: false) {
                     return .failure(.stationsClosed(closeTime: station.operatingHours.close))
@@ -519,10 +570,73 @@ actor TransitGraphEngine {
             }
         }
 
-        if let result = astar(request: request) {
+        if let result = astar(request: request,
+                              originID: request.originID, destID: request.destinationID,
+                              extraAdj: extraAdj, extraStations: extraStations) {
             return .success(result)
         }
         return .failure(.noPath)
+    }
+
+    // MARK: - Virtual Node Helpers
+
+    private func makeVirtualStation(id: StationID, coord: Coordinates, name: String) -> Station {
+        Station(
+            id: id, name: name, shortName: name,
+            line: "ACCESS_WALK", type: walkModeID,
+            coordinates: coord,
+            isTerminal: false, isInterchange: false,
+            interchangesWith: nil, amenities: [],
+            operatingHours: Station.OperatingHours(open: "00:00", close: "23:59")
+        )
+    }
+
+    /// Builds synthetic walk edges between a virtual node and the K nearest real stations.
+    /// `outgoing: true`  → edges FROM virtualID TO nearby stations  (origin case)
+    /// `outgoing: false` → edges FROM nearby stations TO virtualID  (destination case)
+    private func buildAccessEdges(
+        coord: Coordinates,
+        virtualID: StationID,
+        outgoing: Bool
+    ) -> [StationID: [TransitEdge]] {
+        let maxRadiusKm: Double = 1.5
+        let k = 5
+        let walkSpeedKmPerMin = 4.5 / 60.0  // 4.5 km/h
+        let detourFactor = 1.3
+
+        let nearby = stationMap.values
+            .map { (station: $0, dist: haversine(from: coord, to: $0.coordinates)) }
+            .filter { $0.dist <= maxRadiusKm }
+            .sorted { $0.dist < $1.dist }
+            .prefix(k)
+
+        var extraAdj: [StationID: [TransitEdge]] = [:]
+        for item in nearby {
+            let travelMin = item.dist * detourFactor / walkSpeedKmPerMin
+            let fromID    = outgoing ? virtualID : item.station.id
+            let toID      = outgoing ? item.station.id : virtualID
+            let coords    = outgoing
+                ? [coord, item.station.coordinates]
+                : [item.station.coordinates, coord]
+
+            let edge = TransitEdge(
+                id: "\(fromID)_to_\(toID)_access",
+                from: fromID, to: toID,
+                mode: walkModeID, line: "ACCESS_WALK",
+                travelTimeMinutes: travelMin,
+                distanceKm: item.dist,
+                baseFare: 0, farePerKm: 0,
+                acceptedPayments: [],
+                isAirConditioned: false,
+                crowdFactor: 0, reliability: 1.0,
+                bidirectional: false, direction: nil,
+                polylineCoordinates: coords,
+                mkDirectionsTransportType: "walking",
+                isRoadSnapped: false
+            )
+            extraAdj[fromID, default: []].append(edge)
+        }
+        return extraAdj
     }
 
     // MARK: Station lookup helpers (used by ViewModel)
@@ -600,59 +714,60 @@ actor TransitGraphEngine {
         return arrivalMinutes >= open && arrivalMinutes < close
     }
 
-    private func astar(request: RouteRequest) -> RouteResult? {
-        let destination = request.destinationID
-        let destCoords = stationMap[destination]!.coordinates
+    private func astar(
+        request: RouteRequest,
+        originID: StationID,
+        destID: StationID,
+        extraAdj: [StationID: [TransitEdge]],
+        extraStations: [StationID: Station]
+    ) -> RouteResult? {
+        func effectiveStation(_ id: StationID) -> Station? {
+            extraStations[id] ?? stationMap[id]
+        }
+
+        guard let destCoords   = effectiveStation(destID)?.coordinates,
+              let originCoords = effectiveStation(originID)?.coordinates else { return nil }
 
         // Wall-clock departure expressed as minutes since midnight.
-        // Used to compute estimated arrival time at each neighbour station.
         let calendar = Calendar.current
         let depHour   = calendar.component(.hour,   from: request.departureTime)
         let depMinute = calendar.component(.minute, from: request.departureTime)
-        let departureMinutes = depHour * 60 + depMinute   // e.g. 22:50 → 1370
+        let departureMinutes = depHour * 60 + depMinute
 
-        // gScore: best known actual cost to reach each station
-        var gScore: [StationID: Double] = [request.originID: 0]
-
-        // cameFrom: reconstruct path — parent station + edge that got us here
+        var gScore: [StationID: Double] = [originID: 0]
         var cameFrom: [StationID: (parent: StationID, edge: TransitEdge)] = [:]
-
-        // Closed set: stations we've already settled
         var closed: Set<StationID> = []
-
-        // Open set: binary min-heap keyed on fCost
         var openHeap = MinHeap<AStarNode>()
-        let originH = heuristic(from: stationMap[request.originID]!.coordinates, to: destCoords)
-        openHeap.push(AStarNode(stationID: request.originID, gCost: 0, hCost: originH))
+        let originH = heuristic(from: originCoords, to: destCoords)
+        openHeap.push(AStarNode(stationID: originID, gCost: 0, hCost: originH))
 
         while let current = openHeap.popMin() {
             let currentID = current.stationID
 
-            // We may have stale (higher-cost) entries in the heap — skip them.
-            // This is the standard "lazy deletion" pattern for A* with a simple heap.
             if let bestG = gScore[currentID], current.gCost > bestG { continue }
             if closed.contains(currentID) { continue }
             closed.insert(currentID)
 
-            if currentID == destination {
+            if currentID == destID {
                 return buildResult(
-                    destination: destination,
+                    destination: destID,
                     cameFrom: cameFrom,
                     gScore: gScore,
                     stationMap: stationMap,
+                    extraStations: extraStations,
                     departureTime: request.departureTime
                 )
             }
 
-            let neighbors = adjacency[currentID] ?? []
+            // Combine real adjacency with virtual-node edges.
+            let neighbors = (adjacency[currentID] ?? []) + (extraAdj[currentID] ?? [])
 
             for edge in neighbors {
                 let neighbor = edge.to
                 guard !closed.contains(neighbor) else { continue }
 
                 // ── Payment filter ──────────────────────────────────────────
-                // Modes marked isAlwaysAllowed in the JSON (e.g. walk/interchange)
-                // bypass both the payment filter and the mode filter entirely.
+                // Modes marked isAlwaysAllowed (e.g. walk) bypass both filters.
                 let isAlwaysAllowed = alwaysAllowedModes.contains(edge.mode)
                 if !isAlwaysAllowed {
                     if !request.preferredPayments.isEmpty {
@@ -672,28 +787,34 @@ actor TransitGraphEngine {
                 let rawMinutes = edge.travelTimeMinutes
                 let peakMultiplier = peakMultiplier(for: edge, at: request.departureTime)
 
-                // Cost function weights:
-                //   • time (primary)
-                //   • unreliability penalty: add up to 20% extra minutes
-                //   • crowd penalty: add up to 10% extra minutes
-                // All in "effective minutes" units → consistent A* heuristic
-                let reliabilityPenalty = rawMinutes * (1.0 - edge.reliability) * 0.2
-                let crowdPenalty       = rawMinutes * edge.crowdFactor * 0.1
-                let effectiveMinutes   = (rawMinutes * peakMultiplier) + reliabilityPenalty + crowdPenalty
+                let effectiveMinutes: Double
+                switch request.costStrategy {
+                case .balanced:
+                    let reliabilityPenalty = rawMinutes * (1.0 - edge.reliability) * 0.2
+                    let crowdPenalty       = rawMinutes * edge.crowdFactor * 0.1
+                    effectiveMinutes = (rawMinutes * peakMultiplier) + reliabilityPenalty + crowdPenalty
+                case .fastest:
+                    effectiveMinutes = rawMinutes * peakMultiplier
+                case .cheapest:
+                    // Weight fare at 1.5 min/peso so fare-heavy routes are penalised relative to time.
+                    let fare = (edge.line == "INTERCHANGE" || edge.line == "ACCESS_WALK")
+                               ? 0.0 : edge.baseFare + edge.farePerKm * edge.distanceKm
+                    effectiveMinutes = rawMinutes * peakMultiplier + fare * 1.5
+                }
 
                 let tentativeG = (gScore[currentID] ?? .infinity) + effectiveMinutes
 
                 // ── Operating-hours filter ──────────────────────────────────
-                // Skipped entirely when enforceOperatingHours is false (admin override).
-                if enforceOperatingHours, let neighborStation = stationMap[neighbor] {
+                // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
+                if enforceOperatingHours, !neighbor.hasPrefix("__"),
+                   let neighborStation = effectiveStation(neighbor) {
                     let arrivalMinutes = departureMinutes + Int(tentativeG)
-                    guard stationOpen(neighborStation, arrivalMinutes: arrivalMinutes, isAlwaysAllowed: isAlwaysAllowed) else {
-                        continue   // station closed at estimated arrival — skip this edge
-                    }
+                    guard stationOpen(neighborStation, arrivalMinutes: arrivalMinutes,
+                                      isAlwaysAllowed: isAlwaysAllowed) else { continue }
                 }
 
                 if tentativeG < (gScore[neighbor] ?? .infinity),
-                   let neighborCoords = stationMap[neighbor]?.coordinates {
+                   let neighborCoords = effectiveStation(neighbor)?.coordinates {
                     gScore[neighbor] = tentativeG
                     cameFrom[neighbor] = (parent: currentID, edge: edge)
                     let h = heuristic(from: neighborCoords, to: destCoords)
@@ -708,7 +829,7 @@ actor TransitGraphEngine {
             }
         }
 
-        return nil  // no route found
+        return nil
     }
 
     // MARK: - Heuristic
@@ -772,6 +893,7 @@ actor TransitGraphEngine {
         cameFrom: [StationID: (parent: StationID, edge: TransitEdge)],
         gScore: [StationID: Double],
         stationMap: [StationID: Station],
+        extraStations: [StationID: Station],
         departureTime: Date
     ) -> RouteResult {
         // ── Step 1: walk backwards from destination to rebuild A* path ────────
@@ -790,8 +912,8 @@ actor TransitGraphEngine {
             let fromID = path[i].stationID
             let toID   = path[i + 1].stationID
             guard let edge    = path[i + 1].edge,
-                  let fromSt  = stationMap[fromID],
-                  let toSt    = stationMap[toID] else { continue }
+                  let fromSt  = extraStations[fromID] ?? stationMap[fromID],
+                  let toSt    = extraStations[toID]   ?? stationMap[toID] else { continue }
 
             let effectiveTime    = gScore[toID]! - (gScore[fromID] ?? 0)
             let cumulativeMinutes = gScore[toID] ?? 0
@@ -1072,6 +1194,72 @@ struct StationCache {
     }
 }
 
+// MARK: - Location Fetcher
+
+/// One-shot CLLocationManager wrapper for "Use my location" in the Commute tab.
+/// Requests WhenInUse authorization and delivers a single coordinate, then stops.
+/// CLLocationManager delivers callbacks on the main thread when the manager is
+/// created on the main thread, so `continuation` accesses are always serialised
+/// on main — `nonisolated(unsafe)` silences the strict-concurrency checker while
+/// preserving that guarantee.
+final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    nonisolated(unsafe) private var continuation: CheckedContinuation<Coordinates?, Never>?
+
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    @MainActor
+    func requestOnce() async -> Coordinates? {
+        await withCheckedContinuation { cont in
+            continuation = cont
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse, .authorizedAlways:
+                manager.requestLocation()
+            case .notDetermined:
+                manager.requestWhenInUseAuthorization()
+            default:
+                cont.resume(returning: nil)
+                continuation = nil
+            }
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let loc = locations.last else { return }
+        let coord = Coordinates(lat: loc.coordinate.latitude, lng: loc.coordinate.longitude)
+        Task { @MainActor [weak self] in
+            self?.continuation?.resume(returning: coord)
+            self?.continuation = nil
+        }
+    }
+
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse, .authorizedAlways:
+                manager.requestLocation()
+            case .notDetermined:
+                break
+            default:
+                self.continuation?.resume(returning: nil)
+                self.continuation = nil
+            }
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor [weak self] in
+            self?.continuation?.resume(returning: nil)
+            self?.continuation = nil
+        }
+    }
+}
+
 // MARK: - ViewModel
 
 @Observable
@@ -1080,13 +1268,19 @@ final class CommuteViewModel {
     // MARK: State
     var originID: StationID = ""
     var destinationID: StationID = ""
+    /// Non-nil when origin was set via GPS or map long-press.
+    var originCoordinate: Coordinates?
+    /// Non-nil when destination was set via GPS or map long-press.
+    var destinationCoordinate: Coordinates?
     var selectedPayments: Set<PaymentMethod> = [.cash]
     var selectedModes: Set<TransportMode> = Set(TransportMode.allCases.filter { $0 != .walk })
     var departureTime: Date = .now
     var useScheduledTime: Bool = false
 
     var routeResult: RouteResult?
+    var routeOptions: [RouteOption] = []
     var isLoading: Bool = false
+    var isLocating: Bool = false
     var errorMessage: String?
     var allStations: [Station] = []
     var searchQuery: String = ""
@@ -1098,6 +1292,9 @@ final class CommuteViewModel {
     var availablePayments: [PaymentMethodConfig] = []
 
     private var engine: TransitGraphEngine?
+    private let locationFetcher = CommuteLocationFetcher()
+
+    enum LocationTarget { case origin, destination }
 
     // MARK: Init
 
@@ -1143,7 +1340,7 @@ final class CommuteViewModel {
             errorMessage = "Transit engine not ready."
             return
         }
-        guard !originID.isEmpty, !destinationID.isEmpty else {
+        guard canCalculate else {
             errorMessage = "Please select both origin and destination."
             return
         }
@@ -1151,29 +1348,108 @@ final class CommuteViewModel {
         isLoading = true
         errorMessage = nil
         routeResult = nil
+        routeOptions = []
 
-        let request = RouteRequest(
-            from: originID,
-            to: destinationID,
-            preferredPayments: selectedPayments,
-            allowedModes: selectedModes,
-            departureTime: useScheduledTime ? departureTime : .now
-        )
+        let now: Date = useScheduledTime ? departureTime : .now
 
-        // Push work off main thread; engine is an actor so this is safe
-        let result = await Task.detached(priority: .userInitiated) {
-            await engine.findRoute(request)
-        }.value
+        func makeReq(_ strategy: RouteRequest.CostStrategy) -> RouteRequest {
+            RouteRequest(
+                from: originID, to: destinationID,
+                originCoordinate: originCoordinate,
+                destinationCoordinate: destinationCoordinate,
+                preferredPayments: selectedPayments,
+                allowedModes: selectedModes,
+                departureTime: now,
+                costStrategy: strategy
+            )
+        }
+
+        let req1 = makeReq(.fastest)
+        let req2 = makeReq(.cheapest)
+        let req3 = makeReq(.balanced)
+
+        // Run all three strategies; they serialize through the actor's executor but are
+        // scheduled as child tasks so the parent suspends only once for all three.
+        async let r1 = engine.findRoute(req1)
+        async let r2 = engine.findRoute(req2)
+        async let r3 = engine.findRoute(req3)
+        let (fr, cr, br) = await (r1, r2, r3)
 
         isLoading = false
 
-        switch result {
-        case .success(let route):
-            routeResult = route
-        case .failure(.stationsClosed(let closeTime)):
-            errorMessage = "Stations are closed at this time. MRT/LRT service ends at \(formattedTime(closeTime))."
-        case .failure(.noPath):
-            errorMessage = "No route found between these stations."
+        func unwrap(_ r: Result<RouteResult, TransitGraphEngine.RouteError>) -> RouteResult? {
+            if case .success(let v) = r { return v } else { return nil }
+        }
+
+        let fastest  = unwrap(fr)
+        let cheapest = unwrap(cr)
+        let balanced = unwrap(br)
+
+        guard fastest != nil || cheapest != nil || balanced != nil else {
+            switch fr {
+            case .failure(.stationsClosed(let t)):
+                errorMessage = "Stations are closed. MRT/LRT service ends at \(formattedTime(t))."
+            default:
+                errorMessage = "No route found between these stations."
+            }
+            return
+        }
+
+        func routeKey(_ r: RouteResult) -> String {
+            r.legs.map { "\($0.line):\($0.fromStation.id):\($0.toStation.id)" }.joined(separator: "|")
+        }
+
+        var options: [RouteOption] = []
+        var seen = Set<String>()
+
+        func addIfNew(_ result: RouteResult?, label: RouteOption.Label) {
+            guard let r = result else { return }
+            let key = routeKey(r)
+            guard !seen.contains(key) else { return }
+            seen.insert(key)
+            options.append(RouteOption(result: r, label: label))
+        }
+
+        addIfNew(fastest,  label: .fastest)
+        addIfNew(cheapest, label: .cheapest)
+        addIfNew(balanced, label: .balanced)
+
+        routeOptions = Array(options.prefix(3))
+        routeResult  = routeOptions.first?.result
+    }
+
+    /// Confirms a route selection: sets it as the active map route and dismisses the results panel.
+    func selectRoute(_ option: RouteOption) {
+        routeResult = option.result
+        routeOptions = []
+    }
+
+    /// Updates the active map route preview without dismissing the results panel.
+    func previewRoute(_ option: RouteOption) {
+        routeResult = option.result
+    }
+
+    // MARK: Coordinate-based origin / destination
+
+    func setOriginCoordinate(_ coord: Coordinates) {
+        originCoordinate = coord
+        originID = RouteRequest.virtualOriginID
+    }
+
+    func setDestinationCoordinate(_ coord: Coordinates) {
+        destinationCoordinate = coord
+        destinationID = RouteRequest.virtualDestID
+    }
+
+    /// Fetch the user's current GPS location and assign it to origin or destination.
+    @MainActor
+    func fetchLocation(for target: LocationTarget) async {
+        isLocating = true
+        defer { isLocating = false }
+        guard let coord = await locationFetcher.requestOnce() else { return }
+        switch target {
+        case .origin:      setOriginCoordinate(coord)
+        case .destination: setDestinationCoordinate(coord)
         }
     }
 
@@ -1209,7 +1485,8 @@ final class CommuteViewModel {
     }
 
     var canCalculate: Bool {
-        !originID.isEmpty && !destinationID.isEmpty && engine != nil
+        !originID.isEmpty && !destinationID.isEmpty && engine != nil &&
+        originID != destinationID
     }
 }
 

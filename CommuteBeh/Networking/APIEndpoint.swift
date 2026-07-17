@@ -46,6 +46,7 @@ enum APIEndpoint {
     // Admin
     case updateStation(id: String, update: StationUpdate)
     case updateEdge(id: String, polylineCoordinates: [Coordinates])
+    case deleteRoute(lineId: String)
     case adminSettings
     case updateAdminSettings(enforceOperatingHours: Bool)
 
@@ -82,6 +83,7 @@ enum APIEndpoint {
         case .logRoutePlan:                return "/api/v1/analytics/route_plan"
         case .updateStation(let id, _): return "/api/v1/admin/stations/\(id)"
         case .updateEdge(let id, _):    return "/api/v1/admin/edges/\(id)"
+        case .deleteRoute(let lineId):  return "/api/v1/admin/graph/routes/\(lineId)"
         case .adminSettings:            return "/api/v1/admin/settings"
         case .updateAdminSettings:      return "/api/v1/admin/settings"
         }
@@ -93,7 +95,7 @@ enum APIEndpoint {
             return "POST"
         case .updateMe, .updateStation, .updateEdge, .updateAdminSettings:
             return "PATCH"
-        case .signOut, .deleteAccount, .deleteSavedRoute:
+        case .signOut, .deleteAccount, .deleteSavedRoute, .deleteRoute:
             return "DELETE"
         default:
             return "GET"

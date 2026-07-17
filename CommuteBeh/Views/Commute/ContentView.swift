@@ -21,6 +21,7 @@ struct ContentView: View {
     @State private var mapPosition: MapCameraPosition = .region(Self.manilaRegion)
     @State private var showSearchProgress = false
     @FocusState private var focusedField: SearchField?
+    @Namespace private var searchNS
 
     private enum SearchField { case origin, destination }
 
@@ -30,112 +31,251 @@ struct ContentView: View {
     )
 
     var body: some View {
-        Map(position: $mapPosition) {
-            if let result = vm.routeResult {
-                // ── Polylines — one per RouteLeg, using merged polylineCoordinates ──
-                ForEach(result.legs) { leg in
-                    let coords = leg.polylineCoordinates.map {
-                        CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
-                    }
-                    MapPolyline(coordinates: coords)
-                        .stroke(leg.mode.color, lineWidth: leg.mode.lineWidth)
-                }
-                // ── Origin pin ───────────────────────────────────────────────────
-                if let first = result.legs.first {
-                    Annotation("", coordinate: CLLocationCoordinate2D(
-                        latitude: first.fromStation.coordinates.lat,
-                        longitude: first.fromStation.coordinates.lng
-                    )) {
-                        ZStack {
-                            Circle().fill(.green).frame(width: 16, height: 16)
-                            Circle().stroke(.white, lineWidth: 2.5).frame(width: 16, height: 16)
+        MapReader { proxy in
+            Map(position: $mapPosition) {
+                if let result = vm.routeResult {
+                    // ── Polylines — one per RouteLeg ─────────────────────────────
+                    ForEach(result.legs) { leg in
+                        let coords = leg.polylineCoordinates.map {
+                            CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
                         }
-                        .shadow(color: .black.opacity(0.3), radius: 2)
+                        if leg.line == "ACCESS_WALK" {
+                            // Access/egress walk: dashed gray to match TransportModeConfig.mapLineDash
+                            MapPolyline(coordinates: coords)
+                                .stroke(.gray.opacity(0.6),
+                                        style: StrokeStyle(lineWidth: 2.5, dash: [6, 5]))
+                        } else {
+                            MapPolyline(coordinates: coords)
+                                .stroke(leg.mode.color, lineWidth: leg.mode.lineWidth)
+                        }
                     }
-                }
-                // ── Destination pin ──────────────────────────────────────────────
-                if let last = result.legs.last {
-                    Annotation(last.toStation.shortName, coordinate: CLLocationCoordinate2D(
-                        latitude: last.toStation.coordinates.lat,
-                        longitude: last.toStation.coordinates.lng
-                    )) {
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(.red)
-                            .shadow(color: .black.opacity(0.4), radius: 2)
+                    // ── Origin pin ───────────────────────────────────────────────
+                    if let first = result.legs.first {
+                        Annotation("", coordinate: CLLocationCoordinate2D(
+                            latitude: first.fromStation.coordinates.lat,
+                            longitude: first.fromStation.coordinates.lng
+                        )) {
+                            ZStack {
+                                Circle().fill(.green).frame(width: 16, height: 16)
+                                Circle().stroke(.white, lineWidth: 2.5).frame(width: 16, height: 16)
+                            }
+                            .shadow(color: .black.opacity(0.3), radius: 2)
+                        }
                     }
-                }
-                // ── Transfer dots — boarding station of every non-first leg ──────
-                ForEach(result.legs.dropFirst()) { leg in
-                    Annotation("", coordinate: CLLocationCoordinate2D(
-                        latitude: leg.fromStation.coordinates.lat,
-                        longitude: leg.fromStation.coordinates.lng
-                    )) {
-                        Circle()
-                            .fill(.white)
-                            .frame(width: 10, height: 10)
-                            .overlay(Circle().stroke(leg.mode.color, lineWidth: 2))
-                            .shadow(color: .black.opacity(0.2), radius: 1)
+                    // ── Destination pin ──────────────────────────────────────────
+                    if let last = result.legs.last {
+                        let destLabel = last.line == "ACCESS_WALK" ? "" : last.toStation.shortName
+                        Annotation(destLabel, coordinate: CLLocationCoordinate2D(
+                            latitude: last.toStation.coordinates.lat,
+                            longitude: last.toStation.coordinates.lng
+                        )) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.red)
+                                .shadow(color: .black.opacity(0.4), radius: 2)
+                        }
+                    }
+                    // ── Transfer dots — boarding station of every non-access leg ──
+                    ForEach(result.legs.dropFirst().filter { $0.line != "ACCESS_WALK" }) { leg in
+                        Annotation("", coordinate: CLLocationCoordinate2D(
+                            latitude: leg.fromStation.coordinates.lat,
+                            longitude: leg.fromStation.coordinates.lng
+                        )) {
+                            Circle()
+                                .fill(.white)
+                                .frame(width: 10, height: 10)
+                                .overlay(Circle().stroke(leg.mode.color, lineWidth: 2))
+                                .shadow(color: .black.opacity(0.2), radius: 1)
+                        }
                     }
                 }
             }
-        }
-        .ignoresSafeArea()
-        .safeAreaInset(edge: .top, spacing: 0) {
-            searchPanel.padding()
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if let result = vm.routeResult {
-                RouteResultCard(result: result)
+            .ignoresSafeArea()
+            .safeAreaInset(edge: .top, spacing: 0) {
+                searchPanel.padding()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if !vm.routeOptions.isEmpty {
+                    RouteResultsPanel(
+                        options: vm.routeOptions,
+                        onSelect: { vm.selectRoute($0) },
+                        onPreview: { vm.previewRoute($0) }
+                    )
                     .padding()
-                    .transition(.move(edge: .bottom).combined(with: .opacity)) // motion.cardEnter
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
-        }
-        .animation(DesignTokens.Motion.cardEnter, value: vm.routeResult == nil)
-        .onChange(of: vm.isLoading) { _, isLoading in
-            if !isLoading, let result = vm.routeResult { fitMap(to: result) }
-        }
-        // motion.searchProgress: inline progress only past a 250 ms grace delay,
-        // then visible ≥ 500 ms — replaces the full-screen LoadingOverlay, which
-        // rendered as a dark flash for a < 100 ms local A* computation.
-        .task(id: vm.isLoading) {
-            if vm.isLoading {
-                try? await Task.sleep(for: DesignTokens.Motion.progressGraceDelay)
-                if vm.isLoading { showSearchProgress = true }
-            } else if showSearchProgress {
-                try? await Task.sleep(for: DesignTokens.Motion.progressMinVisible)
-                showSearchProgress = false
+            .animation(DesignTokens.Motion.cardEnter, value: vm.routeOptions.isEmpty)
+            .onChange(of: vm.isLoading) { _, isLoading in
+                if !isLoading, let result = vm.routeResult { fitMap(to: result) }
             }
+            .task(id: vm.isLoading) {
+                if vm.isLoading {
+                    try? await Task.sleep(for: DesignTokens.Motion.progressGraceDelay)
+                    if vm.isLoading { showSearchProgress = true }
+                } else if showSearchProgress {
+                    try? await Task.sleep(for: DesignTokens.Motion.progressMinVisible)
+                    showSearchProgress = false
+                }
+            }
+            // Long-press on map: first press sets origin, subsequent presses set destination.
+            .gesture(
+                LongPressGesture(minimumDuration: 0.5)
+                    .simultaneously(with: DragGesture(minimumDistance: 0, coordinateSpace: .local))
+                    .onEnded { value in
+                        guard value.first == true else { return }
+                        if let cgPoint = value.second?.startLocation,
+                           let clCoord = proxy.convert(cgPoint, from: .local) {
+                            handleMapLongPress(at: Coordinates(
+                                lat: clCoord.latitude, lng: clCoord.longitude))
+                        }
+                    }
+            )
         }
     }
 
+    // MARK: - Design constants
+
+    private static let orange = Color(red: 0.91, green: 0.38, blue: 0.16)
+    private static let originGreen = Color(red: 0.18, green: 0.48, blue: 0.20)
+    private static let cardCream = Color(red: 0.96, green: 0.94, blue: 0.90)
+
     // MARK: - Search Panel
 
+    private var isSearchCollapsed: Bool {
+        vm.isLoading || !vm.routeOptions.isEmpty
+    }
+
     private var searchPanel: some View {
+        Group {
+            if isSearchCollapsed {
+                collapsedSearchPill
+                    .transition(.opacity)
+            } else {
+                expandedSearchCard
+                    .transition(.opacity)
+            }
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: isSearchCollapsed)
+    }
+
+    // MARK: Collapsed pill (shown while loading / showing results)
+
+    private var collapsedSearchPill: some View {
+        HStack(spacing: 10) {
+            Button(action: resetAll) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 42, height: 42)
+                    .background(Circle().fill(.white))
+                    .shadow(color: .black.opacity(0.10), radius: 4, x: 0, y: 2)
+            }
+            .buttonStyle(.plain)
+
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(Self.originGreen)
+                    .frame(width: 8, height: 8)
+                    .matchedGeometryEffect(id: "origin-dot", in: searchNS, properties: .position)
+
+                Text(originText)
+                    .font(.system(.subheadline, weight: .semibold))
+                    .lineLimit(1)
+                    .matchedGeometryEffect(id: "origin-text", in: searchNS, properties: .position)
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.secondary)
+
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.primary)
+                    .frame(width: 8, height: 8)
+                    .matchedGeometryEffect(id: "dest-dot", in: searchNS, properties: .position)
+
+                Text(destinationText)
+                    .font(.system(.subheadline, weight: .semibold))
+                    .lineLimit(1)
+                    .matchedGeometryEffect(id: "dest-text", in: searchNS, properties: .position)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Capsule().fill(.white))
+            .shadow(color: .black.opacity(0.10), radius: 4, x: 0, y: 2)
+
+            Spacer()
+        }
+    }
+
+    // MARK: Expanded card (default search state)
+
+    private var expandedSearchCard: some View {
         VStack(spacing: 6) {
-            // Input card
-            VStack(spacing: 8) {
-                fieldRow(
-                    placeholder: "From: Search station…",
-                    text: $originText,
-                    icon: "circle.fill",
-                    iconColor: .green,
-                    field: .origin,
-                    onChange: updateOriginSuggestions,
-                    onClear: clearOrigin
-                )
-                Divider().padding(.horizontal, 4)
-                fieldRow(
-                    placeholder: "To: Search station…",
-                    text: $destinationText,
-                    icon: "mappin.circle.fill",
-                    iconColor: .red,
-                    field: .destination,
-                    onChange: updateDestSuggestions,
-                    onClear: clearDestination
-                )
-                Divider().padding(.horizontal, 4)
-                HStack(spacing: 10) {
+            VStack(spacing: 0) {
+                // Origin field
+                HStack(spacing: 14) {
+                    Circle()
+                        .fill(Self.originGreen)
+                        .frame(width: 10, height: 10)
+                        .matchedGeometryEffect(id: "origin-dot", in: searchNS, properties: .position)
+                    ZStack(alignment: .leading) {
+                        // Invisible anchor for the origin name — used only for geometry matching
+                        Text(originText)
+                            .font(.system(.body, weight: .semibold))
+                            .opacity(0)
+                            .matchedGeometryEffect(id: "origin-text", in: searchNS, properties: .position)
+                            .allowsHitTesting(false)
+                        TextField("Start", text: $originText)
+                            .font(.system(.body, weight: .semibold))
+                            .autocorrectionDisabled()
+                            .focused($focusedField, equals: .origin)
+                            .onChange(of: originText) { _, val in updateOriginSuggestions(val) }
+                    }
+                    if !originText.isEmpty {
+                        Button(action: clearOrigin) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color.gray.opacity(0.35))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 15)
+
+                dashedDivider.padding(.horizontal, 18)
+
+                // Destination field
+                HStack(spacing: 14) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Self.orange)
+                        .frame(width: 10, height: 10)
+                        .matchedGeometryEffect(id: "dest-dot", in: searchNS, properties: .position)
+                    ZStack(alignment: .leading) {
+                        // Invisible anchor for the destination name — geometry matching only
+                        Text(destinationText)
+                            .font(.system(.body, weight: .semibold))
+                            .opacity(0)
+                            .matchedGeometryEffect(id: "dest-text", in: searchNS, properties: .position)
+                            .allowsHitTesting(false)
+                        TextField("Destination", text: $destinationText)
+                            .font(.system(.body, weight: .semibold))
+                            .autocorrectionDisabled()
+                            .focused($focusedField, equals: .destination)
+                            .onChange(of: destinationText) { _, val in updateDestSuggestions(val) }
+                    }
+                    if !destinationText.isEmpty {
+                        Button(action: clearDestination) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color.gray.opacity(0.35))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 15)
+
+                // Action row
+                HStack(spacing: 12) {
                     Button {
                         focusedField = nil
                         Task { await vm.calculateRoute() }
@@ -144,29 +284,43 @@ struct ContentView: View {
                             if showSearchProgress {
                                 ProgressView().tint(.white)
                             } else {
-                                Label("Search Route", systemImage: "magnifyingglass")
+                                Text("SEARCH ROUTE")
+                                    .font(.system(.subheadline, weight: .bold))
+                                    .kerning(1.2)
                             }
                         }
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(Capsule().fill(Self.orange))
                     }
-                    .buttonStyle(.borderedProminent)
                     .disabled(!vm.canCalculate || vm.isLoading)
+                    .opacity(!vm.canCalculate ? 0.55 : 1)
 
-                    Button(action: resetAll) {
-                        Image(systemName: "arrow.counterclockwise")
+                    Button(action: swapOriginDestination) {
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.primary)
+                            .frame(width: 46, height: 46)
+                            .background(Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1.5))
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.plain)
                 }
+                .padding(.horizontal, 14)
+                .padding(.top, 4)
+                .padding(.bottom, 14)
+
                 if let error = vm.errorMessage {
                     Text(error)
                         .font(DesignTokens.TypeScale.meta)
                         .foregroundStyle(DesignTokens.Colors.destructive)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 18)
+                        .padding(.bottom, 12)
                 }
             }
-            .padding(DesignTokens.Space.s3)
-            .background(.regularMaterial)
+            .background(Self.cardCream)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.card))
             .cardShadow(y: 4)
 
@@ -178,7 +332,7 @@ struct ContentView: View {
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
                 .cardShadow(y: 4)
-                .transition(.opacity.combined(with: .move(edge: .top))) // motion.suggestEnter
+                .transition(.opacity.combined(with: .move(edge: .top)))
             } else if showDestSuggestions && !destSuggestions.isEmpty {
                 SuggestionList(stations: Array(destSuggestions.prefix(5))) { station in
                     selectDestination(station)
@@ -186,45 +340,27 @@ struct ContentView: View {
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
                 .cardShadow(y: 4)
-                .transition(.opacity.combined(with: .move(edge: .top))) // motion.suggestEnter
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .animation(DesignTokens.Motion.suggestEnter, value: suggestionsVisible)
     }
 
+    private var dashedDivider: some View {
+        GeometryReader { geo in
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: 0.5))
+                path.addLine(to: CGPoint(x: geo.size.width, y: 0.5))
+            }
+            .stroke(Color.primary.opacity(0.15),
+                    style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+        }
+        .frame(height: 1)
+    }
+
     private var suggestionsVisible: Bool {
         (showOriginSuggestions && !originSuggestions.isEmpty) ||
         (showDestSuggestions && !destSuggestions.isEmpty)
-    }
-
-    @ViewBuilder
-    private func fieldRow(
-        placeholder: String,
-        text: Binding<String>,
-        icon: String,
-        iconColor: Color,
-        field: SearchField,
-        onChange: @escaping (String) -> Void,
-        onClear: @escaping () -> Void
-    ) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .foregroundStyle(iconColor)
-                .font(.subheadline)
-                .frame(width: 20)
-            TextField(placeholder, text: text)
-                .autocorrectionDisabled()
-                .focused($focusedField, equals: field)
-                .onChange(of: text.wrappedValue) { _, val in onChange(val) }
-            if !text.wrappedValue.isEmpty {
-                Button(action: onClear) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Color.gray.opacity(0.45))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, 4)
     }
 
     // MARK: - Actions
@@ -267,6 +403,7 @@ struct ContentView: View {
     private func selectOrigin(_ station: Station) {
         originText = station.name
         vm.originID = station.id
+        vm.originCoordinate = nil
         showOriginSuggestions = false
         originSuggestions = []
         focusedField = .destination
@@ -275,6 +412,7 @@ struct ContentView: View {
     private func selectDestination(_ station: Station) {
         destinationText = station.name
         vm.destinationID = station.id
+        vm.destinationCoordinate = nil
         showDestSuggestions = false
         destSuggestions = []
         focusedField = nil
@@ -282,11 +420,13 @@ struct ContentView: View {
 
     private func clearOrigin() {
         originText = ""; vm.originID = ""
+        vm.originCoordinate = nil
         originSuggestions = []; showOriginSuggestions = false
     }
 
     private func clearDestination() {
         destinationText = ""; vm.destinationID = ""
+        vm.destinationCoordinate = nil
         destSuggestions = []; showDestSuggestions = false
     }
 
@@ -294,9 +434,46 @@ struct ContentView: View {
         focusedField = nil
         clearOrigin(); clearDestination()
         vm.routeResult = nil
+        vm.routeOptions = []
         vm.errorMessage = nil
         withAnimation(.easeInOut(duration: 0.4)) {
             mapPosition = .region(Self.manilaRegion)
+        }
+    }
+
+    private func swapOriginDestination() {
+        let tempText  = originText
+        let tempID    = vm.originID
+        let tempCoord = vm.originCoordinate
+
+        originText           = destinationText
+        vm.originID          = vm.destinationID
+        vm.originCoordinate  = vm.destinationCoordinate
+
+        destinationText         = tempText
+        vm.destinationID        = tempID
+        vm.destinationCoordinate = tempCoord
+
+        // Normalise virtual IDs after the swap
+        if vm.originID == RouteRequest.virtualDestID       { vm.originID = RouteRequest.virtualOriginID }
+        if vm.destinationID == RouteRequest.virtualOriginID { vm.destinationID = RouteRequest.virtualDestID }
+
+        showOriginSuggestions = false
+        showDestSuggestions   = false
+        originSuggestions     = []
+        destSuggestions       = []
+    }
+
+    /// Long-press handler: sets the tapped coordinate as origin if unset, destination otherwise.
+    private func handleMapLongPress(at coord: Coordinates) {
+        if vm.originID.isEmpty {
+            originText = "Pinned Location"
+            showOriginSuggestions = false
+            vm.setOriginCoordinate(coord)
+        } else {
+            destinationText = "Pinned Location"
+            showDestSuggestions = false
+            vm.setDestinationCoordinate(coord)
         }
     }
 
@@ -374,135 +551,271 @@ struct SuggestionList: View {
     }
 }
 
-// MARK: - Route Result Card
+// MARK: - Route Results Panel
 
-private struct RouteModeChip: Identifiable {
-    let mode: TransportMode
-    let count: Int
-    let label: String
-    let isWalk: Bool
-    var id: String { label }
-}
+struct RouteResultsPanel: View {
+    let options: [RouteOption]
+    let onSelect: (RouteOption) -> Void
+    let onPreview: (RouteOption) -> Void
 
-struct RouteResultCard: View {
-    let result: RouteResult
-    @State private var expanded = false
+    @State private var selectedIndex: Int = 0
+
+    private static let cardCream = Color(red: 0.96, green: 0.94, blue: 0.90)
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // ── Summary (always visible) — tap anywhere to expand ────────────
-            VStack(alignment: .leading, spacing: DesignTokens.Space.s2) {
-                topRow
-                timeRow
-                chipsRow
-            }
-            .padding()
-            .contentShape(Rectangle())
-            .onTapGesture { withAnimation(DesignTokens.Motion.disclose) { expanded.toggle() } }
+        VStack(alignment: .leading, spacing: 8) {
+            Text("BEST WAY THERE")
+                .font(.subheadline.weight(.heavy))
+                .kerning(0.8)
+                .padding(.horizontal, 4)
 
-            // ── Expanded leg detail ──────────────────────────────────────────
-            if expanded {
-                Divider()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(result.legs.enumerated()), id: \.element.id) { i, leg in
-                            RouteLegRow(leg: leg).padding(.horizontal)
-                            if i < result.legs.count - 1 {
-                                Divider().padding(.leading, 54)
-                            }
+            ForEach(Array(options.enumerated()), id: \.element.id) { i, option in
+                RouteOptionCard(
+                    option: option,
+                    isExpanded: i == selectedIndex,
+                    onExpand: {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            selectedIndex = i
                         }
+                        onPreview(option)
+                    },
+                    onSelect: { onSelect(option) }
+                )
+                .jellyEffect(trigger: i == selectedIndex)
+            }
+        }
+        .padding(16)
+        .background(Self.cardCream)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.10), radius: 12, x: 0, y: -4)
+    }
+}
+
+// MARK: - Route Option Card
+
+private struct RouteOptionCard: View {
+    let option: RouteOption
+    let isExpanded: Bool
+    let onExpand: () -> Void
+    let onSelect: () -> Void
+
+    @Namespace private var ns
+
+    private static let fastestBlue   = Color(red: 0.22, green: 0.45, blue: 0.87)
+    private static let cheapestGreen = Color(red: 0.18, green: 0.60, blue: 0.28)
+    private static let orange        = Color(red: 0.91, green: 0.38, blue: 0.16)
+
+    private var result: RouteResult { option.result }
+
+    // VStack with a persistent header row lets SwiftUI interpolate the card's height
+    // smoothly as the conditional sections are added/removed below it.
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            compactBar
+            if !isExpanded {
+                collapsedSubRow
+                    .transition(.opacity)
+            }
+            if isExpanded {
+                expandedSection
+                    .transition(.opacity)
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isExpanded)
+        .clipped()
+        .background(.white)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isExpanded ? Color.primary.opacity(0.12) : Color.primary.opacity(0.07),
+                        lineWidth: isExpanded ? 1.5 : 1)
+        )
+        .shadow(color: isExpanded ? .black.opacity(0.08) : .clear, radius: 6, x: 0, y: 2)
+    }
+
+    // MARK: Compact bar — only rendered when collapsed.
+    // SwiftUI tracks the last-known geometry positions even after this view leaves the
+    // hierarchy, so matchedGeometryEffect in expandedSection still animates correctly.
+
+    @ViewBuilder
+    private var compactBar: some View {
+        if !isExpanded {
+            Button(action: onExpand) {
+                HStack(alignment: .center) {
+                    HStack(spacing: 6) {
+                        Text("\(Int(result.totalTimeMinutes)) min")
+                            .font(.system(.body, design: .default, weight: .bold))
+                            .matchedGeometryEffect(id: "time", in: ns, properties: .position)
+                        labelBadge(compact: true)
+                            .matchedGeometryEffect(id: "badge", in: ns, properties: .position)
                     }
-                    .padding(.vertical, DesignTokens.Space.s2)
+                    Spacer()
+                    HStack(spacing: 6) {
+                        HStack(alignment: .firstTextBaseline, spacing: 1) {
+                            Text("₱").font(.footnote.bold())
+                            Text("\(Int(result.totalFare))").font(.body.bold())
+                        }
+                        .matchedGeometryEffect(id: "fare", in: ns, properties: .position)
+                        Image(systemName: "chevron.down")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .frame(maxHeight: 280)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .foregroundStyle(.primary)
+            .transition(.opacity)
         }
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.card))
-        .cardShadow(y: -4)
     }
 
-    // MARK: Rows
+    // MARK: Collapsed-only sub-row
 
-    // Row 1: badge · transfers + distance · payment icons
-    private var topRow: some View {
-        HStack(spacing: DesignTokens.Space.s2) {
+    private var collapsedSubRow: some View {
+        HStack(spacing: 4) {
+            Text("Arrive at \(arrivalText)")
+                .font(.caption).foregroundStyle(.secondary)
+            if !paymentsText.isEmpty {
+                Text("·").font(.caption).foregroundStyle(.secondary)
+                Text(paymentsText).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 14)
+    }
+
+    // MARK: Expanded-only section
+
+    private var expandedSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Row 1: label badge + departure | payment chips
+            HStack(spacing: 8) {
+                labelBadge(compact: false)
+                    .matchedGeometryEffect(id: "badge", in: ns, properties: .position)
+                Text(departureText).font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                HStack(spacing: 6) {
+                    ForEach(acceptedPayments, id: \.self) { paymentChip($0) }
+                }
+            }
+
+            // Row 2: duration | fare
+            HStack(alignment: .firstTextBaseline) {
+                Text("\(Int(result.totalTimeMinutes)) min")
+                    .font(.system(.title, design: .default, weight: .bold))
+                    .matchedGeometryEffect(id: "time", in: ns, properties: .position)
+                Text("Arrive at \(arrivalText)")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                Spacer()
+                HStack(alignment: .firstTextBaseline, spacing: 1) {
+                    Text("₱").font(.subheadline.bold())
+                    Text("\(Int(result.totalFare))").font(.title2.bold())
+                }
+                .matchedGeometryEffect(id: "fare", in: ns, properties: .position)
+            }
+
+            // Dashed divider
+            GeometryReader { geo in
+                Path { p in
+                    p.move(to: CGPoint(x: 0, y: 0.5))
+                    p.addLine(to: CGPoint(x: geo.size.width, y: 0.5))
+                }
+                .stroke(Color.primary.opacity(0.15), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+            }
+            .frame(height: 1)
+
+            // Row 3: mode chips (single-line, horizontally scrollable)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(legChips) { legChipView($0) }
+                }
+                .padding(.horizontal, 1)
+            }
+
+            // Row 4: transfer + walk stats
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.triangle.swap")
+                    .font(.caption).foregroundStyle(.secondary)
+                Text(statsText).font(.caption).foregroundStyle(.secondary)
+            }
+
+            // USE THIS ROUTE button
+            Button(action: onSelect) {
+                Text("USE THIS ROUTE")
+                    .font(.system(.subheadline, design: .default, weight: .bold))
+                    .kerning(1.0)
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Capsule().fill(Self.orange))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+    }
+
+    // MARK: Badge (shared between expanded and collapsed)
+
+    @ViewBuilder
+    private func labelBadge(compact: Bool) -> some View {
+        let hPad: CGFloat = compact ? 7 : 10
+        let vPad: CGFloat = compact ? 3 : 5
+        let font: Font  = compact ? .caption2.weight(.heavy) : .caption.weight(.heavy)
+        switch option.label {
+        case .fastest:
             Text("FASTEST")
-                .font(.caption.weight(.heavy))
+                .font(font)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.orange)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-            Text(subtitleText)
-                .font(DesignTokens.TypeScale.meta)
-                .foregroundStyle(.secondary)
+                .minimumScaleFactor(0.4)
                 .lineLimit(1)
-
-            Spacer()
-
-            HStack(spacing: 6) {
-                ForEach(acceptedPayments, id: \.self) { paymentID in
-                    paymentIcon(paymentID)
-                }
-            }
+                .padding(.horizontal, hPad).padding(.vertical, vPad)
+                .background(Capsule().fill(Self.fastestBlue))
+        case .cheapest:
+            Text("CHEAPEST")
+                .font(font)
+                .foregroundStyle(.white)
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .padding(.horizontal, hPad).padding(.vertical, vPad)
+                .background(Capsule().fill(Self.cheapestGreen))
+        case .balanced:
+            EmptyView()
         }
     }
 
-    // Row 2: duration · departure → arrival · fare
-    private var timeRow: some View {
-        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.s2) {
-            Text("\(Int(result.totalTimeMinutes)) min")
-                .font(.system(.title2, design: .default, weight: .bold))
-
-            Text(timeRangeText)
-                .font(DesignTokens.TypeScale.meta)
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("₱\(Int(result.totalFare))")
-                    .font(.system(.title3, design: .default, weight: .bold))
-                Text("TOTAL")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    // Row 3: mode summary chips + expand chevron
-    private var chipsRow: some View {
-        HStack(spacing: DesignTokens.Space.s2) {
-            ForEach(modeChips) { chip in chipView(chip) }
-            Spacer()
-            Image(systemName: expanded ? "chevron.up" : "chevron.down")
+    @ViewBuilder
+    private func paymentChip(_ paymentID: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: sfSymbol(for: paymentID))
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+            Text(shortName(for: paymentID))
+                .font(.caption2)
+                .lineLimit(1)
         }
+        .foregroundStyle(.secondary)
+        .fixedSize()
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .overlay(RoundedRectangle(cornerRadius: 7).stroke(Color.secondary.opacity(0.35), lineWidth: 1))
     }
 
-    // MARK: Computed values
+    // MARK: Computed
 
-    private var subtitleText: String {
-        let xfer = result.transfers == 0
-            ? "Direct"
-            : "\(result.transfers) transfer\(result.transfers > 1 ? "s" : "")"
-        return "\(xfer) · \(String(format: "%.1f", result.totalDistanceKm)) km"
+    private var departureText: String {
+        guard let first = result.legs.first else { return "" }
+        let dep = first.estimatedArrival.addingTimeInterval(-first.effectiveTravelMinutes * 60)
+        let fmt = DateFormatter(); fmt.dateFormat = "h:mm a"
+        return "Leaves \(fmt.string(from: dep))"
     }
 
-    // Depart = first leg's estimated arrival minus that leg's travel time.
-    // Arrive = last leg's estimated arrival.
-    private var timeRangeText: String {
-        guard let first = result.legs.first, let last = result.legs.last else { return "" }
-        let departure = first.estimatedArrival.addingTimeInterval(-first.effectiveTravelMinutes * 60)
-        let fmt = DateFormatter()
-        fmt.dateFormat = "h:mm a"
-        return "Arrives at \(fmt.string(from: last.estimatedArrival))"
+    private var arrivalText: String {
+        guard let last = result.legs.last else { return "" }
+        let fmt = DateFormatter(); fmt.dateFormat = "h:mm a"
+        return fmt.string(from: last.estimatedArrival)
     }
 
-    // Payments that every non-walk leg accepts (intersection = works the whole journey).
     private var acceptedPayments: [String] {
         let nonWalk = result.legs.filter { $0.mode != .walk }
         guard !nonWalk.isEmpty else { return [] }
@@ -513,85 +826,55 @@ struct RouteResultCard: View {
         return Array(common).sorted()
     }
 
-    private var modeChips: [RouteModeChip] {
-        var chips: [RouteModeChip] = []
-        var order: [TransportMode] = []
-        var counts: [TransportMode: Int] = [:]
-        var stationTotals: [TransportMode: Int] = [:]
+    private var paymentsText: String {
+        acceptedPayments.map { shortName(for: $0) }.joined(separator: " · ")
+    }
 
-        for leg in result.legs where leg.mode != .walk {
-            if counts[leg.mode] == nil { order.append(leg.mode) }
-            counts[leg.mode, default: 0] += 1
-            stationTotals[leg.mode, default: 0] += leg.stops.count
-        }
-        for mode in order {
-            let count = counts[mode, default: 0]
-            let n = stationTotals[mode, default: 0]
-            let noun: String
-            switch mode {
-            case .train:    noun = "train ride\(count > 1 ? "s" : "")"
-            case .bus:      noun = "bus ride\(count > 1 ? "s" : "")"
-            case .jeepney:  noun = "jeepney ride\(count > 1 ? "s" : "")"
-            case .tricycle: noun = "tricycle ride\(count > 1 ? "s" : "")"
-            case .walk:     noun = "walk"
+    private struct LegChip: Identifiable {
+        let id = UUID()
+        let label: String
+        let color: Color
+        let isWalk: Bool
+    }
+
+    private var legChips: [LegChip] {
+        result.legs
+            .filter { $0.line != "ACCESS_WALK" }
+            .map { leg -> LegChip in
+                if leg.mode == .walk || leg.line == "INTERCHANGE" {
+                    let mins = Int(leg.effectiveTravelMinutes.rounded())
+                    return LegChip(label: "Walk · \(mins) min", color: .gray, isWalk: true)
+                }
+                let stops = leg.stopCount
+                return LegChip(
+                    label: "\(leg.line) · \(stops) stop\(stops == 1 ? "" : "s")",
+                    color: leg.mode.color, isWalk: false
+                )
             }
-            chips.append(RouteModeChip(
-                mode: mode, count: count,
-                label: "\(count) \(noun) (\(n) station\(n == 1 ? "" : "s"))",
-                isWalk: false
-            ))
-        }
-
-        let walks = result.legs.filter { $0.mode == .walk }
-        if !walks.isEmpty {
-            let mins = Int(walks.reduce(0.0) { $0 + $1.effectiveTravelMinutes }.rounded())
-            chips.append(RouteModeChip(
-                mode: .walk, count: walks.count,
-                label: "\(walks.count) walk\(walks.count > 1 ? "s" : "") (\(mins) min)",
-                isWalk: true
-            ))
-        }
-        return chips
-    }
-
-    // MARK: Sub-views
-
-    @ViewBuilder
-    private func paymentIcon(_ paymentID: String) -> some View {
-        Image(systemName: Self.sfSymbol(for: paymentID))
-            .font(.caption)
-            .frame(width: 28, height: 28)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-            )
-            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder
-    private func chipView(_ chip: RouteModeChip) -> some View {
-        HStack(spacing: DesignTokens.Space.s1) {
-            Image(systemName: chip.mode.icon).font(.caption.weight(.semibold))
-            Text(chip.label).font(DesignTokens.TypeScale.meta).fontWeight(.medium)
-        }
-        .foregroundStyle(chip.isWalk ? AnyShapeStyle(.secondary) : AnyShapeStyle(chip.mode.color))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background { chipBackground(chip) }
+    private func legChipView(_ chip: LegChip) -> some View {
+        Text(chip.label)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(chip.isWalk ? AnyShapeStyle(.secondary) : AnyShapeStyle(chip.color))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(chip.isWalk ? Color.secondary.opacity(0.1) : chip.color.opacity(0.12)))
     }
 
-    @ViewBuilder
-    private func chipBackground(_ chip: RouteModeChip) -> some View {
-        if chip.isWalk {
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.secondary.opacity(0.4),
-                        style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-        } else {
-            RoundedRectangle(cornerRadius: 8).fill(chip.mode.color.opacity(0.12))
-        }
+    private var statsText: String {
+        let xfers = result.transfers
+        let walkMins = Int(result.legs
+            .filter { $0.mode == .walk && $0.line != "ACCESS_WALK" }
+            .reduce(0.0) { $0 + $1.effectiveTravelMinutes }
+            .rounded())
+        let xferPart = xfers == 0 ? "Direct" : "\(xfers) transfer\(xfers > 1 ? "s" : "")"
+        let walkPart = walkMins > 0 ? " · \(walkMins) min\(walkMins == 1 ? "" : "s") walking" : ""
+        return "\(xferPart)\(walkPart)"
     }
 
-    private static func sfSymbol(for paymentID: String) -> String {
+    private func sfSymbol(for paymentID: String) -> String {
         switch paymentID {
         case "beep_card": return "creditcard.fill"
         case "cash":      return "banknote"
@@ -600,6 +883,50 @@ struct RouteResultCard: View {
         case "card":      return "creditcard"
         default:          return "banknote"
         }
+    }
+
+    private func shortName(for paymentID: String) -> String {
+        switch paymentID {
+        case "beep_card": return "Beep"
+        case "cash":      return "Cash"
+        case "gcash":     return "GCash"
+        case "maya":      return "Maya"
+        case "card":      return "Card"
+        default:          return paymentID.capitalized
+        }
+    }
+}
+
+// MARK: - Jelly Effect Modifier
+
+/// Applies a spring-bounce to the view's container (background, border, shadow) when `trigger`
+/// changes. The initial compression (scale = 1 − intensity) springs back with low damping so it
+/// overshoots slightly before settling — producing the "jelly" feel.
+///
+/// Usage:
+///   RouteOptionCard(...).jellyEffect(trigger: isExpanded)
+///   someButton.jellyEffect(trigger: isPressed, intensity: 0.06)
+struct JellyEffect<T: Equatable>: ViewModifier {
+    let trigger: T
+    var intensity: CGFloat = 0.04
+
+    @State private var scale: CGFloat = 1.0
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(scale)
+            .onChange(of: trigger) { _, _ in
+                scale = 1.0 - intensity
+                withAnimation(.spring(response: 0.38, dampingFraction: 0.28)) {
+                    scale = 1.0
+                }
+            }
+    }
+}
+
+extension View {
+    func jellyEffect(trigger: some Equatable, intensity: CGFloat = 0.04) -> some View {
+        modifier(JellyEffect(trigger: trigger, intensity: intensity))
     }
 }
 
@@ -788,11 +1115,12 @@ private extension RouteLeg {
     .background(Color(.systemGroupedBackground))
 }
 
-#Preview("Route Result Card") {
+#Preview("Route Results Panel") {
     let ayala   = Station.mock(id: "MRT3_AYALA",    name: "Ayala Station",    shortName: "Ayala",      line: "MRT-3", type: "train")
     let kalaw   = Station.mock(id: "MRT3_KALAW",    name: "Kalaw Station",    shortName: "Kalaw",      line: "MRT-3", type: "train")
     let central = Station.mock(id: "LRT1_CENTRAL",  name: "Central Station",  shortName: "Central",    line: "LRT-1", type: "train")
     let avenida = Station.mock(id: "LRT1_AVENIDA",  name: "Avenida Station",  shortName: "Avenida",    line: "LRT-1", type: "train")
+    let carriedo = Station.mock(id: "LRT1_CARRIEDO", name: "Carriedo Station", shortName: "Carriedo",  line: "LRT-1", type: "train")
 
     let mrt3Stops: [Station] = [
         ayala,
@@ -800,13 +1128,9 @@ private extension RouteLeg {
         .mock(id: "MRT3_VITO",     name: "Vito Cruz Station", shortName: "Vito Cruz",line: "MRT-3", type: "train"),
         kalaw,
     ]
-    let lrt1Stops: [Station] = [
-        central,
-        .mock(id: "LRT1_CARRIEDO", name: "Carriedo Station", shortName: "Carriedo", line: "LRT-1", type: "train"),
-        avenida,
-    ]
+    let lrt1Stops: [Station] = [central, carriedo, avenida]
 
-    let legs: [RouteLeg] = [
+    let fastestLegs: [RouteLeg] = [
         .mock(from: ayala,   to: kalaw,   mode: .train, line: "MRT-3", direction: "southbound",
               stops: mrt3Stops, minutes: 12, fare: 28, distanceKm: 4.1,
               instruction: "Ride MRT-3 Southbound to Kalaw",
@@ -820,16 +1144,24 @@ private extension RouteLeg {
               instruction: "Ride LRT-1 Northbound to Avenida",
               arrival: Date().addingTimeInterval(1500)),
     ]
+    let cheapestLegs: [RouteLeg] = [
+        .mock(from: ayala, to: avenida, mode: .jeepney, line: "JEEPNEY_QUIAPO_CUBAO",
+              minutes: 48, fare: 15, distanceKm: 9.2,
+              instruction: "Ride Jeepney to Avenida",
+              arrival: Date().addingTimeInterval(2880)),
+    ]
 
-    let result = RouteResult(
-        legs: legs, totalTimeMinutes: 25, totalFare: 48,
-        totalDistanceKm: 7.4, transfers: 2,
-        modes: [.train, .walk, .train]
-    )
+    let fastest  = RouteResult(legs: fastestLegs,  totalTimeMinutes: 25, totalFare: 48,  totalDistanceKm: 7.4, transfers: 2, modes: [.train, .train])
+    let cheapest = RouteResult(legs: cheapestLegs, totalTimeMinutes: 48, totalFare: 15,  totalDistanceKm: 9.2, transfers: 0, modes: [.jeepney])
+
+    let options: [RouteOption] = [
+        RouteOption(result: fastest,  label: .fastest),
+        RouteOption(result: cheapest, label: .cheapest),
+    ]
 
     ZStack(alignment: .bottom) {
         Color(.systemGroupedBackground).ignoresSafeArea()
-        RouteResultCard(result: result).padding()
+        RouteResultsPanel(options: options, onSelect: { _ in }, onPreview: { _ in }).padding()
     }
 }
 

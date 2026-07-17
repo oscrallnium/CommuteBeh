@@ -24,6 +24,8 @@ final class AdminRoutesViewModel {
     var enforceOperatingHours: Bool = true
     var isLoadingSettings: Bool = false
     var settingsError: String?
+    var isDeletingRoute: Bool = false
+    var deleteRouteError: String?
 
     func load() {
         Task { await loadSettings() }
@@ -63,6 +65,21 @@ final class AdminRoutesViewModel {
             persistToLocalGraph(serverStation, preserving: local)
             break
         }
+    }
+
+    func deleteRoute(_ lineId: String) async {
+        isDeletingRoute = true
+        deleteRouteError = nil
+        do {
+            try await AdminService.shared.deleteRoute(lineId: lineId)
+            lineGroups.removeAll { $0.id == lineId }
+            persistDeletionToLocalGraph(lineId: lineId)
+        } catch let error as APIError {
+            deleteRouteError = error.userMessage
+        } catch {
+            deleteRouteError = "Failed to delete route."
+        }
+        isDeletingRoute = false
     }
 
     func loadSettings() async {
@@ -127,12 +144,53 @@ final class AdminRoutesViewModel {
         try? data.write(to: url)
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }
+
+    // Removes every station and edge on `lineId`, and strips it from each
+    // transport mode's `lines` array — mirrors GraphService#delete_route on the backend.
+    private func persistDeletionToLocalGraph(lineId: String) {
+        guard case .success(let graph) = GraphLoader.load(),
+              let url = GraphLoader.documentsURL() else { return }
+
+        let updatedModes = graph.transportModes.mapValues { config -> TransportModeConfig in
+            guard config.lines.contains(lineId) else { return config }
+            return TransportModeConfig(
+                id: config.id,
+                displayName: config.displayName,
+                pluralName: config.pluralName,
+                sfSymbol: config.sfSymbol,
+                colorHex: config.colorHex,
+                mapLineWidthPt: config.mapLineWidthPt,
+                mapLineDash: config.mapLineDash,
+                mkDirectionsTransportType: config.mkDirectionsTransportType,
+                isUserSelectable: config.isUserSelectable,
+                isAlwaysAllowed: config.isAlwaysAllowed,
+                lines: config.lines.filter { $0 != lineId },
+                defaultAcceptedPayments: config.defaultAcceptedPayments,
+                notes: config.notes
+            )
+        }
+
+        let updated = TransitGraph(
+            version: graph.version,
+            stations: graph.stations.filter { $0.line != lineId },
+            edges: graph.edges.filter { $0.line != lineId },
+            peakHourMultipliers: graph.peakHourMultipliers,
+            transportModes: updatedModes,
+            paymentMethods: graph.paymentMethods,
+            enforceOperatingHours: graph.enforceOperatingHours
+        )
+
+        guard let data = try? JSONEncoder().encode(updated) else { return }
+        try? data.write(to: url)
+        NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
+    }
 }
 
 // MARK: - Root: list of lines
 
 struct AdminRoutesView: View {
     @State private var vm = AdminRoutesViewModel()
+    @State private var routeToDelete: AdminRoutesViewModel.LineGroup?
 
     var body: some View {
         NavigationStack {
@@ -144,6 +202,13 @@ struct AdminRoutesView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List {
+                        if let error = vm.deleteRouteError {
+                            Section {
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                        }
                         Section("Settings") {
                             HStack {
                                 Toggle(isOn: Binding(
@@ -183,14 +248,48 @@ struct AdminRoutesView: View {
                                     }
                                     .padding(.vertical, 2)
                                 }
+                                .swipeActions(edge: .trailing) {
+                                    Button(role: .destructive) {
+                                        routeToDelete = group
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .disabled(vm.isDeletingRoute)
                             }
                         }
                     }
                     .listStyle(.insetGrouped)
+                    .disabled(vm.isDeletingRoute)
+                    .overlay {
+                        if vm.isDeletingRoute {
+                            ProgressView("Deleting route…")
+                                .padding(16)
+                                .background(.regularMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
                 }
             }
             .navigationTitle("Manage Routes")
             .onAppear { vm.load() }
+            .confirmationDialog(
+                "Delete \(routeToDelete?.id ?? "") route?",
+                isPresented: Binding(
+                    get: { routeToDelete != nil },
+                    set: { if !$0 { routeToDelete = nil } }
+                ),
+                presenting: routeToDelete
+            ) { group in
+                Button("Delete Route", role: .destructive) {
+                    let lineId = group.id
+                    routeToDelete = nil
+                    Task { await vm.deleteRoute(lineId) }
+                }
+                Button("Cancel", role: .cancel) { routeToDelete = nil }
+            } message: { group in
+                Text("This permanently removes all \(group.stations.count) stations and every edge on \(group.id). This cannot be undone.")
+            }
         }
     }
 }

@@ -34,10 +34,6 @@ struct UserProfile: Codable {
 
 struct AdminSettings: Decodable {
     let enforceOperatingHours: Bool
-
-    enum CodingKeys: String, CodingKey {
-        case enforceOperatingHours = "enforce_operating_hours"
-    }
 }
 
 /// Fields that can be patched on a station via PATCH /api/v1/admin/stations/:id.
