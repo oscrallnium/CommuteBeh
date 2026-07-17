@@ -1,3 +1,10 @@
+//
+//  RouteService.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import Foundation
 
 final class RouteService {
@@ -6,10 +13,10 @@ final class RouteService {
 
     private init() {}
 
-    func stations(query: String? = nil) async throws -> [APIStation] {
-        let resp: APIResponse<[APIStation]> = try await client.request(
+    func stations(query: String? = nil) async throws -> [Station] {
+        let resp: APIResponse<[Station]> = try await client.request(
             .stations(query: query),
-            responseType: APIResponse<[APIStation]>.self
+            responseType: APIResponse<[Station]>.self
         )
         return resp.data
     }

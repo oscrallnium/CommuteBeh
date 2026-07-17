@@ -1,3 +1,10 @@
+//
+//  APIEndpoint.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import Foundation
 
 enum APIEndpoint {
@@ -36,6 +43,13 @@ enum APIEndpoint {
     // Analytics
     case logRoutePlan(origin: String, destination: String, lineIds: [String], durationSecs: Int)
 
+    // Admin
+    case updateStation(id: String, update: StationUpdate)
+    case updateEdge(id: String, polylineCoordinates: [Coordinates])
+    case deleteRoute(lineId: String)
+    case adminSettings
+    case updateAdminSettings(enforceOperatingHours: Bool)
+
     func urlRequest() throws -> URLRequest {
         let base = URL(string: APIConfig.baseURL)!
         var components = URLComponents(url: base.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
@@ -67,6 +81,11 @@ enum APIEndpoint {
         case .incidents:                   return "/api/v1/incidents"
         case .reportIncident:              return "/api/v1/incidents"
         case .logRoutePlan:                return "/api/v1/analytics/route_plan"
+        case .updateStation(let id, _): return "/api/v1/admin/stations/\(id)"
+        case .updateEdge(let id, _):    return "/api/v1/admin/edges/\(id)"
+        case .deleteRoute(let lineId):  return "/api/v1/admin/graph/routes/\(lineId)"
+        case .adminSettings:            return "/api/v1/admin/settings"
+        case .updateAdminSettings:      return "/api/v1/admin/settings"
         }
     }
 
@@ -74,9 +93,9 @@ enum APIEndpoint {
         switch self {
         case .register, .signIn, .refreshToken, .createSavedRoute, .reportIncident, .logRoutePlan:
             return "POST"
-        case .updateMe:
+        case .updateMe, .updateStation, .updateEdge, .updateAdminSettings:
             return "PATCH"
-        case .signOut, .deleteAccount, .deleteSavedRoute:
+        case .signOut, .deleteAccount, .deleteSavedRoute, .deleteRoute:
             return "DELETE"
         default:
             return "GET"
@@ -113,6 +132,20 @@ enum APIEndpoint {
         case .logRoutePlan(let origin, let destination, let lineIds, let durationSecs):
             return ["event": ["origin_station_id": origin, "destination_station_id": destination,
                               "line_ids": lineIds, "duration_seconds": durationSecs]]
+        case .updateStation(_, let update):
+            var station: [String: Any] = [:]
+            if let lat = update.latitude  { station["latitude"]   = lat }
+            if let lng = update.longitude { station["longitude"]  = lng }
+            if let n   = update.name      { station["name"]       = n   }
+            if let sn  = update.shortName { station["short_name"] = sn  }
+            if let ot  = update.openTime  { station["open_time"]  = ot  }
+            if let ct  = update.closeTime { station["close_time"] = ct  }
+            return station.isEmpty ? nil : ["station": station]
+        case .updateEdge(_, let coords):
+            let dicts = coords.map { ["lat": $0.lat, "lng": $0.lng] as [String: Any] }
+            return ["edge": ["polyline_coordinates": dicts]]
+        case .updateAdminSettings(let enforce):
+            return ["enforce_operating_hours": enforce]
         default:
             return nil
         }

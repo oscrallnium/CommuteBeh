@@ -1,3 +1,10 @@
+//
+//  LoopCreatorView.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import SwiftUI
 import MapKit
 import UIKit
@@ -334,16 +341,11 @@ final class CreateLoopViewModel {
     }
 
     private func writeToGraph(stations: [[String: Any]], edges: [[String: Any]]) async throws {
-        // Resolve file: Documents override → bundle fallback
-        let docsURL = GraphLoader.documentsURL()
-        let sourceURL: URL
-        if let d = docsURL, FileManager.default.fileExists(atPath: d.path) {
-            sourceURL = d
-        } else if let b = Bundle.main.url(forResource: "transit_graph_v3", withExtension: "json") {
-            sourceURL = b
-        } else {
+        guard let docsURL = GraphLoader.documentsURL(),
+              FileManager.default.fileExists(atPath: docsURL.path) else {
             throw URLError(.fileDoesNotExist)
         }
+        let sourceURL = docsURL
 
         let data = try Data(contentsOf: sourceURL)
         guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -373,10 +375,7 @@ final class CreateLoopViewModel {
             withJSONObject: root,
             options: [.prettyPrinted, .sortedKeys]
         )
-        let targetURL = docsURL ?? FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("transit_graph_v3.json")
-        try outData.write(to: targetURL, options: .atomic)
+        try outData.write(to: docsURL, options: .atomic)
 
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }

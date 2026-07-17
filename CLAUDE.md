@@ -9,6 +9,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - iOS 26+ · SwiftUI · MapKit · Swift Concurrency
 - Bundle ID: `com.banaueinc.commutebeh.CommuteBeh`
 
+## Swift File Header
+
+Every new `.swift` file must begin with this header. Use the exact date the file is first created (`M/D/YY`, no leading zeros):
+
+```swift
+//
+//  FileName.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 7/7/26.
+//
+```
+
+- App name is **Gora** (not CommuteBeh).
+- Author is **Oscar Allen Brioso**.
+- Date format: `M/D/YY` — e.g. `7/7/26`, `11/2/26`. No leading zeros.
+- The header goes on line 1, before any `import` statements.
+
 ## Build & Test
 
 ```bash

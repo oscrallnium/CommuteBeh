@@ -1,3 +1,10 @@
+//
+//  APIConfig.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import Foundation
 
 enum APIConfig {

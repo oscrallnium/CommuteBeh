@@ -1,3 +1,10 @@
+//
+//  ExploreView.swift
+//  Gora
+//
+//  Created by Oscar Allen Brioso on 6/30/26.
+//
+
 import SwiftUI
 import MapKit
 
@@ -108,11 +115,14 @@ final class ExploreViewModel {
     func load() async {
         isLoading = true
         errorMessage = nil
-        roadPolylines = [:]
+        // Intentionally keep roadPolylines across reloads — re-snapping all edges on every
+        // TransitDataDidUpdate (e.g. Enforce-Operating-Hours toggle) fires 50+ MKDirections
+        // requests at once and hits Apple's GEO rate limit. Edges that are already cached
+        // are skipped by the roadPolylines[poly.id] == nil guard below.
         fetchProgress = 0
         fetchTotal = 0
 
-        switch GraphLoader.load(from: "transit_graph_v3") {
+        switch await GraphLoader.ensureLoaded() {
         case .success(let graph):
             layers = buildLayers(from: graph)
 
@@ -153,28 +163,55 @@ final class ExploreViewModel {
         edges: [(id: String, coordinates: [CLLocationCoordinate2D], transportType: MKDirectionsTransportType)]
     ) async {
         fetchProgress = 0
-        // Route each consecutive pair of waypoints independently so road snapping
-        // follows the user-defined GPS trace rather than jumping from endpoint to endpoint.
         struct Seg {
             let edgeID: String; let idx: Int
             let snapped: [CLLocationCoordinate2D]?
             let from: CLLocationCoordinate2D; let to: CLLocationCoordinate2D
         }
+        // Flatten all (edge, segment-index) pairs so the sliding window below can schedule
+        // them in order without nested loops inside the group body.
+        struct SegInput {
+            let edgeID: String; let idx: Int
+            let from: CLLocationCoordinate2D; let to: CLLocationCoordinate2D
+            let transportType: MKDirectionsTransportType
+        }
+        var inputs: [SegInput] = []
+        for (edgeID, coords, type) in edges {
+            for i in 0..<(coords.count - 1) {
+                inputs.append(SegInput(edgeID: edgeID, idx: i,
+                                       from: coords[i], to: coords[i + 1],
+                                       transportType: type))
+            }
+        }
+
         var byEdge: [String: [Seg]] = [:]
+        // Sliding-window concurrency: keep at most maxConcurrent in-flight requests so we
+        // never burst more than ~8 simultaneous MKDirections calls. Apple's GEO service
+        // allows 50 per 60 s; each call takes ~1–2 s, so 8 concurrent ≈ 4–8 RPS max.
+        let maxConcurrent = 8
         await withTaskGroup(of: Seg.self) { group in
-            for (edgeID, coords, type) in edges {
-                for i in 0..<(coords.count - 1) {
-                    let from = coords[i], to = coords[i + 1]
-                    group.addTask {
-                        Seg(edgeID: edgeID, idx: i,
-                            snapped: await Self.roadPolyline(from: from, to: to, transportType: type),
-                            from: from, to: to)
-                    }
+            var nextIndex = 0
+            // Seed the initial batch.
+            while nextIndex < inputs.count && nextIndex < maxConcurrent {
+                let s = inputs[nextIndex]; nextIndex += 1
+                group.addTask {
+                    Seg(edgeID: s.edgeID, idx: s.idx,
+                        snapped: await Self.roadPolyline(from: s.from, to: s.to, transportType: s.transportType),
+                        from: s.from, to: s.to)
                 }
             }
+            // As each task finishes, schedule the next pending segment.
             for await seg in group {
                 byEdge[seg.edgeID, default: []].append(seg)
                 fetchProgress += 1
+                if nextIndex < inputs.count {
+                    let s = inputs[nextIndex]; nextIndex += 1
+                    group.addTask {
+                        Seg(edgeID: s.edgeID, idx: s.idx,
+                            snapped: await Self.roadPolyline(from: s.from, to: s.to, transportType: s.transportType),
+                            from: s.from, to: s.to)
+                    }
+                }
             }
         }
         // Stitch each edge's segments back into one road-following polyline.
@@ -242,13 +279,11 @@ final class ExploreViewModel {
     }
 
     private func removeFromGraph(lineID: String) async throws {
-        let docsURL = GraphLoader.documentsURL()
-        let sourceURL: URL
-        if let d = docsURL, FileManager.default.fileExists(atPath: d.path) {
-            sourceURL = d
-        } else if let b = Bundle.main.url(forResource: "transit_graph_v3", withExtension: "json") {
-            sourceURL = b
-        } else { throw URLError(.fileDoesNotExist) }
+        guard let docsURL = GraphLoader.documentsURL(),
+              FileManager.default.fileExists(atPath: docsURL.path) else {
+            throw URLError(.fileDoesNotExist)
+        }
+        let sourceURL = docsURL
 
         let data = try Data(contentsOf: sourceURL)
         guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -277,10 +312,7 @@ final class ExploreViewModel {
         }
 
         let out = try JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted, .sortedKeys])
-        let target = docsURL ?? FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("transit_graph_v3.json")
-        try out.write(to: target, options: .atomic)
+        try out.write(to: docsURL, options: .atomic)
 
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }
