@@ -84,10 +84,6 @@ MVVM + `@Observable` + Swift Concurrency. See `.claude/skills/architecture-mvvm.
 | `jeepney` | `JEEPNEY_QUIAPO_CUBAO`, `JEEPNEY_QUIAPO`, `JEEPNEY_NORTH`, `JEEPNEY_MAKATI`, `EJEEPNEY_BGC`, `JEEPNEY_CARTIMAR_LRT` |
 | `tricycle` | `TRICYCLE_MANILA` |
 
-## Adding a Transit Line
-
-Edit `transit_graph_v3.json` only — no Swift changes required unless the mode is brand new. Schema and naming conventions: `.claude/skills/transit-data.md`.
-
 ## Map Styling Note
 
 `modeColor(_:)` for `TransportMode` is duplicated across `ContentView`, `RouteResultCard`, `RouteLegRow`, and `ExploreViewModel`. Consolidate into `extension TransportMode { var color: Color }` before adding more call sites.

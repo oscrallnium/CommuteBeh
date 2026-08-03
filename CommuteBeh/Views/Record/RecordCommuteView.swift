@@ -72,7 +72,13 @@ final class RecordCommuteViewModel: NSObject {
 
 extension RecordCommuteViewModel: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let loc = locations.last, loc.horizontalAccuracy < 50 else { return }
+        // CoreLocation's first delegate callback can hand back a cached, possibly
+        // stale-and-distant fix — accuracy alone doesn't catch it. Reject anything
+        // older than 5s so a stale fix doesn't draw a spurious line from wherever the
+        // phone last had a fix to the current position.
+        guard let loc = locations.last,
+              loc.horizontalAccuracy < 50,
+              abs(loc.timestamp.timeIntervalSinceNow) < 5 else { return }
         let coord = loc.coordinate
         Task { @MainActor [weak self] in self?.rawWaypoints.append(coord) }
     }
@@ -372,7 +378,9 @@ final class RecordedRouteCreatorViewModel {
 // MARK: - RecordCommuteView
 
 struct RecordCommuteView: View {
+    @Environment(UserSession.self) private var session
     @State private var vm = RecordCommuteViewModel()
+    @State private var showPolylineRecorder = false
     @State private var mapPosition: MapCameraPosition = .userLocation(
         fallback: .region(MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 14.5763, longitude: 121.0194),
@@ -411,6 +419,9 @@ struct RecordCommuteView: View {
                 rawWaypoints: vm.rawWaypoints,
                 onDone: { vm.showCompletionSheet = false; vm.state = .idle }
             )
+        }
+        .sheet(isPresented: $showPolylineRecorder) {
+            PolylineRecorderView(onDone: { showPolylineRecorder = false })
         }
         .onAppear {
             if vm.authStatus == .notDetermined { vm.requestPermission() }
@@ -481,6 +492,24 @@ struct RecordCommuteView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(vm.authStatus == .denied || vm.authStatus == .restricted)
+
+            // Correcting an edge's polylineCoordinates hits an admin-only backend
+            // endpoint (PATCH /api/v1/admin/edges/:id) — hide the entry point for
+            // everyone else rather than let them ride a whole line and hit a 403.
+            if session.isAdmin {
+                Button {
+                    showPolylineRecorder = true
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "tram.fill")
+                        Text("Update Track Polylines")
+                    }
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+                }
+                .buttonStyle(.bordered)
+            }
         }
     }
 
@@ -803,4 +832,4 @@ private struct RecordedOutputView: View {
     }
 }
 
-#Preview { RecordCommuteView() }
+#Preview { RecordCommuteView().environment(UserSession()) }

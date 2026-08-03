@@ -13,6 +13,10 @@ import MapKit
 struct ExplorePolyline: Identifiable {
     let id: String
     let coordinates: [CLLocationCoordinate2D]
+    /// The edge's own `mkDirectionsTransportType`, carried through so road snapping asks
+    /// MapKit for the right kind of route (`DirectionsTransport.snapType(for:)`) instead of
+    /// assuming every line is driven.
+    let transportHint: String?
 }
 
 struct VisibleStation: Identifiable {
@@ -42,12 +46,6 @@ struct ColoredPolyline: Identifiable {
     let lineWidth: CGFloat
 }
 
-struct VisibleWaypoint: Identifiable {
-    let id: String
-    let coordinate: CLLocationCoordinate2D
-    let color: Color
-}
-
 // MARK: - Station Dot
 
 struct StationDot: View {
@@ -68,20 +66,6 @@ struct StationDot: View {
     }
 }
 
-// MARK: - Waypoint Dot
-
-struct WaypointDot: View {
-    let color: Color
-
-    var body: some View {
-        ZStack {
-            Circle().fill(.white).frame(width: 6, height: 6)
-            Circle().stroke(color.opacity(0.75), lineWidth: 1.5).frame(width: 6, height: 6)
-        }
-        .shadow(color: .black.opacity(0.2), radius: 1, x: 0, y: 0.5)
-    }
-}
-
 // MARK: - ViewModel
 
 @Observable
@@ -91,6 +75,10 @@ final class ExploreViewModel {
     var layers: [RouteLayer] = []
     var isLoading = false
     var errorMessage: String?
+    var isDeletingLayer = false
+    /// Kept separate from `errorMessage` so a failed delete doesn't get wiped by the
+    /// next graph reload, and vice versa.
+    var deleteError: String?
 
     // Road-snapped coordinates fetched via MKDirections, keyed by edge ID.
     // visiblePolylines prefers these over the static JSON coordinates.
@@ -137,14 +125,17 @@ final class ExploreViewModel {
 
             // Trains run on elevated/underground guideways — MKDirections would route
             // via surface streets. Keep the JSON polylineCoordinates for trains unchanged.
-            // All other modes use .automobile, which reliably follows the road network
-            // in the Philippines; .transit lacks jeepney/bus data and can hang indefinitely.
+            // Every other edge is snapped with the type its own data asks for: a walking
+            // edge gets a pedestrian route, everything else `.automobile`. See
+            // DirectionsTransport for why the "transit" hint is not passed through.
             let edges = layers.flatMap { layer -> [(id: String, coordinates: [CLLocationCoordinate2D], transportType: MKDirectionsTransportType)] in
                 guard layer.mode != "train" else { return [] }
                 return layer.polylines.compactMap { poly in
                     guard poly.coordinates.count >= 2,
-                          roadPolylines[poly.id] == nil else { return nil }  // skip pre-populated
-                    return (poly.id, poly.coordinates, MKDirectionsTransportType.automobile)
+                          roadPolylines[poly.id] == nil,          // skip pre-populated
+                          Self.needsRoadSnapping(poly.coordinates) else { return nil }
+                    return (poly.id, poly.coordinates,
+                            DirectionsTransport.snapType(for: poly.transportHint))
                 }
             }
             // fetchTotal = total segments (consecutive coord pairs) across all polylines.
@@ -158,6 +149,29 @@ final class ExploreViewModel {
     }
 
     // MARK: - Road Snapping
+
+    /// Points closer together than this are treated as a genuine recorded trace rather
+    /// than a chord in need of snapping. Well below a Metro Manila block, so a real
+    /// road path always falls under it and a stop-to-stop chord rarely does.
+    private static let denseSpacingMeters: Double = 150
+
+    /// Whether an edge's stored geometry is coarse enough to be worth road-snapping.
+    ///
+    /// Snapping costs one MKDirections request *per consecutive pair*, so a densely
+    /// recorded polyline spends hundreds of network round-trips reproducing a path it
+    /// already has — 956 requests on a cold launch of the live graph, 908 of them
+    /// re-deriving two routes that were already road-traced. `isRoadSnapped` is supposed
+    /// to prevent that, but it defaults to false for everything recorded before the
+    /// column existed, so it can't be relied on alone. Point spacing is self-describing
+    /// and needs no flag to be correct.
+    static func needsRoadSnapping(_ coordinates: [CLLocationCoordinate2D]) -> Bool {
+        guard coordinates.count >= 2 else { return false }
+        let total = zip(coordinates, coordinates.dropFirst()).reduce(0.0) { sum, pair in
+            sum + CLLocation(latitude: pair.0.latitude, longitude: pair.0.longitude)
+                .distance(from: CLLocation(latitude: pair.1.latitude, longitude: pair.1.longitude))
+        }
+        return total / Double(coordinates.count - 1) > denseSpacingMeters
+    }
 
     private func snapToRoads(
         edges: [(id: String, coordinates: [CLLocationCoordinate2D], transportType: MKDirectionsTransportType)]
@@ -185,6 +199,7 @@ final class ExploreViewModel {
         }
 
         var byEdge: [String: [Seg]] = [:]
+        var completed = 0
         // Sliding-window concurrency: keep at most maxConcurrent in-flight requests so we
         // never burst more than ~8 simultaneous MKDirections calls. Apple's GEO service
         // allows 50 per 60 s; each call takes ~1–2 s, so 8 concurrent ≈ 4–8 RPS max.
@@ -203,7 +218,13 @@ final class ExploreViewModel {
             // As each task finishes, schedule the next pending segment.
             for await seg in group {
                 byEdge[seg.edgeID, default: []].append(seg)
-                fetchProgress += 1
+                // Batched: every completion mutating observable state re-invalidates the
+                // map, which rebuilds every overlay. The counter only drives a progress
+                // label, so a coarser tick costs nothing visible.
+                completed += 1
+                if completed % 4 == 0 || completed == inputs.count {
+                    fetchProgress = completed
+                }
                 if nextIndex < inputs.count {
                     let s = inputs[nextIndex]; nextIndex += 1
                     group.addTask {
@@ -229,34 +250,24 @@ final class ExploreViewModel {
         }
     }
 
+    /// Snapping goes through `DirectionsGateway` at `.background` urgency. This pass is the
+    /// app's heaviest MKDirections consumer — dozens of segments, eight at a time — and it
+    /// used to spend the whole per-app rate limit, after which *every* other request in the
+    /// app (notably a search's walk legs) came back "Directions Not Available". The gateway
+    /// paces it behind interactive work and caches results across reloads.
     nonisolated private static func roadPolyline(
         from: CLLocationCoordinate2D,
         to: CLLocationCoordinate2D,
         transportType: MKDirectionsTransportType
     ) async -> [CLLocationCoordinate2D]? {
-        // Race MKDirections against a 10-second timeout so a single hanging request
-        // never stalls the whole progress bar.
-        await withTaskGroup(of: [CLLocationCoordinate2D]?.self) { group in
-            group.addTask {
-                let request = MKDirections.Request()
-                request.source = MKMapItem(placemark: MKPlacemark(coordinate: from))
-                request.destination = MKMapItem(placemark: MKPlacemark(coordinate: to))
-                request.transportType = transportType
-                guard let response = try? await MKDirections(request: request).calculate(),
-                      let route = response.routes.first,
-                      route.polyline.pointCount > 0 else { return nil }
-                let count = route.polyline.pointCount
-                var coords = Array(repeating: CLLocationCoordinate2D(), count: count)
-                route.polyline.getCoordinates(&coords, range: NSRange(location: 0, length: count))
-                return coords
-            }
-            group.addTask {
-                try? await Task.sleep(nanoseconds: 10_000_000_000)
-                return nil
-            }
-            let result = await group.next() ?? nil
-            group.cancelAll()
-            return result
+        let path = await DirectionsGateway.shared.path(
+            from: Coordinates(lat: from.latitude, lng: from.longitude),
+            to: Coordinates(lat: to.latitude, lng: to.longitude),
+            transport: transportType,
+            urgency: .background
+        )
+        return path?.coordinates.map {
+            CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
         }
     }
 
@@ -267,15 +278,39 @@ final class ExploreViewModel {
         var updated = layers[i]; updated.isVisible.toggle(); layers[i] = updated
     }
 
+    /// Deletes a whole route, server first. The previous version only rewrote the local
+    /// Documents JSON and swallowed every error, so the route came back on the next
+    /// `GraphService` sync (the server still had it) and a failure was indistinguishable
+    /// from success. Now the backend is the source of truth: the row goes only if
+    /// `DELETE /api/v1/admin/graph/routes/:lineId` succeeds, and the optimistic removal
+    /// is rolled back if it doesn't.
     func deleteLayer(_ layerID: String) async {
-        // Remove from in-memory layers immediately for a snappy UI response.
-        if let layer = layers.first(where: { $0.id == layerID }) {
-            layer.polylines.forEach { roadPolylines.removeValue(forKey: $0.id) }
-        }
-        layers.removeAll { $0.id == layerID }
+        guard let index = layers.firstIndex(where: { $0.id == layerID }) else { return }
+        let removed = layers[index]
 
-        // Persist the deletion to the JSON graph on disk.
-        do { try await removeFromGraph(lineID: layerID) } catch {}
+        isDeletingLayer = true
+        deleteError = nil
+        layers.remove(at: index)
+        removed.polylines.forEach { roadPolylines.removeValue(forKey: $0.id) }
+
+        do {
+            try await AdminService.shared.deleteRoute(lineId: layerID)
+        } catch {
+            layers.insert(removed, at: min(index, layers.count))
+            deleteError = (error as? APIError)?.userMessage ?? "Couldn't delete \(removed.displayName)."
+            isDeletingLayer = false
+            return
+        }
+
+        // Server's done; patch the on-disk graph so routing/Commute drop the line without
+        // waiting for a sync. If that write fails the server is still authoritative, so
+        // pull a fresh copy rather than leaving the cache ahead of the truth.
+        do {
+            try await removeFromGraph(lineID: layerID)
+        } catch {
+            await GraphService.shared.forceSync()
+        }
+        isDeletingLayer = false
     }
 
     private func removeFromGraph(lineID: String) async throws {
@@ -344,23 +379,6 @@ final class ExploreViewModel {
         }
     }
 
-    // Intermediate polyline waypoints from the JSON (excludes station endpoints).
-    // Shown as small hollow dots so the user can verify/adjust coordinates in the JSON.
-    var visibleWaypoints: [VisibleWaypoint] {
-        layers.filter(\.isVisible).flatMap { layer in
-            layer.polylines.flatMap { poly -> [VisibleWaypoint] in
-                guard poly.coordinates.count > 2 else { return [] }
-                return poly.coordinates.dropFirst().dropLast()
-                    .enumerated()
-                    .map { idx, coord in
-                        VisibleWaypoint(id: "\(poly.id)_wp\(idx)",
-                                        coordinate: coord,
-                                        color: layer.color)
-                    }
-            }
-        }
-    }
-
     // MARK: - Graph → Layers
 
     private func buildLayers(from graph: TransitGraph) -> [RouteLayer] {
@@ -390,7 +408,8 @@ final class ExploreViewModel {
                     let coords = edge.polylineCoordinates.map {
                         CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
                     }
-                    return ExplorePolyline(id: edge.id, coordinates: coords)
+                    return ExplorePolyline(id: edge.id, coordinates: coords,
+                                           transportHint: edge.mkDirectionsTransportType)
                 }
 
                 let stations: [VisibleStation] = (stationsByLine[line] ?? []).map { s in
@@ -490,6 +509,7 @@ final class ExploreViewModel {
 // MARK: - Explore View
 
 struct ExploreView: View {
+    @Environment(UserSession.self) private var session
     @State private var vm = ExploreViewModel()
     @State private var mapPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
@@ -499,6 +519,7 @@ struct ExploreView: View {
     )
     @State private var panelExpanded = true
     @State private var showCreateLoop = false
+    @State private var layerToDelete: RouteLayer?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -506,11 +527,6 @@ struct ExploreView: View {
                 ForEach(vm.visiblePolylines) { item in
                     MapPolyline(coordinates: item.coordinates)
                         .stroke(item.color, lineWidth: item.lineWidth)
-                }
-                ForEach(vm.visibleWaypoints) { wp in
-                    Annotation("", coordinate: wp.coordinate, anchor: .center) {
-                        WaypointDot(color: wp.color)
-                    }
                 }
                 ForEach(vm.visibleStations) { station in
                     Annotation("", coordinate: station.coordinate, anchor: .center) {
@@ -542,10 +558,27 @@ struct ExploreView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                if vm.isDeletingLayer {
+                    statusPill {
+                        ProgressView()
+                        Text("Deleting route…").font(.caption)
+                    }
+                }
                 if let err = vm.errorMessage {
                     statusPill {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
                         Text(err).font(.caption).foregroundStyle(.red)
+                    }
+                }
+                if let err = vm.deleteError {
+                    statusPill {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                        Text(err).font(.caption).foregroundStyle(.red)
+                        Button {
+                            vm.deleteError = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+                        }
                     }
                 }
             }
@@ -592,15 +625,20 @@ struct ExploreView: View {
                     }
                     .padding(.trailing, 6)
                 }
-                Button { showCreateLoop = true } label: {
-                    Image(systemName: "plus.circle")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.blue)
-                        .frame(width: 30, height: 30)
-                        .background(Color.blue.opacity(0.10))
-                        .clipShape(Circle())
+                // Saving a route hits an admin-only backend endpoint (POST
+                // /api/v1/admin/graph/routes) — hide the entry point for everyone else
+                // rather than let them build a whole route and hit a 403 at the last step.
+                if session.isAdmin {
+                    Button { showCreateLoop = true } label: {
+                        Image(systemName: "plus.circle")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.blue)
+                            .frame(width: 30, height: 30)
+                            .background(Color.blue.opacity(0.10))
+                            .clipShape(Circle())
+                    }
+                    .padding(.trailing, 4)
                 }
-                .padding(.trailing, 4)
                 Button {
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                         panelExpanded.toggle()
@@ -630,11 +668,16 @@ struct ExploreView: View {
                                     .listRowBackground(Color.clear)
                                     .listRowSeparatorTint(Color.gray.opacity(0.25))
                                     .listRowInsets(EdgeInsets())
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
-                                            Task { await vm.deleteLayer(layer.id) }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
+                                    // Deleting a route is admin-only on the backend, same
+                                    // as creating one — don't offer a swipe that can only
+                                    // ever come back as a 403.
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        if session.isAdmin {
+                                            Button(role: .destructive) {
+                                                layerToDelete = layer
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
                                         }
                                     }
                             }
@@ -653,7 +696,25 @@ struct ExploreView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .frame(maxHeight: 270)
+                .disabled(vm.isDeletingLayer)
             }
+        }
+        .confirmationDialog(
+            "Delete \(layerToDelete?.displayName ?? "") route?",
+            isPresented: Binding(
+                get: { layerToDelete != nil },
+                set: { if !$0 { layerToDelete = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: layerToDelete
+        ) { layer in
+            Button("Delete Route", role: .destructive) {
+                layerToDelete = nil
+                Task { await vm.deleteLayer(layer.id) }
+            }
+            Button("Cancel", role: .cancel) { layerToDelete = nil }
+        } message: { layer in
+            Text("This permanently removes all \(layer.stations.count) stops and every segment on \(layer.id) from the server. This cannot be undone.")
         }
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))

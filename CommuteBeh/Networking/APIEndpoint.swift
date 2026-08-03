@@ -45,7 +45,10 @@ enum APIEndpoint {
 
     // Admin
     case updateStation(id: String, update: StationUpdate)
-    case updateEdge(id: String, polylineCoordinates: [Coordinates])
+    case insertStation(payload: [String: Any])
+    case deleteStation(id: String)
+    case updateEdge(id: String, polylineCoordinates: [Coordinates]?, bidirectional: Bool?, direction: String??)
+    case createRoute(payload: [String: Any])
     case deleteRoute(lineId: String)
     case adminSettings
     case updateAdminSettings(enforceOperatingHours: Bool)
@@ -82,7 +85,10 @@ enum APIEndpoint {
         case .reportIncident:              return "/api/v1/incidents"
         case .logRoutePlan:                return "/api/v1/analytics/route_plan"
         case .updateStation(let id, _): return "/api/v1/admin/stations/\(id)"
-        case .updateEdge(let id, _):    return "/api/v1/admin/edges/\(id)"
+        case .insertStation:            return "/api/v1/admin/stations"
+        case .deleteStation(let id):    return "/api/v1/admin/stations/\(id)"
+        case .updateEdge(let id, _, _, _): return "/api/v1/admin/edges/\(id)"
+        case .createRoute:              return "/api/v1/admin/graph/routes"
         case .deleteRoute(let lineId):  return "/api/v1/admin/graph/routes/\(lineId)"
         case .adminSettings:            return "/api/v1/admin/settings"
         case .updateAdminSettings:      return "/api/v1/admin/settings"
@@ -91,11 +97,11 @@ enum APIEndpoint {
 
     private var method: String {
         switch self {
-        case .register, .signIn, .refreshToken, .createSavedRoute, .reportIncident, .logRoutePlan:
+        case .register, .signIn, .refreshToken, .createSavedRoute, .reportIncident, .logRoutePlan, .createRoute, .insertStation:
             return "POST"
         case .updateMe, .updateStation, .updateEdge, .updateAdminSettings:
             return "PATCH"
-        case .signOut, .deleteAccount, .deleteSavedRoute, .deleteRoute:
+        case .signOut, .deleteAccount, .deleteSavedRoute, .deleteRoute, .deleteStation:
             return "DELETE"
         default:
             return "GET"
@@ -141,9 +147,22 @@ enum APIEndpoint {
             if let ot  = update.openTime  { station["open_time"]  = ot  }
             if let ct  = update.closeTime { station["close_time"] = ct  }
             return station.isEmpty ? nil : ["station": station]
-        case .updateEdge(_, let coords):
-            let dicts = coords.map { ["lat": $0.lat, "lng": $0.lng] as [String: Any] }
-            return ["edge": ["polyline_coordinates": dicts]]
+        case .updateEdge(_, let coords, let bidirectional, let direction):
+            // Every field is optional and applied independently server-side, so send only
+            // what's actually changing — a directionality edit must not rewrite geometry.
+            var edge: [String: Any] = [:]
+            if let coords {
+                edge["polyline_coordinates"] = coords.map { ["lat": $0.lat, "lng": $0.lng] as [String: Any] }
+            }
+            if let bidirectional { edge["bidirectional"] = bidirectional }
+            // Double optional: `.some(nil)` clears the label, `.none` leaves it alone.
+            if let direction { edge["direction"] = direction ?? NSNull() }
+            return ["edge": edge]
+        case .createRoute(let payload):
+            print("createRoute payload: \(payload)")
+            return payload
+        case .insertStation(let payload):
+            return payload
         case .updateAdminSettings(let enforce):
             return ["enforce_operating_hours": enforce]
         default:

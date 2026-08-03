@@ -21,10 +21,38 @@ final class AdminService {
         return resp.data
     }
 
-    func updateEdge(id: String, polylineCoordinates: [Coordinates]) async throws -> TransitEdge {
+    /// Inserts a new stop immediately before/after `referenceStationId` on the same
+    /// line. Payload keys: referenceStationId, position ("before"/"after"), name,
+    /// lat, lng, and optionally shortName/openTime/closeTime.
+    func insertStation(payload: [String: Any]) async throws -> InsertStationResult {
+        let resp: APIResponse<InsertStationResult> = try await client.request(
+            .insertStation(payload: payload), responseType: APIResponse<InsertStationResult>.self
+        )
+        return resp.data
+    }
+
+    func deleteStation(id: String) async throws {
+        _ = try await client.request(.deleteStation(id: id), responseType: EmptyResponse.self)
+    }
+
+    func updateEdge(
+        id: String,
+        polylineCoordinates: [Coordinates]? = nil,
+        bidirectional: Bool? = nil,
+        direction: String?? = nil
+    ) async throws -> TransitEdge {
         let resp: APIResponse<TransitEdge> = try await client.request(
-            .updateEdge(id: id, polylineCoordinates: polylineCoordinates),
+            .updateEdge(id: id, polylineCoordinates: polylineCoordinates,
+                        bidirectional: bidirectional, direction: direction),
             responseType: APIResponse<TransitEdge>.self
+        )
+        return resp.data
+    }
+
+    func createRoute(payload: [String: Any]) async throws -> CreateRouteResult {
+        let resp: APIResponse<CreateRouteResult> = try await client.request(
+            .createRoute(payload: payload),
+            responseType: APIResponse<CreateRouteResult>.self
         )
         return resp.data
     }

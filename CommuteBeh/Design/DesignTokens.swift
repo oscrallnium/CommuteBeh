@@ -58,6 +58,28 @@ enum DesignTokens {
         static let destructive = Color(.systemRed)
         /// Delays/incidents, pending states.
         static let warning = Color(.systemOrange)
+
+        // MARK: Results surface
+        // The results panel and its cards are a deliberately light-only surface
+        // (paper fill + hard ink outline), so these are fixed values rather than
+        // semantic system colors — `Color.primary` would invert the outline to
+        // white on the still-white card in dark mode.
+
+        /// Hard outline on paper-filled cards and pills.
+        static let ink = Color(red: 0.09, green: 0.09, blue: 0.10)
+        /// Card fill on the results surface.
+        static let paper = Color(red: 0.996, green: 0.988, blue: 0.973)
+        /// Panel background behind the result cards.
+        static let cream = Color(red: 0.96, green: 0.94, blue: 0.90)
+        /// Primary action — the one thing to tap on a surface. Filled capsules only
+        /// ("USE THIS ROUTE"); at 3.3:1 on `paper` it clears AA for large bold text
+        /// but not for small text, so it must not be used below 14 pt bold.
+        static let action = Color(red: 0.91, green: 0.38, blue: 0.16)
+
+        /// "FASTEST" label badge.
+        static let fastest = Color(red: 0.22, green: 0.45, blue: 0.87)
+        /// "CHEAPEST" label badge.
+        static let cheapest = Color(red: 0.13, green: 0.42, blue: 0.44)
     }
 
     // MARK: Motion patterns
@@ -70,6 +92,12 @@ enum DesignTokens {
         static let cameraFit: Animation = .easeInOut(duration: 0.5)
         /// motion.disclose — disclosure expand/collapse.
         static let disclose: Animation = .easeInOut(duration: 0.2)
+        /// motion.morph — result card ⇄ full route details.
+        /// Deliberately longer and softer than `disclose`: the whole panel changes
+        /// shape while the duration/fare pair flies across it, and the eye needs
+        /// time to follow that. A stiffer spring settles inside ~200 ms, which
+        /// reads as a cut rather than a transition.
+        static let morph: Animation = .spring(response: 0.55, dampingFraction: 0.86)
         /// motion.searchProgress — inline progress shows only past this grace delay…
         static let progressGraceDelay: Duration = .milliseconds(250)
         /// …and once shown stays visible at least this long, to avoid flicker.

@@ -48,8 +48,11 @@ final class APIClient {
         case 404:
             throw APIError.notFound
         case 422:
-            let msg = (try? JSONDecoder().decode(ErrorResponse.self, from: data))?.error ?? "Validation failed"
-            throw APIError.unprocessable(msg)
+            let parsed = try? JSONDecoder().decode(ErrorResponse.self, from: data)
+            let base = parsed?.error ?? "Validation failed"
+            let detail = parsed?.errors?.joined(separator: " ")
+            let msg = [base, detail].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " — ")
+            throw APIError.unprocessable(msg.isEmpty ? "Validation failed" : msg)
         case 429:
             throw APIError.tooManyRequests
         default:

@@ -29,6 +29,8 @@ final class AdminEdgesViewModel {
     var lineGroups: [LineGroup] = []
     var stationIndex: [StationID: Station] = [:]
     var errorMessage: String?
+    var isBulkUpdating = false
+    var bulkUpdateError: String?
 
     func load() {
         switch GraphLoader.load() {
@@ -50,35 +52,67 @@ final class AdminEdgesViewModel {
         stationIndex[id]?.name ?? id
     }
 
-    func updateEdge(_ edge: TransitEdge, polylineCoordinates: [Coordinates]) async throws {
+    func updateEdge(
+        _ edge: TransitEdge,
+        polylineCoordinates: [Coordinates]? = nil,
+        bidirectional: Bool? = nil
+    ) async throws {
         let updated = try await AdminService.shared.updateEdge(
-            id: edge.id, polylineCoordinates: polylineCoordinates
+            id: edge.id, polylineCoordinates: polylineCoordinates, bidirectional: bidirectional
         )
+        apply(updated)
+    }
+
+    /// Sets one-wayness across a whole line in one action.
+    ///
+    /// Repairing by hand isn't realistic: an insert done before the backend inherited
+    /// directionality left two two-way segments buried in an otherwise one-way chain, and
+    /// a long route has dozens of edges to check. Continues past individual failures so a
+    /// single rejected edge doesn't abandon the rest half-converted, and reports what
+    /// didn't take.
+    func setBidirectionalForLine(_ lineId: String, to value: Bool) async {
+        isBulkUpdating = true
+        bulkUpdateError = nil
+        let targets = (lineGroups.first { $0.id == lineId }?.edges ?? [])
+            .filter { $0.bidirectional != value }
+
+        var failed: [String] = []
+        for edge in targets {
+            do {
+                let updated = try await AdminService.shared.updateEdge(
+                    id: edge.id, bidirectional: value
+                )
+                apply(updated)
+            } catch {
+                failed.append(edge.id)
+            }
+        }
+        if !failed.isEmpty {
+            bulkUpdateError = failed.count == targets.count
+                ? "Couldn't update any segment."
+                : "Updated \(targets.count - failed.count) of \(targets.count); \(failed.count) failed."
+        }
+        isBulkUpdating = false
+    }
+
+    private func apply(_ updated: TransitEdge) {
         for i in lineGroups.indices {
-            guard let j = lineGroups[i].edges.firstIndex(where: { $0.id == edge.id }) else { continue }
+            guard let j = lineGroups[i].edges.firstIndex(where: { $0.id == updated.id }) else { continue }
             lineGroups[i].edges[j] = updated
-            persistToLocalGraph(edgeId: edge.id, polylineCoordinates: updated.polylineCoordinates)
+            persistToLocalGraph(updated)
             break
         }
     }
 
-    private func persistToLocalGraph(edgeId: String, polylineCoordinates: [Coordinates]) {
+    // Takes the server's full response edge rather than reconstructing from the old
+    // cached one — the server recomputes distance_km and (as of this fix) sets
+    // is_road_snapped: true for a hand-edited polyline; reusing stale `old` values
+    // for those would silently undo half the point of trusting this edit.
+    private func persistToLocalGraph(_ updatedEdge: TransitEdge) {
         guard case .success(let graph) = GraphLoader.load(),
-              let idx = graph.edges.firstIndex(where: { $0.id == edgeId }),
+              let idx = graph.edges.firstIndex(where: { $0.id == updatedEdge.id }),
               let url = GraphLoader.documentsURL() else { return }
 
-        let old = graph.edges[idx]
-        let updatedEdge = TransitEdge(
-            id: old.id, from: old.from, to: old.to, mode: old.mode, line: old.line,
-            travelTimeMinutes: old.travelTimeMinutes, distanceKm: old.distanceKm,
-            baseFare: old.baseFare, farePerKm: old.farePerKm,
-            acceptedPayments: old.acceptedPayments, isAirConditioned: old.isAirConditioned,
-            crowdFactor: old.crowdFactor, reliability: old.reliability,
-            bidirectional: old.bidirectional, direction: old.direction,
-            polylineCoordinates: polylineCoordinates,
-            mkDirectionsTransportType: old.mkDirectionsTransportType,
-            isRoadSnapped: old.isRoadSnapped
-        )
         var edges = graph.edges
         edges[idx] = updatedEdge
         let newGraph = TransitGraph(
@@ -135,26 +169,80 @@ private struct EdgeListView: View {
         vm.lineGroups.first(where: { $0.id == group.id })?.edges ?? group.edges
     }
 
+    /// A line whose segments disagree is the signature of a stop inserted before the
+    /// backend inherited directionality — the two halves of the split segment came back
+    /// two-way inside an otherwise one-way chain.
+    private var hasMixedDirectionality: Bool {
+        let values = Set(currentEdges.map(\.bidirectional))
+        return values.count > 1
+    }
+
     var body: some View {
-        List(currentEdges) { edge in
-            EdgeRow(
-                edge: edge,
-                fromName: vm.stationName(for: edge.from),
-                toName: vm.stationName(for: edge.to)
-            )
-            .contentShape(Rectangle())
-            .onTapGesture { selectedEdge = edge }
+        List {
+            if hasMixedDirectionality {
+                Section {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                            Text("Some segments are one-way and others two-way. A two-way segment inside a one-way route lets the app route riders backwards along it.")
+                                .font(.caption)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        HStack(spacing: 10) {
+                            Button("Make all one-way") {
+                                Task { await vm.setBidirectionalForLine(group.id, to: false) }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            Button("Make all two-way") {
+                                Task { await vm.setBidirectionalForLine(group.id, to: true) }
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                        }
+                        .disabled(vm.isBulkUpdating)
+                    }
+                }
+            }
+            if let error = vm.bulkUpdateError {
+                Section { Text(error).font(.caption).foregroundStyle(.red) }
+            }
+            Section {
+                ForEach(currentEdges) { edge in
+                    EdgeRow(
+                        edge: edge,
+                        fromName: vm.stationName(for: edge.from),
+                        toName: vm.stationName(for: edge.to)
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { selectedEdge = edge }
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle(group.id)
         .navigationBarTitleDisplayMode(.large)
+        .disabled(vm.isBulkUpdating)
+        .overlay {
+            if vm.isBulkUpdating {
+                ProgressView("Updating segments…")
+                    .padding(16)
+                    .background(.regularMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
         .fullScreenCover(item: $selectedEdge) { edge in
             EditEdgePolylineView(
                 edge: edge,
                 fromName: vm.stationName(for: edge.from),
-                toName: vm.stationName(for: edge.to)
-            ) { newCoords in
-                try await vm.updateEdge(edge, polylineCoordinates: newCoords)
+                toName: vm.stationName(for: edge.to),
+                fromCoordinate: vm.stationIndex[edge.from]?.coordinates,
+                toCoordinate: vm.stationIndex[edge.to]?.coordinates
+            ) { newCoords, isOneWay in
+                try await vm.updateEdge(edge,
+                                        polylineCoordinates: newCoords,
+                                        bidirectional: !isOneWay)
             }
         }
     }
@@ -182,8 +270,19 @@ private struct EdgeRow: View {
                         .clipShape(Capsule())
                 }
             }
-            Text("\(edge.polylineCoordinates.count) waypoints")
-                .font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                // One-wayness decides whether the engine synthesises a reverse edge, so
+                // it belongs on the row: it's the difference between a rider being sent
+                // to the correct side of the road and the opposite one.
+                Text(edge.bidirectional ? "Two-way" : "One-way")
+                    .font(.caption2.bold())
+                    .padding(.horizontal, 6).padding(.vertical, 2)
+                    .background(edge.bidirectional ? Color.orange.opacity(0.14) : Color.green.opacity(0.14))
+                    .foregroundStyle(edge.bidirectional ? .orange : .green)
+                    .clipShape(Capsule())
+                Text("\(edge.polylineCoordinates.count) waypoints")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 2)
     }
@@ -195,25 +294,35 @@ private struct EditEdgePolylineView: View {
     let edge: TransitEdge
     let fromName: String
     let toName: String
-    let onSave: ([Coordinates]) async throws -> Void
+    /// The edge's endpoints, needed to fetch a road route for an edge that has no usable
+    /// geometry to edit — nil only if the station is missing from the local graph.
+    let fromCoordinate: Coordinates?
+    let toCoordinate: Coordinates?
+    let onSave: ([Coordinates], Bool) async throws -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var waypoints: [Coordinates]
+    @State private var isOneWay: Bool
     @State private var selectedIndex: Int
     @State private var cameraPosition: MapCameraPosition
     @State private var centerCoordinate: CLLocationCoordinate2D
     @State private var cameraDistance: CLLocationDistance = 500
     @State private var isSaving = false
+    @State private var isSnapping = false
     @State private var errorMessage: String?
 
     init(edge: TransitEdge, fromName: String, toName: String,
-         onSave: @escaping ([Coordinates]) async throws -> Void) {
+         fromCoordinate: Coordinates?, toCoordinate: Coordinates?,
+         onSave: @escaping ([Coordinates], Bool) async throws -> Void) {
         self.edge = edge
         self.fromName = fromName
         self.toName = toName
+        self.fromCoordinate = fromCoordinate
+        self.toCoordinate = toCoordinate
         self.onSave = onSave
         let coords = edge.polylineCoordinates
         _waypoints = State(initialValue: coords)
+        _isOneWay = State(initialValue: !edge.bidirectional)
         _selectedIndex = State(initialValue: 0)
         let anchor = coords.first.map {
             CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
@@ -303,6 +412,22 @@ private struct EditEdgePolylineView: View {
 
                 // Bottom control panel
                 VStack(spacing: 12) {
+                    // Directionality sits with the geometry: this is the only screen that
+                    // can change it, and a segment's shape and its direction of travel are
+                    // usually corrected in the same sitting.
+                    Toggle(isOn: $isOneWay) {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("One-way").font(.subheadline)
+                            Text(directionalityCaption)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    // A direction-tagged edge is one-way by definition and the server
+                    // rejects the other combination, so lock it rather than offer a switch
+                    // that can only fail.
+                    .disabled(edge.direction != nil)
+
                     // Coordinate of map center
                     Text(String(format: "%.6f,  %.6f",
                                 centerCoordinate.latitude, centerCoordinate.longitude))
@@ -342,6 +467,27 @@ private struct EditEdgePolylineView: View {
                             .buttonStyle(.bordered)
                             .disabled(selectedIndex == waypoints.count - 1)
                         }
+                    }
+
+                    // Snap to roads — the repair path for an edge with no usable geometry.
+                    // A head/tail stop insert before this shipped wrote an empty polyline
+                    // (e.g. UPLB_KANAN_SEG8, Animal Science → CEAT), and a 2-point polyline
+                    // is a straight chord; neither is editable point-by-point, so offer to
+                    // fetch the real road route between the edge's two stations instead.
+                    if waypoints.count < 3, fromCoordinate != nil, toCoordinate != nil {
+                        Button {
+                            Task { await snapToRoads() }
+                        } label: {
+                            if isSnapping {
+                                HStack { ProgressView(); Text("Fetching road route…") }
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                Label("Snap to Roads", systemImage: "point.topleft.down.to.point.bottomright.curvepath")
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isSnapping || isSaving)
                     }
 
                     // Action buttons
@@ -424,6 +570,15 @@ private struct EditEdgePolylineView: View {
         }
     }
 
+    private var directionalityCaption: String {
+        if let direction = edge.direction {
+            return "Always one-way — this segment is tagged \(direction.capitalized)."
+        }
+        return isOneWay
+            ? "Served in the \(fromName) → \(toName) direction only."
+            : "Riders can travel this segment both ways."
+    }
+
     private func flyToSelected() {
         guard selectedIndex < waypoints.count else { return }
         let wp = waypoints[selectedIndex]
@@ -435,11 +590,42 @@ private struct EditEdgePolylineView: View {
         }
     }
 
+    /// Replaces the waypoints with the real road route between this edge's two stations.
+    /// Loads them into the editor rather than saving directly, so the admin sees what they
+    /// are about to commit and can still nudge a point before pressing Save.
+    private func snapToRoads() async {
+        guard let fromCoordinate, let toCoordinate else { return }
+        isSnapping = true
+        errorMessage = nil
+
+        let path = await DirectionsGateway.shared.path(
+            from: fromCoordinate, to: toCoordinate,
+            transport: DirectionsTransport.snapType(for: edge.mkDirectionsTransportType),
+            urgency: .interactive
+        )
+        isSnapping = false
+
+        guard let path, path.coordinates.count >= 2 else {
+            errorMessage = "Couldn't fetch a road route for this segment. Try again in a moment."
+            return
+        }
+        // Pin the ends to the stations themselves: MKDirections snaps its endpoints to the
+        // nearest road, and the map draws stop pins from the station coordinates, so any
+        // drift renders as a gap between the pin and the line.
+        var snapped = path.coordinates
+        snapped[0] = fromCoordinate
+        snapped[snapped.count - 1] = toCoordinate
+
+        waypoints = snapped
+        selectedIndex = 0
+        flyToSelected()
+    }
+
     private func save() async {
         isSaving = true
         errorMessage = nil
         do {
-            try await onSave(waypoints)
+            try await onSave(waypoints, isOneWay)
             dismiss()
         } catch let error as APIError {
             errorMessage = error.userMessage

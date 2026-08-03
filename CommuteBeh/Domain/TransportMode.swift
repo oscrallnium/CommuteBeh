@@ -91,6 +91,8 @@ struct PaymentMethodConfig: Codable {
     let notes: String
 }
 
+/// A stop, or one of the two synthetic nodes the engine injects for a pinned coordinate
+/// (see `isPinnedLocation`).
 struct Station: Codable, Identifiable, Hashable {
     let id: StationID
     let name: String
@@ -107,6 +109,14 @@ struct Station: Codable, Identifiable, Hashable {
     struct OperatingHours: Codable, Hashable {
         let open: String
         let close: String
+    }
+
+    /// True for the synthetic `__ORIGIN__` / `__DEST__` nodes injected when routing from or
+    /// to a raw coordinate. Unlike a real stop — which sits on the road its vehicles use —
+    /// this is wherever the user's pin, GPS fix, or geocoded address landed: inside a mall,
+    /// in the middle of a campus, behind a wall. Geometry must not be forced to meet it.
+    var isPinnedLocation: Bool {
+        id == RouteRequest.virtualOriginID || id == RouteRequest.virtualDestID
     }
 }
 
@@ -326,6 +336,24 @@ struct RouteLeg: Identifiable {
     /// The raw A* steps merged into this leg.
     /// Retained for per-segment MKDirections ETA calls and AR navigation.
     let rawSteps: [RawStep]
+
+    /// True for the synthetic walk between the user's pinned coordinate and the first/last
+    /// stop — as opposed to an `INTERCHANGE` walk between two platforms inside the network.
+    var isAccessWalk: Bool { line == "ACCESS_WALK" }
+
+    /// The real stop at the network end of an access walk (the other end is the virtual
+    /// `__ORIGIN__`/`__DEST__` node, which also carries the `ACCESS_WALK` line).
+    var accessStop: Station? {
+        guard isAccessWalk else { return nil }
+        return fromStation.line == "ACCESS_WALK" ? toStation : fromStation
+    }
+
+    /// An access walk past what that stop's role justifies. Surfaced in the UI so a long
+    /// walk reads as a visible trade-off rather than a silent one.
+    var isLongAccessWalk: Bool {
+        guard let stop = accessStop else { return false }
+        return distanceKm > AccessPolicy.comfortableRadiusKm(for: stop)
+    }
 }
 
 struct RouteResult {
@@ -427,6 +455,53 @@ private struct MinHeap<T: Comparable> {
     }
 }
 
+// MARK: - Access Walk Policy
+
+/// Governs the synthetic walk between a pinned coordinate (address, GPS, map pin) and
+/// the first/last real stop of a route.
+///
+/// The old policy was a single flat 1.5 km radius applied to the *k nearest stops
+/// globally*, which failed in both directions: it silently accepted 1.4 km walks to
+/// an arbitrary mid-route stop, and — because the nearest stops around any dense point
+/// all belong to the same line — it could hand every access edge to one line and leave
+/// a slightly-further line with no way in, reporting "no route" for a trip that exists.
+///
+/// The replacement is role-aware: people will walk to a *terminal* (that's where you
+/// board for a long trip), but not nearly as far to a random stop mid-route.
+/// `nonisolated` because the module defaults to `@MainActor` isolation and this policy is
+/// read from inside `TransitGraphEngine`'s actor during the search.
+nonisolated enum AccessPolicy {
+    /// Comfortable walk to an ordinary mid-route stop.
+    static let midRouteKm: Double = 0.6
+    /// Terminals earn a longer allowance — walking to a terminal is normal behaviour.
+    static let terminalKm: Double = 1.2
+    /// Absolute ceiling. Past this the location is simply not served by the network,
+    /// and the user is told so explicitly instead of getting a bare "no route".
+    static let hardCeilingKm: Double = 1.5
+
+    /// Access walking is weighted heavier than riding when A* compares alternatives, so
+    /// a 1.2 km walk never wins over a 300 m one just to shave a couple of riding
+    /// minutes. Applies to search cost only — displayed durations stay honest.
+    static let discomfortFactor: Double = 1.6
+
+    /// Upper bound on how many distinct lines get an access edge, to keep the frontier small.
+    static let maxLines = 8
+
+    static let walkSpeedKmPerMin = 4.5 / 60.0   // 4.5 km/h
+    /// Straight-line distance underestimates a real walk; this approximates street detour.
+    static let detourFactor = 1.3
+
+    /// How far a passenger is assumed to walk to reach `station` without complaint.
+    static func comfortableRadiusKm(for station: Station) -> Double {
+        station.isTerminal ? terminalKm : midRouteKm
+    }
+
+    /// Straight-line km → walking minutes, detour included.
+    static func walkMinutes(forKm km: Double) -> Double {
+        km * detourFactor / walkSpeedKmPerMin
+    }
+}
+
 // MARK: - Transit Graph Engine (actor for thread safety)
 
 actor TransitGraphEngine {
@@ -518,32 +593,15 @@ actor TransitGraphEngine {
 
     enum RouteError: Error {
         case stationsClosed(closeTime: String)
+        /// No stop within `AccessPolicy.hardCeilingKm` of the pinned start point.
+        /// Carries the nearest stop so the UI can say *why*, not just "no route".
+        case originTooFar(nearest: String, km: Double)
+        /// No stop within `AccessPolicy.hardCeilingKm` of the pinned end point.
+        case destinationTooFar(nearest: String, km: Double)
         case noPath
     }
 
     func findRoute(_ request: RouteRequest) -> Result<RouteResult, RouteError> {
-        var extraAdj: [StationID: [TransitEdge]] = [:]
-        var extraStations: [StationID: Station] = [:]
-
-        // Build virtual origin node when routing from a raw coordinate.
-        if let coord = request.originCoordinate {
-            let vStation = makeVirtualStation(
-                id: RouteRequest.virtualOriginID, coord: coord, name: "Your Location")
-            extraStations[RouteRequest.virtualOriginID] = vStation
-            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualOriginID, outgoing: true)
-            extraAdj.merge(adj) { $0 + $1 }
-        }
-
-        // Build virtual destination node when routing to a raw coordinate.
-        if let coord = request.destinationCoordinate {
-            let vStation = makeVirtualStation(
-                id: RouteRequest.virtualDestID, coord: coord, name: "Your Destination")
-            extraStations[RouteRequest.virtualDestID] = vStation
-            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualDestID, outgoing: false)
-            extraAdj.merge(adj) { $0 + $1 }
-            extraAdj[RouteRequest.virtualDestID, default: []] = extraAdj[RouteRequest.virtualDestID] ?? []
-        }
-
         // Station existence check — skip virtual IDs (they won't be in stationMap).
         for stationID in [request.originID, request.destinationID] {
             guard stationID.hasPrefix("__") || stationMap[stationID] != nil else {
@@ -552,6 +610,15 @@ actor TransitGraphEngine {
         }
 
         guard request.originID != request.destinationID else {
+            return .success(RouteResult(legs: [], totalTimeMinutes: 0, totalFare: 0,
+                                        totalDistanceKm: 0, transfers: 0, modes: []))
+        }
+
+        // Two coordinate endpoints that land on (near-)the same spot — e.g. the same address
+        // typed on both sides — would otherwise route a nonsense station-and-back trip.
+        if let originCoord = request.originCoordinate,
+           let destCoord = request.destinationCoordinate,
+           haversine(from: originCoord, to: destCoord) < 0.1 {
             return .success(RouteResult(legs: [], totalTimeMinutes: 0, totalFare: 0,
                                         totalDistanceKm: 0, transfers: 0, modes: []))
         }
@@ -570,15 +637,72 @@ actor TransitGraphEngine {
             }
         }
 
-        if let result = astar(request: request,
-                              originID: request.originID, destID: request.destinationID,
-                              extraAdj: extraAdj, extraStations: extraStations) {
-            return .success(result)
+        // Pre-flight reachability — a pinned point with nothing inside the hard ceiling can
+        // never route, and the user deserves the reason rather than a bare "no route found".
+        if let coord = request.originCoordinate, let miss = unreachable(coord) {
+            return .failure(.originTooFar(nearest: miss.name, km: miss.km))
+        }
+        if let coord = request.destinationCoordinate, let miss = unreachable(coord) {
+            return .failure(.destinationTooFar(nearest: miss.name, km: miss.km))
+        }
+
+        // Two passes: first with the comfortable, role-aware radius; only if that finds
+        // nothing do we widen to the hard ceiling. A long walk is therefore never chosen
+        // when a short one would have done — but it is still offered before giving up,
+        // flagged as `isLongAccessWalk` so the UI can call it out.
+        let needsWidePass = request.originCoordinate != nil || request.destinationCoordinate != nil
+        for widened in (needsWidePass ? [false, true] : [false]) {
+            let virtualNodes = buildVirtualNodes(for: request, widened: widened)
+            if let result = astar(request: request,
+                                  originID: request.originID, destID: request.destinationID,
+                                  extraAdj: virtualNodes.adjacency,
+                                  extraStations: virtualNodes.stations) {
+                return .success(result)
+            }
         }
         return .failure(.noPath)
     }
 
     // MARK: - Virtual Node Helpers
+
+    /// Nearest stop and its distance when *nothing* sits within the hard ceiling of `coord`;
+    /// `nil` when the point is served. Returns `nil` for an empty graph too — an unloaded
+    /// graph is not a "too far" condition.
+    private func unreachable(_ coord: Coordinates) -> (name: String, km: Double)? {
+        guard let nearest = stationMap.values
+            .map({ (station: $0, dist: haversine(from: coord, to: $0.coordinates)) })
+            .min(by: { $0.dist < $1.dist }) else { return nil }
+        guard nearest.dist > AccessPolicy.hardCeilingKm else { return nil }
+        return (nearest.station.name, nearest.dist)
+    }
+
+    /// Assembles the virtual origin/destination nodes and their access edges for one pass.
+    private func buildVirtualNodes(
+        for request: RouteRequest,
+        widened: Bool
+    ) -> (adjacency: [StationID: [TransitEdge]], stations: [StationID: Station]) {
+        var extraAdj: [StationID: [TransitEdge]] = [:]
+        var extraStations: [StationID: Station] = [:]
+
+        if let coord = request.originCoordinate {
+            extraStations[RouteRequest.virtualOriginID] = makeVirtualStation(
+                id: RouteRequest.virtualOriginID, coord: coord, name: "Your Location")
+            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualOriginID,
+                                       outgoing: true, widened: widened)
+            extraAdj.merge(adj) { $0 + $1 }
+        }
+
+        if let coord = request.destinationCoordinate {
+            extraStations[RouteRequest.virtualDestID] = makeVirtualStation(
+                id: RouteRequest.virtualDestID, coord: coord, name: "Your Destination")
+            let adj = buildAccessEdges(coord: coord, virtualID: RouteRequest.virtualDestID,
+                                       outgoing: false, widened: widened)
+            extraAdj.merge(adj) { $0 + $1 }
+            extraAdj[RouteRequest.virtualDestID, default: []] = extraAdj[RouteRequest.virtualDestID] ?? []
+        }
+
+        return (extraAdj, extraStations)
+    }
 
     private func makeVirtualStation(id: StationID, coord: Coordinates, name: String) -> Station {
         Station(
@@ -591,33 +715,43 @@ actor TransitGraphEngine {
         )
     }
 
-    /// Builds synthetic walk edges between a virtual node and the K nearest real stations.
+    /// Builds synthetic walk edges between a virtual node and the reachable real stations.
     /// `outgoing: true`  → edges FROM virtualID TO nearby stations  (origin case)
     /// `outgoing: false` → edges FROM nearby stations TO virtualID  (destination case)
+    ///
+    /// `widened: false` uses the comfortable, role-aware radius (`AccessPolicy`); `true`
+    /// relaxes every candidate to the hard ceiling for the fallback pass.
+    ///
+    /// Candidates are reduced to **the nearest stop on each line**, not the k nearest stops
+    /// overall. Taking the k nearest globally hands every access edge to whichever line is
+    /// densest around `coord` — around UPLB's Carabao Park all five nearest stops belong to
+    /// UPLB_KANAN — so a line whose stop sits slightly further away gets no way in at all
+    /// and the search reports "no route" for a trip that plainly exists.
     private func buildAccessEdges(
         coord: Coordinates,
         virtualID: StationID,
-        outgoing: Bool
+        outgoing: Bool,
+        widened: Bool
     ) -> [StationID: [TransitEdge]] {
-        let maxRadiusKm: Double = 1.5
-        let k = 5
-        let walkSpeedKmPerMin = 4.5 / 60.0  // 4.5 km/h
-        let detourFactor = 1.3
-
-        let nearby = stationMap.values
+        let candidates = stationMap.values
             .map { (station: $0, dist: haversine(from: coord, to: $0.coordinates)) }
-            .filter { $0.dist <= maxRadiusKm }
+            .filter { item in
+                let limit = widened
+                    ? AccessPolicy.hardCeilingKm
+                    : AccessPolicy.comfortableRadiusKm(for: item.station)
+                return item.dist <= limit
+            }
+
+        let nearby = Dictionary(grouping: candidates, by: { $0.station.line })
+            .compactMap { $0.value.min { $0.dist < $1.dist } }
             .sorted { $0.dist < $1.dist }
-            .prefix(k)
+            .prefix(AccessPolicy.maxLines)
 
         var extraAdj: [StationID: [TransitEdge]] = [:]
         for item in nearby {
-            let travelMin = item.dist * detourFactor / walkSpeedKmPerMin
+            let travelMin = AccessPolicy.walkMinutes(forKm: item.dist)
             let fromID    = outgoing ? virtualID : item.station.id
             let toID      = outgoing ? item.station.id : virtualID
-            let coords    = outgoing
-                ? [coord, item.station.coordinates]
-                : [item.station.coordinates, coord]
 
             let edge = TransitEdge(
                 id: "\(fromID)_to_\(toID)_access",
@@ -630,7 +764,12 @@ actor TransitGraphEngine {
                 isAirConditioned: false,
                 crowdFactor: 0, reliability: 1.0,
                 bidirectional: false, direction: nil,
-                polylineCoordinates: coords,
+                // Deliberately empty — never a [origin, station] chord. A two-point straight
+                // line across whatever lies between the pin and the stop (a divided highway,
+                // a river, a walled block) is not a path anyone can walk, and once drawn it
+                // is indistinguishable from real geometry. WalkRouteRefiner fills this in
+                // from MKDirections walking directions; until it does, the leg draws nothing.
+                polylineCoordinates: [],
                 mkDirectionsTransportType: "walking",
                 isRoadSnapped: false
             )
@@ -734,7 +873,12 @@ actor TransitGraphEngine {
         let depMinute = calendar.component(.minute, from: request.departureTime)
         let departureMinutes = depHour * 60 + depMinute
 
+        // gScore is the *search* cost (includes the access-walk discomfort weight);
+        // timeScore is the cost the user is shown. They diverge only on access walks —
+        // buildResult derives per-leg durations and arrival times from timeScore so a
+        // weighted walk is never displayed as taking longer than it does.
         var gScore: [StationID: Double] = [originID: 0]
+        var timeScore: [StationID: Double] = [originID: 0]
         var cameFrom: [StationID: (parent: StationID, edge: TransitEdge)] = [:]
         var closed: Set<StationID> = []
         var openHeap = MinHeap<AStarNode>()
@@ -752,7 +896,7 @@ actor TransitGraphEngine {
                 return buildResult(
                     destination: destID,
                     cameFrom: cameFrom,
-                    gScore: gScore,
+                    gScore: timeScore,
                     stationMap: stationMap,
                     extraStations: extraStations,
                     departureTime: request.departureTime
@@ -802,7 +946,14 @@ actor TransitGraphEngine {
                     effectiveMinutes = rawMinutes * peakMultiplier + fare * 1.5
                 }
 
-                let tentativeG = (gScore[currentID] ?? .infinity) + effectiveMinutes
+                // Access walking costs more than it takes: without this weight A* will walk
+                // 1.2 km to a stop to shave two riding minutes off, which no passenger does.
+                let searchMinutes = edge.line == "ACCESS_WALK"
+                    ? effectiveMinutes * AccessPolicy.discomfortFactor
+                    : effectiveMinutes
+
+                let tentativeG = (gScore[currentID] ?? .infinity) + searchMinutes
+                let tentativeTime = (timeScore[currentID] ?? .infinity) + effectiveMinutes
 
                 // ── Operating-hours filter ──────────────────────────────────
                 // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
@@ -816,6 +967,7 @@ actor TransitGraphEngine {
                 if tentativeG < (gScore[neighbor] ?? .infinity),
                    let neighborCoords = effectiveStation(neighbor)?.coordinates {
                     gScore[neighbor] = tentativeG
+                    timeScore[neighbor] = tentativeTime
                     cameFrom[neighbor] = (parent: currentID, edge: edge)
                     let h = heuristic(from: neighborCoords, to: destCoords)
                     openHeap.push(AStarNode(
@@ -888,10 +1040,12 @@ actor TransitGraphEngine {
 
     // MARK: - Path Reconstruction
 
+    /// `elapsedMinutes` is A*'s *time* score (`timeScore`), not its search cost — the two
+    /// differ by the access-walk discomfort weight, which must never reach the UI.
     private func buildResult(
         destination: StationID,
         cameFrom: [StationID: (parent: StationID, edge: TransitEdge)],
-        gScore: [StationID: Double],
+        gScore elapsedMinutes: [StationID: Double],
         stationMap: [StationID: Station],
         extraStations: [StationID: Station],
         departureTime: Date
@@ -906,17 +1060,22 @@ actor TransitGraphEngine {
         path.reverse()  // origin → destination
 
         // ── Step 2: build flat RawSteps (one per A* edge) ────────────────────
+        // path[i].edge is the edge OUT of path[i].stationID toward path[i+1].stationID
+        // (it's populated from cameFrom[path[i+1]].edge during the backward walk above,
+        // then lands on index i after the reverse). Must index with path[i], not
+        // path[i+1] — the latter is always the *next* hop's outgoing edge, and is nil
+        // for the very last station, silently dropping the final hop of the route.
         var rawSteps: [RawStep] = []
 
         for i in 0..<path.count - 1 {
             let fromID = path[i].stationID
             let toID   = path[i + 1].stationID
-            guard let edge    = path[i + 1].edge,
+            guard let edge    = path[i].edge,
                   let fromSt  = extraStations[fromID] ?? stationMap[fromID],
                   let toSt    = extraStations[toID]   ?? stationMap[toID] else { continue }
 
-            let effectiveTime    = gScore[toID]! - (gScore[fromID] ?? 0)
-            let cumulativeMinutes = gScore[toID] ?? 0
+            let cumulativeMinutes = elapsedMinutes[toID] ?? 0
+            let effectiveTime     = cumulativeMinutes - (elapsedMinutes[fromID] ?? 0)
             let estimatedArrival  = departureTime.addingTimeInterval(cumulativeMinutes * 60)
 
             rawSteps.append(RawStep(
@@ -997,6 +1156,17 @@ actor TransitGraphEngine {
                 // the previous one (the shared intermediate station). Drop it.
                 let coords = step.edge.polylineCoordinates.dropFirst()
                 polyline.append(contentsOf: coords)
+            }
+            // Pin the ends to the boarding/alighting stations' own coordinates rather
+            // than trusting the edge's stored polyline endpoints. The schema *should*
+            // guarantee polylineCoordinates[0]/[-1] == station coords, but live data can
+            // drift from that (a station move that didn't regenerate its edges, a hand-
+            // edited polyline, etc.) — and ContentView draws the origin/destination pins
+            // from the station coordinates, not from the polyline. Any mismatch there
+            // renders as a visible gap between the pin and the line.
+            if !polyline.isEmpty {
+                polyline[0] = first.fromStation.coordinates
+                polyline[polyline.count - 1] = last.toStation.coordinates
             }
 
             let totalTime = buffer.reduce(0) { $0 + $1.effectiveTravelMinutes }
@@ -1089,12 +1259,22 @@ actor TransitGraphEngine {
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
             return "Board \(line)\(dirLabel) at \(from.shortName), ride to \(to.shortName) (\(stopsLabel))"
         case .bus:
-            return "Take \(line) bus from \(from.shortName) to \(to.shortName) (\(stopsLabel))"
+            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
+            return "Take \(line) bus\(dirLabel) from \(from.shortName) to \(to.shortName) (\(stopsLabel))"
         case .jeepney:
-            return "Ride jeepney (\(line)) from \(from.shortName) to \(to.shortName)"
+            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
+            return "Ride jeepney (\(line))\(dirLabel) from \(from.shortName) to \(to.shortName)"
         case .tricycle:
-            return "Take tricycle from \(from.shortName) to \(to.shortName)"
+            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
+            return "Take tricycle\(dirLabel) from \(from.shortName) to \(to.shortName)"
         case .walk:
+            // Access walks have a virtual node on one end — naming it ("Walk from Your
+            // Location to Stop 1") reads as a place the user has never heard of.
+            if line == "ACCESS_WALK" {
+                return from.line == "ACCESS_WALK"
+                    ? "Walk to \(to.shortName)"
+                    : "Walk from \(from.shortName) to your destination"
+            }
             if from.isInterchange || to.isInterchange {
                 return "Transfer: Walk from \(from.shortName) to \(to.shortName)"
             }
@@ -1286,10 +1466,38 @@ final class CommuteViewModel {
     var searchQuery: String = ""
     var filteredStations: [Station] = []
 
+    // MARK: Address Search — LocationSuggestion state
+    // Implementation (MKLocalSearchCompleter wiring, merging, invalidation) lives in
+    // LocationSearch.swift so this file stays MapKit-free. See FEATURE_ADDRESS_ROUTING_FINDINGS.md §2.
+    var originSuggestions: [LocationSuggestion] = []
+    var destSuggestions: [LocationSuggestion] = []
+    var showOriginSuggestions = false
+    var showDestSuggestions = false
+    var isResolvingOrigin = false
+    var isResolvingDestination = false
+    /// Text of the last confirmed origin/destination selection (station, address, pin, swap).
+    /// Lets `updateOriginSuggestions`/`updateDestSuggestions` tell a programmatic text-set apart
+    /// from a real user edit — see `invalidateOriginIfEdited` in LocationSearch.swift.
+    var confirmedOriginLabel: String?
+    var confirmedDestLabel: String?
+    var lastOriginQuery: String = ""
+    var lastDestQuery: String = ""
+    let addressSearchOrigin = AddressSearchService()
+    let addressSearchDest = AddressSearchService()
+    var originDebounce: Task<Void, Never>?
+    var destDebounce: Task<Void, Never>?
+    /// In-flight MKDirections re-measurement of the current results' walk legs.
+    /// Cancelled on every new search so a stale refinement can't overwrite fresh results.
+    var walkRefineTask: Task<Void, Never>?
+
     /// Populated from JSON — drives the mode filter picker UI.
     var availableModes: [TransportModeConfig] = []
     /// Populated from JSON — drives the payment method picker UI.
     var availablePayments: [PaymentMethodConfig] = []
+
+    /// Last known position of the passenger, or `nil` until a fix arrives (or if location
+    /// is denied). Read by the map for its location dot and its resting camera.
+    var userLocation: Coordinates?
 
     private var engine: TransitGraphEngine?
     private let locationFetcher = CommuteLocationFetcher()
@@ -1302,6 +1510,8 @@ final class CommuteViewModel {
         // Populate stations immediately from disk cache so search works before
         // the async engine finishes loading (or on subsequent launches).
         self.allStations = StationCache.load()
+        addressSearchOrigin.onUpdate = { [weak self] in self?.remergeOriginSuggestions() }
+        addressSearchDest.onUpdate = { [weak self] in self?.remergeDestSuggestions() }
         Task { await setupEngine() }
         NotificationCenter.default.addObserver(
             forName: Notification.Name("TransitDataDidUpdate"),
@@ -1333,6 +1543,10 @@ final class CommuteViewModel {
     }
 
     // MARK: Route Calculation
+
+    /// False until `setupEngine()` finishes. `calculateRoute()` refuses to run before
+    /// then, so anything that searches without user input has to wait on this.
+    var isEngineReady: Bool { engine != nil }
 
     @MainActor
     func calculateRoute() async {
@@ -1389,8 +1603,12 @@ final class CommuteViewModel {
             switch fr {
             case .failure(.stationsClosed(let t)):
                 errorMessage = "Stations are closed. MRT/LRT service ends at \(formattedTime(t))."
+            case .failure(.originTooFar(let nearest, let km)):
+                errorMessage = "Your start point isn't served yet — the nearest stop (\(nearest)) is \(distanceLabel(km)) away."
+            case .failure(.destinationTooFar(let nearest, let km)):
+                errorMessage = "Your destination isn't served yet — the nearest stop (\(nearest)) is \(distanceLabel(km)) away."
             default:
-                errorMessage = "No route found between these stations."
+                errorMessage = "No route found between these locations."
             }
             return
         }
@@ -1416,12 +1634,24 @@ final class CommuteViewModel {
 
         routeOptions = Array(options.prefix(3))
         routeResult  = routeOptions.first?.result
+
+        // Straight-line walks are good enough to search with, not to trust — that goes for
+        // the engine's access walks and for the two-point interchange chords stored in JSON
+        // alike. Re-measure the ones that survived against real pedestrian directions, off
+        // the critical path, so results appear at engine speed and sharpen a moment later.
+        // Implementation: WalkRouteRefiner.swift (keeps MapKit out of the domain layer).
+        walkRefineTask?.cancel()
+        walkRefineTask = Task { [weak self] in await self?.refineWalkLegs() }
     }
 
     /// Confirms a route selection: sets it as the active map route and dismisses the results panel.
     func selectRoute(_ option: RouteOption) {
         routeResult = option.result
         routeOptions = []
+        // Deliberately does NOT cancel `walkRefineTask`. Selecting a route is when the user
+        // starts studying the map, which is exactly where a straight-line walk shows — so
+        // refinement must be allowed to land on the selected route (WalkRouteRefiner
+        // updates `routeResult` in place when the options list has been emptied).
     }
 
     /// Updates the active map route preview without dismissing the results panel.
@@ -1434,11 +1664,24 @@ final class CommuteViewModel {
     func setOriginCoordinate(_ coord: Coordinates) {
         originCoordinate = coord
         originID = RouteRequest.virtualOriginID
+        confirmedOriginLabel = "Pinned Location"
     }
 
     func setDestinationCoordinate(_ coord: Coordinates) {
         destinationCoordinate = coord
         destinationID = RouteRequest.virtualDestID
+        confirmedDestLabel = "Pinned Location"
+    }
+
+    /// The passenger's own position, for the map's location dot and for the camera the
+    /// Commute tab rests at when there is no route to frame.
+    ///
+    /// Distinct from `fetchLocation(for:)`, which *assigns* a position to a search field.
+    /// This one only observes, so a denied or unavailable fix leaves it `nil` and the map
+    /// falls back to its default region — nothing else changes.
+    @MainActor
+    func refreshUserLocation() async {
+        if let coord = await locationFetcher.requestOnce() { userLocation = coord }
     }
 
     /// Fetch the user's current GPS location and assign it to origin or destination.
@@ -1454,6 +1697,12 @@ final class CommuteViewModel {
     }
 
     // MARK: Helpers
+
+    /// "450 m" under a kilometre, "2.3 km" above — used in the out-of-range messages.
+    func distanceLabel(_ km: Double) -> String {
+        km < 1 ? "\(Int((km * 1000).rounded(.toNearestOrAwayFromZero) / 10) * 10) m"
+               : String(format: "%.1f km", km)
+    }
 
     private func formattedTime(_ hhmm: String) -> String {
         let parts = hhmm.split(separator: ":").compactMap { Int($0) }

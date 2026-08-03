@@ -36,6 +36,19 @@ struct AdminSettings: Decodable {
     let enforceOperatingHours: Bool
 }
 
+/// Response from POST /api/v1/admin/graph/routes.
+struct CreateRouteResult: Decodable {
+    let lineId: String
+    let stationsAdded: Int
+    let edgesAdded: Int
+}
+
+/// Response from POST /api/v1/admin/stations (inserting a new stop into an existing route).
+struct InsertStationResult: Decodable {
+    let lineId: String
+    let stationId: String
+}
+
 /// Fields that can be patched on a station via PATCH /api/v1/admin/stations/:id.
 /// All properties are optional — only non-nil values are sent to the server.
 struct StationUpdate {
