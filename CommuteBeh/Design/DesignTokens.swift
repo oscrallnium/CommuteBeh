@@ -98,6 +98,14 @@ enum DesignTokens {
         /// time to follow that. A stiffer spring settles inside ~200 ms, which
         /// reads as a cut rather than a transition.
         static let morph: Animation = .spring(response: 0.55, dampingFraction: 0.86)
+        // The passenger dot's motion between GPS fixes is deliberately not a token here.
+        // It is `UserAnnotation`, which MapKit animates with the same puck animator Maps
+        // uses — the pacing is Apple's, and there is nothing for us to specify.
+        /// motion.locationPulse — the passenger dot's idle breathe while standing still.
+        /// The one respect in which the dot's motion is ours rather than MapKit's: see
+        /// `PassengerPuck`.
+        static let locationPulse: Animation = .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
+
         /// motion.searchProgress — inline progress shows only past this grace delay…
         static let progressGraceDelay: Duration = .milliseconds(250)
         /// …and once shown stays visible at least this long, to avoid flicker.
@@ -148,6 +156,36 @@ extension TransportMode {
         case .jeepney:  return 4
         case .tricycle: return 3
         case .walk:     return 2
+        }
+    }
+}
+
+// MARK: - StationAccessPoint styling
+//
+// Admin-only, and deliberately not reusing the transport-mode palette: a door is not a
+// mode, and colouring it by line would make two doors of the same station indistinguishable
+// on the map, which is exactly what the editor exists to tell apart.
+extension StationAccessPoint {
+    /// Entrances point in, exits point out, shared doors show both.
+    var symbol: String { kind.symbol }
+
+    /// Direction is the field most likely to be set wrong, so it drives the colour:
+    /// undirected doors are neutral, northbound and southbound are told apart at a glance.
+    var directionTint: Color {
+        switch direction {
+        case "northbound": return DesignTokens.Colors.fastest
+        case "southbound": return DesignTokens.Colors.cheapest
+        default:           return DesignTokens.Colors.action
+        }
+    }
+}
+
+extension StationAccessPoint.Kind {
+    var symbol: String {
+        switch self {
+        case .entrance: return "arrow.down.right.and.arrow.up.left"
+        case .exit:     return "arrow.up.left.and.arrow.down.right"
+        case .both:     return "arrow.left.arrow.right"
         }
     }
 }

@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var originText = ""
     @State private var destinationText = ""
     @State private var mapPosition: MapCameraPosition = .region(Self.manilaRegion)
+    /// Captured once the map appears — see `moveCamera`.
+    @State private var mapProxy: MapProxy?
     @State private var showSearchProgress = false
     @FocusState private var focusedField: SearchField?
     @Namespace private var searchNS
@@ -31,6 +33,8 @@ struct ContentView: View {
     @State private var visibleBottom: CGFloat = 0
     /// Map-ready coordinates + bounding box for `vm.routeResult`. See `RouteGeometry`.
     @State private var routeGeometry: RouteGeometry?
+    /// Whether this tab is the one on screen. Gates the location dot — see `UserAnnotation`.
+    @State private var isOnScreen = false
     private enum SearchField { case origin, destination }
 
     /// Inputs that should re-frame the camera. Bundled so the debounced fit below has a
@@ -43,12 +47,24 @@ struct ContentView: View {
 
     /// Inputs that should return the camera to its resting position. `hasRoute` is what
     /// makes Reset re-fire it: clearing `routeResult` flips it back to `false`.
+    ///
+    /// `hasUserLocation` is a Bool and not the coordinate itself on purpose. The location
+    /// feed is live, so the coordinate changes every few metres the passenger walks —
+    /// keying on it would re-centre the camera on every one of those, snatching the map
+    /// back from anyone who had panned it. What earns a re-centre is *acquiring* a fix
+    /// (nil → non-nil), which happens once. `recenterHome` reads the current coordinate
+    /// when it runs, so the camera still lands on the up-to-date position.
     private struct HomeTrigger: Equatable {
-        let user: Coordinates?
+        let hasUserLocation: Bool
         let visibleTop: CGFloat
         let visibleBottom: CGFloat
         let hasRoute: Bool
     }
+
+    /// Inset the search panel carries inside the top safe area. Added back by
+    /// `measuresVisibleTop` so the published edge still describes the panel's outer
+    /// boundary even though it is measured from the card within it.
+    private static let panelPadding: CGFloat = 16
 
     private static let manilaRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 14.5763, longitude: 121.0194),
@@ -125,22 +141,36 @@ struct ContentView: View {
                 // showing whether or not a route is on screen. Orange, so it never reads
                 // as part of a route — the green origin dot and the red destination pin
                 // are the route's own endpoints, and this is neither.
-                if let me = vm.userLocation {
-                    Annotation("", coordinate: CLLocationCoordinate2D(
-                        latitude: me.lat, longitude: me.lng
-                    )) {
-                        ZStack {
-                            Circle()
-                                .fill(DesignTokens.Colors.action.opacity(0.20))
-                                .frame(width: 34, height: 34)
-                            Circle()
-                                .fill(DesignTokens.Colors.action)
-                                .frame(width: 16, height: 16)
-                            Circle()
-                                .stroke(.white, lineWidth: 2.5)
-                                .frame(width: 16, height: 16)
-                        }
-                        .shadow(color: .black.opacity(0.25), radius: 2)
+                //
+                // `UserAnnotation`, not an `Annotation` at `vm.userLocation`. An
+                // `Annotation`'s coordinate is not animatable: assigning a new one moves
+                // the view on the next frame, so the dot teleported from fix to fix — it
+                // hopped a car length every second or so instead of travelling.
+                //
+                // MapKit positions this one itself, through the same puck animator Maps
+                // uses: it interpolates between fixes and projects a little past the last
+                // one at the pace being kept, so the dot moves continuously while the
+                // passenger moves and settles when they stop. Supplying content here keeps
+                // our styling and gives up only the stock blue puck's look — the heading
+                // cone and accuracy ring were never drawn anyway.
+                //
+                // Note this is fed by MapKit's own location service, not by
+                // `vm.userLocation`. That feed still runs, for the resting camera and the
+                // search fields; the dot no longer depends on it.
+                //
+                // Dropped from the content while the tab is away, which is how MapKit's
+                // feed is told to stop — there is no switch for it, and leaving a second
+                // location service running behind another tab is the expense
+                // `stopTrackingUserLocation` exists to avoid.
+                //
+                // The `(UserLocation) -> Content` overload, not the plain one: it hands
+                // back the same location MapKit is rendering the dot at, speed included —
+                // `PassengerPuck` reads that to know when to breathe. A second
+                // `CLLocationManager` reading of our own would drift a fix or two from
+                // what's actually on screen.
+                if isOnScreen {
+                    UserAnnotation { userLocation in
+                        PassengerPuck(speed: userLocation.location?.speed)
                     }
                 }
             }
@@ -168,13 +198,10 @@ struct ContentView: View {
             )
             .safeAreaInset(edge: .top, spacing: 0) {
                 searchPanel
-                    .padding()
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(key: VisibleTopKey.self,
-                                                   value: geo.frame(in: .global).maxY)
-                        }
-                    )
+                    .padding(Self.panelPadding)
+                    // The measurement is published from the card/pill itself, not from
+                    // here — see `measuresVisibleTop`. Reading the padded panel's own
+                    // frame would fold the suggestion list into it.
                     .onPreferenceChange(VisibleTopKey.self) { visibleTop = $0 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -219,18 +246,40 @@ struct ContentView: View {
                 guard !Task.isCancelled else { return }
                 fitMap(to: result)
             }
-            // One fix, on first appearance. Not a continuous track: the dot marks where
-            // the passenger started from, and a moving camera would fight the route fit.
-            .task { await vm.refreshUserLocation() }
+            // Live position for as long as the map is on screen — for the resting camera
+            // and the search fields. The dot is MapKit's own (see `UserAnnotation` above)
+            // and does not come from here.
+            .onAppear {
+                vm.startTrackingUserLocation()
+                isOnScreen = true
+                mapProxy = proxy
+            }
+            // The tab bar makes this fire on every tab switch, which is exactly when both
+            // location feeds should stop.
+            .onDisappear {
+                vm.stopTrackingUserLocation()
+                isOnScreen = false
+            }
             // Rest the camera on the passenger whenever there is no route to frame — on
             // first load, and again after Reset clears one. Keyed on the strip as well as
             // the fix, so the first centring waits for the panels to be measured instead
             // of landing on the raw screen centre and then jumping.
-            .task(id: HomeTrigger(user: vm.userLocation,
+            .task(id: HomeTrigger(hasUserLocation: vm.userLocation != nil,
                                   visibleTop: visibleTop,
                                   visibleBottom: visibleBottom,
                                   hasRoute: vm.routeResult != nil)) {
-                guard vm.routeResult == nil else { return }
+                // `calculateRoute()` clears `routeResult` to `nil` the instant a search
+                // starts, well before the new one is ready — flipping `hasRoute` false and
+                // making this task eligible to fire mid-search. Without the `isLoading`
+                // guard, a search that took just over the 80ms below raced this against
+                // `fitMap`'s own task below: `recenterHome` would land on the passenger,
+                // then `fitMap` would try to animate from there to the route a moment
+                // later — two `withAnimation` camera writes close enough together that
+                // MapKit dropped the second's animation and snapped instead of gliding.
+                // That, not a broken `fitMap`, is what read as "doesn't animate to show
+                // the route": which one won was a race with the engine's own timing, so it
+                // didn't reproduce on every search.
+                guard vm.routeResult == nil, !vm.isLoading else { return }
                 try? await Task.sleep(for: .milliseconds(80))
                 guard !Task.isCancelled else { return }
                 recenterHome()
@@ -334,6 +383,7 @@ struct ContentView: View {
 
             Spacer()
         }
+        .measuresVisibleTop(outerPadding: Self.panelPadding)
     }
 
     // MARK: Expanded card (default search state)
@@ -456,6 +506,12 @@ struct ContentView: View {
             .background(Self.cardCream)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.card))
             .cardShadow(y: 4)
+            // Measured here rather than on the enclosing VStack: the suggestion list
+            // below is a sibling in that stack, so measuring the stack made the strip's
+            // top edge move every time the list opened, closed, or changed row count —
+            // and that edge keys the camera tasks, which re-framed the map on every
+            // keystroke. The list floats over the map; it does not move the card.
+            .measuresVisibleTop(outerPadding: Self.panelPadding)
 
             // Suggestions — outside the clipped card so they aren't cut off
             if vm.showOriginSuggestions && !vm.originSuggestions.isEmpty {
@@ -617,10 +673,12 @@ struct ContentView: View {
             latitude:  (geo.minLat + geo.maxLat) / 2,
             longitude: (geo.minLng + geo.maxLng) / 2
         )
-        // 2.4x padding leaves ~30% margin on every side of the visible strip (between the
-        // top and bottom cards) instead of the route's pins sitting almost flush against them.
-        var latDelta = max((geo.maxLat - geo.minLat) * 2.4, 0.02)
-        let lngDelta = max((geo.maxLng - geo.minLng) * 2.4, 0.02)
+        // 1.2x padding leaves ~8% margin on every side of the visible strip (between the
+        // top and bottom cards) — calibrated against a reference screenshot of the target
+        // framing: measuring the route's pins and polyline there against the visible strip
+        // put the route at ~88% of the screen's width, which is what 1.2x reproduces.
+        var latDelta = max((geo.maxLat - geo.minLat) * 1.2, 0.01)
+        let lngDelta = max((geo.maxLng - geo.minLng) * 1.2, 0.01)
 
         // Shift center and expand span so the route sits in the visible map area
         // between the top search pill and the bottom results panel. Map renders
@@ -635,12 +693,10 @@ struct ContentView: View {
                                                lngDelta: lngDelta, strip: strip)
         }
 
-        withAnimation(DesignTokens.Motion.cameraFit) {
-            mapPosition = .region(MKCoordinateRegion(
-                center: center,
-                span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lngDelta)
-            ))
-        }
+        moveCamera(to: MKCoordinateRegion(
+            center: center,
+            span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lngDelta)
+        ))
     }
 
     /// Fractions of the screen hidden above and below the map strip the passenger can
@@ -699,8 +755,29 @@ struct ContentView: View {
                                                lngDelta: span.longitudeDelta,
                                                strip: strip)
         }
+        moveCamera(to: MKCoordinateRegion(center: center, span: span))
+    }
+
+    /// Animates the camera to `region`.
+    ///
+    /// Goes through `.camera(...)`, not `.region(...)`, on purpose. `MapCameraPosition`
+    /// is case-based under the hood — `.camera`, `.region`, `.rect`, and `.item` are each
+    /// backed by their own optional accessor, and `positionedByUser` exists specifically
+    /// because the framework tracks whether the *current* value came from the passenger's
+    /// own pinch/pan. An interactive gesture reports back a camera pose (centre, distance,
+    /// heading, pitch), not a lat/lng rectangle, so after the passenger has touched the
+    /// map at all, `mapPosition` is holding a `.camera(...)`-cased value. Writing
+    /// `.region(...)` over that asks `withAnimation` to interpolate between two different
+    /// underlying representations instead of gliding within one — which is where the
+    /// animation was silently failing to play. `MapProxy.camera(framing:)` converts our
+    /// computed region into the same representation a gesture would have left behind, so
+    /// every write here lands in `.camera(...)`, regardless of what the passenger did to
+    /// the map beforehand.
+    private func moveCamera(to region: MKCoordinateRegion) {
+        let target: MapCameraPosition = mapProxy.map { .camera($0.camera(framing: region)) }
+            ?? .region(region)
         withAnimation(DesignTokens.Motion.cameraFit) {
-            mapPosition = .region(MKCoordinateRegion(center: center, span: span))
+            mapPosition = target
         }
     }
 
@@ -715,6 +792,79 @@ struct ContentView: View {
     }
 
     // Mode styling lives in extension TransportMode (DesignTokens.swift).
+}
+
+// MARK: - Passenger Puck
+
+/// Content for the passenger's `UserAnnotation` — position is entirely MapKit's (see the
+/// call site); this supplies only the look, orange rather than the stock puck's blue, and
+/// one behaviour: a Maps-style idle breathe while the passenger is standing still, which
+/// stops the instant `speed` says otherwise. Moving is already its own motion cue; the
+/// breathing exists for the moments there isn't one.
+private struct PassengerPuck: View {
+    /// `userLocation.location?.speed`, handed down by the `UserAnnotation` closure. `nil`
+    /// before MapKit has a fix.
+    let speed: CLLocationSpeed?
+
+    @State private var isStill = true
+    /// Debounced target for `isStill` — see the `.task(id:)` below. Kept separate so a
+    /// single noisy sample crossing the threshold can't flip the pulse on its own.
+    @State private var pendingStill = true
+    @State private var breathe = false
+
+    /// Below this, the passenger reads as stopped rather than mid-stride — comfortably
+    /// under even a slow walk (~1.2 m/s), so nothing anyone would call moving triggers it.
+    private static let stillThreshold: CLLocationSpeed = 0.4
+    /// How long a reading has to hold before the pulse commits to it. A GPS speed sample
+    /// hovering near the threshold — waiting at a light, a stalled elevator — shouldn't
+    /// flicker the halo on and off; this is long enough to ride that out and short enough
+    /// that the pulse starts soon after an actual stop.
+    private static let debounce = Duration.milliseconds(700)
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(DesignTokens.Colors.action.opacity(isStill && breathe ? 0.32 : 0.20))
+                .frame(width: 34, height: 34)
+                .scaleEffect(isStill && breathe ? 1.25 : 1.0)
+            Circle()
+                .fill(DesignTokens.Colors.action)
+                .frame(width: 16, height: 16)
+            Circle()
+                .stroke(.white, lineWidth: 2.5)
+                .frame(width: 16, height: 16)
+        }
+        .shadow(color: .black.opacity(0.25), radius: 2)
+        .onChange(of: speed, initial: true) { _, newSpeed in
+            pendingStill = Self.isBelowThreshold(newSpeed)
+        }
+        // Auto-cancelled and restarted by SwiftUI on every `pendingStill` change, which is
+        // what makes this a debounce rather than a delay: a classification that flips back
+        // before `debounce` elapses just restarts the wait instead of committing.
+        .task(id: pendingStill) {
+            try? await Task.sleep(for: Self.debounce)
+            guard !Task.isCancelled else { return }
+            isStill = pendingStill
+        }
+        .onChange(of: isStill, initial: true) { _, still in
+            if still {
+                withAnimation(DesignTokens.Motion.locationPulse) { breathe = true }
+            } else {
+                // A plain assignment, not `withAnimation`: `isStill` already masks
+                // `breathe`'s contribution above, so the halo is already at rest the
+                // instant this runs — there is nothing left to animate. This just leaves
+                // `breathe` clean for the next `withAnimation` to start from.
+                breathe = false
+            }
+        }
+    }
+
+    private static func isBelowThreshold(_ speed: CLLocationSpeed?) -> Bool {
+        // No reliable reading — no fix yet, or CoreLocation's "invalid" sentinel — reads
+        // as still. There's no evidence of movement to justify treating it otherwise.
+        guard let speed, speed >= 0 else { return true }
+        return speed < stillThreshold
+    }
 }
 
 // MARK: - Route Geometry
@@ -884,6 +1034,23 @@ private struct VisibleTopKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
+    }
+}
+
+private extension View {
+    /// Publishes this view's bottom edge — plus the search panel's outer padding — as the
+    /// top of the visible map strip.
+    ///
+    /// Applied to the search card and the collapsed pill, never to a container that also
+    /// holds the suggestion list. Only a change in what *permanently* covers the map
+    /// should reach `VisibleTopKey`; a transient list that opens over it should not.
+    func measuresVisibleTop(outerPadding: CGFloat) -> some View {
+        background(
+            GeometryReader { geo in
+                Color.clear.preference(key: VisibleTopKey.self,
+                                       value: geo.frame(in: .global).maxY + outerPadding)
+            }
+        )
     }
 }
 
@@ -1237,12 +1404,22 @@ struct RouteResultsPanel: View {
         }
         // Both detail entry points animate explicitly with withAnimation, so no
         // implicit .animation(value: detailID) here — it would apply a second spring.
-        .onChange(of: options.map(\.id), initial: true) { _, newIDs in
+        // Keyed on the legs, not on the option ids. Option ids now survive walk
+        // refinement (see `RouteOption.id`), which is the whole point — but refinement
+        // *does* rewrite times, fares and geometry, and keying on ids alone would leave
+        // this cache serving the pre-refinement figures for the rest of the search.
+        // Refinement only runs on routes that contain a walk leg, and it rebuilds those
+        // legs, so a leg-id signature always moves when the numbers do.
+        .onChange(of: options.flatMap { $0.result.legs.map(\.id) }, initial: true) { _, _ in
             summaries = Self.buildSummaries(options)
-            if newIDs.first(where: { $0 == selectedID }) == nil {
-                selectedID = newIDs.first
+            // Refinement can still *drop* an option whose access walk turned out to be
+            // too long to walk, so the selection and the open detail view are re-checked
+            // against what survived.
+            let ids = options.map(\.id)
+            if !ids.contains(where: { $0 == selectedID }) {
+                selectedID = ids.first
             }
-            if let id = detailID, !newIDs.contains(id) {
+            if let id = detailID, !ids.contains(id) {
                 detailID = nil
             }
         }
@@ -2320,7 +2497,8 @@ private extension Station {
             coordinates: Coordinates(lat: lat, lng: lng),
             isTerminal: false, isInterchange: false,
             interchangesWith: nil, amenities: [],
-            operatingHours: .init(open: "05:30", close: "23:00")
+            operatingHours: .init(open: "05:30", close: "23:00"),
+            accessPoints: nil
         )
     }
 }

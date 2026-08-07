@@ -42,6 +42,12 @@ private struct WalkMeasurement {
     let minutes: Double
     let distanceKm: Double
     let coordinates: [Coordinates]
+    /// The endpoints the walk was actually measured between — station doors when the
+    /// stations have any recorded, centroids otherwise. Carried back so the polyline is
+    /// pinned to the same two points it was routed between; pinning to the centroid
+    /// instead would drag both ends off the path and undo the whole resolution.
+    let from: Coordinates
+    let to: Coordinates
 }
 
 @MainActor
@@ -121,13 +127,27 @@ extension CommuteViewModel {
         // Running clock shift: a longer (or shorter) walk moves every later leg's ETA.
         var shiftMinutes: Double = 0
 
-        for leg in option.result.legs {
+        let allLegs = option.result.legs
+        for (index, leg) in allLegs.enumerated() {
             guard leg.mode == .walk else {
                 legs.append(leg.shiftingArrival(byMinutes: shiftMinutes))
                 continue
             }
 
-            guard let measurement = await measureWalk(for: leg, cache: &cache) else {
+            // A walk carries no direction of its own — `RouteLeg.direction` is set from
+            // the edge, and walk edges have none. The doors it should use are decided by
+            // its neighbours: the ride just left, and the one about to be boarded. Both
+            // are nil at the ends of a route, and on every line but MRT-3, which is the
+            // only one with directional edges.
+            let arriving  = index > 0 ? allLegs[index - 1].direction : nil
+            let departing = index + 1 < allLegs.count ? allLegs[index + 1].direction : nil
+
+            guard let measurement = await measureWalk(
+                for: leg,
+                arrivingDirection: arriving,
+                departingDirection: departing,
+                cache: &cache
+            ) else {
                 // MapKit couldn't route this walk even after retries (offline, throttled, no
                 // pedestrian path known). The leg keeps its time and distance estimate and
                 // stays in the route — dropping trips on a network failure would hide
@@ -150,17 +170,25 @@ extension CommuteViewModel {
                 minutes: measurement.minutes,
                 distanceKm: measurement.distanceKm,
                 polyline: measurement.coordinates,
+                pinnedTo: (measurement.from, measurement.to),
                 arrivalShiftMinutes: shiftMinutes
             ))
         }
 
-        return RouteOption(result: option.result.replacingLegs(legs), label: option.label)
+        // Same option, sharper geometry — so it keeps its id. The panel keys its
+        // selection, its open detail view and its summary cache on that id; see
+        // `RouteOption.id` for what a fresh one did to the results panel's height.
+        return RouteOption(result: option.result.replacingLegs(legs),
+                           label: option.label,
+                           id: option.id)
     }
 
     // MARK: Measurement
 
     private func measureWalk(
         for leg: RouteLeg,
+        arrivingDirection: String?,
+        departingDirection: String?,
         cache: inout [String: WalkMeasurement?]
     ) async -> WalkMeasurement? {
         // Take MapKit's transport type from the edge's own hint rather than assuming a walk
@@ -176,8 +204,23 @@ extension CommuteViewModel {
             return nil
         }
 
-        let from = leg.fromStation.coordinates
-        let to   = leg.toStation.coordinates
+        // Doors, not centroids — when the stations have any recorded.
+        //
+        // `pinningStationEnds` justifies itself with "a stop sits on the road its
+        // vehicles use, so MKDirections lands within a metre of it". True of a jeepney
+        // stop; false of a rail station, whose single coordinate is the centroid of a
+        // structure standing on a viaduct or inside a building. Asking for a walk between
+        // two such points makes MKDirections snap each to whatever footpath is nearest,
+        // which is why the MRT-3 Taft ⇄ LRT-1 EDSA transfer came back routed between two
+        // arbitrary kerbside points instead of across the footbridge that joins them.
+        //
+        // Each end is resolved against the *other* station's centroid, so of several
+        // doors the pair chosen is the one facing the walk. Stations with no recorded
+        // doors return their centroid and behave exactly as before.
+        let from = leg.fromStation.accessPoint(
+            kind: .exit, direction: arrivingDirection, nearestTo: leg.toStation.coordinates)
+        let to = leg.toStation.accessPoint(
+            kind: .entrance, direction: departingDirection, nearestTo: leg.fromStation.coordinates)
         let key = String(format: "%.5f,%.5f>%.5f,%.5f", from.lat, from.lng, to.lat, to.lng)
         if let cached = cache[key] { return cached }
 
@@ -224,7 +267,8 @@ extension CommuteViewModel {
             ) {
                 return WalkMeasurement(minutes: path.minutes,
                                        distanceKm: path.distanceKm,
-                                       coordinates: path.coordinates)
+                                       coordinates: path.coordinates,
+                                       from: from, to: to)
             }
             guard attempt < backoff.count, !Task.isCancelled else { return nil }
             try? await Task.sleep(for: backoff[attempt])
@@ -260,21 +304,29 @@ private extension RouteLeg {
         minutes: Double,
         distanceKm: Double,
         polyline: [Coordinates],
+        pinnedTo endpoints: (from: Coordinates, to: Coordinates),
         arrivalShiftMinutes: Double
     ) -> RouteLeg {
         copy(
             effectiveTravelMinutes: minutes,
             distanceKm: distanceKm,
-            polylineCoordinates: pinningStationEnds(of: polyline),
+            polylineCoordinates: pinningStationEnds(of: polyline, to: endpoints),
             estimatedArrival: estimatedArrival.addingTimeInterval(arrivalShiftMinutes * 60)
         )
     }
 
     /// Snaps the polyline's ends onto this leg's **stations** — and only its stations.
     ///
+    /// `endpoints` are the two points the walk was actually routed between: the stations'
+    /// recorded doors where they have any, their centroids where they do not. Pinning to
+    /// the centroid regardless is what this used to do, and it dragged both ends of a
+    /// correctly-routed path back to the middle of a building.
+    ///
     /// A stop sits on the road its vehicles use, so MKDirections lands within a metre of it
     /// and any residual drift is noise worth removing: the map draws stop pins from station
-    /// coordinates, and a metre of daylight between pin and line reads as a defect.
+    /// coordinates, and a metre of daylight between pin and line reads as a defect. That
+    /// premise holds for a kerbside stop and for a door; it never held for a rail centroid,
+    /// which is the bug this parameter exists to close.
     ///
     /// A *pinned location* is the opposite case. MKDirections has already snapped it to the
     /// road in front of the address — 2 to 19 m away in the routes measured — and that
@@ -284,11 +336,12 @@ private extension RouteLeg {
     /// it alone costs a few metres of honest gap between the pin and the path — MapKit has
     /// no data for the walk from inside a mall to its gate — and buys a line that actually
     /// follows the road.
-    func pinningStationEnds(of polyline: [Coordinates]) -> [Coordinates] {
+    func pinningStationEnds(of polyline: [Coordinates],
+                           to endpoints: (from: Coordinates, to: Coordinates)) -> [Coordinates] {
         guard polyline.count >= 2 else { return polylineCoordinates }
         var pinned = polyline
-        if !fromStation.isPinnedLocation { pinned[0] = fromStation.coordinates }
-        if !toStation.isPinnedLocation { pinned[pinned.count - 1] = toStation.coordinates }
+        if !fromStation.isPinnedLocation { pinned[0] = endpoints.from }
+        if !toStation.isPinnedLocation { pinned[pinned.count - 1] = endpoints.to }
         return pinned
     }
 

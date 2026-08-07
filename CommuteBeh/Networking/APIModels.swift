@@ -58,6 +58,13 @@ struct StationUpdate {
     var shortName: String?
     var openTime: String?
     var closeTime: String?
+    /// The station's complete set of doors. Sending it **replaces** whatever the server
+    /// holds, so a door left out is a door deleted — that is how removal works, and why
+    /// the editor always sends the full list rather than a diff.
+    ///
+    /// `nil` omits the key and leaves the server's doors untouched, so renaming a station
+    /// or nudging its centroid does not have to resend them. An explicit `[]` clears them.
+    var accessPoints: [StationAccessPoint]?
 }
 
 // MARK: - Transit

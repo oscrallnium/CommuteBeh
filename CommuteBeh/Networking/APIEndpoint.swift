@@ -146,6 +146,22 @@ enum APIEndpoint {
             if let sn  = update.shortName { station["short_name"] = sn  }
             if let ot  = update.openTime  { station["open_time"]  = ot  }
             if let ct  = update.closeTime { station["close_time"] = ct  }
+            if let points = update.accessPoints {
+                // snake_case to match the controller's permit list. Sent whole — see
+                // StationUpdate.accessPoints; an empty array clears the station's doors.
+                station["access_points"] = points.map { point in
+                    [
+                        "access_point_id": point.id,
+                        "name": point.name,
+                        "kind": point.kind.rawValue,
+                        // NSNull, not omitted: nil means "serves every direction", and
+                        // the key has to arrive for the server to write it as NULL.
+                        "direction": point.direction ?? NSNull(),
+                        "lat": point.coordinates.lat,
+                        "lng": point.coordinates.lng
+                    ] as [String: Any]
+                }
+            }
             return station.isEmpty ? nil : ["station": station]
         case .updateEdge(_, let coords, let bidirectional, let direction):
             // Every field is optional and applied independently server-side, so send only

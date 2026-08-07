@@ -85,7 +85,10 @@ final class AdminRoutesViewModel {
                 isInterchange: local.isInterchange,
                 interchangesWith: local.interchangesWith,
                 amenities: local.amenities,
-                operatingHours: serverStation.operatingHours
+                operatingHours: serverStation.operatingHours,
+                // From the server, not `local`: unlike interchangesWith, the station
+                // endpoint does return access points, so its copy is the fresh one.
+                accessPoints: serverStation.accessPoints
             )
             persistToLocalGraph(serverStation, preserving: local)
             break
@@ -166,7 +169,8 @@ final class AdminRoutesViewModel {
             isInterchange: local.isInterchange,
             interchangesWith: local.interchangesWith,
             amenities: local.amenities,
-            operatingHours: serverStation.operatingHours
+            operatingHours: serverStation.operatingHours,
+            accessPoints: serverStation.accessPoints
         )
 
         var stations = graph.stations
@@ -1200,6 +1204,7 @@ private struct EditStationView: View {
 
     enum Tab: String, CaseIterable {
         case location = "Location"
+        case access   = "Access"
         case details  = "Details"
     }
 
@@ -1209,6 +1214,12 @@ private struct EditStationView: View {
     // Location tab
     @State private var cameraPosition: MapCameraPosition
     @State private var centerCoordinate: CLLocationCoordinate2D
+
+    // Access tab — the station's doors, edited as a list and saved as a whole set.
+    @State private var accessPoints: [StationAccessPoint]
+    /// Door currently being positioned on the map, if any. While non-nil the map's
+    /// crosshair moves that door instead of the station centroid.
+    @State private var editingAccessPointID: StationAccessPoint.ID?
 
     // Details tab
     @State private var name: String
@@ -1230,6 +1241,7 @@ private struct EditStationView: View {
             MapCamera(centerCoordinate: coord, distance: 400, heading: 0, pitch: 0)
         ))
         _centerCoordinate = State(initialValue: coord)
+        _accessPoints = State(initialValue: station.accessPoints ?? [])
         _name      = State(initialValue: station.name)
         _shortName = State(initialValue: station.shortName)
         _openTime  = State(initialValue: station.operatingHours.open)
@@ -1239,19 +1251,44 @@ private struct EditStationView: View {
     var body: some View {
         ZStack {
             // Background layer
-            if selectedTab == .location {
-                Map(position: $cameraPosition)
-                    .onMapCameraChange(frequency: .continuous) { ctx in
-                        centerCoordinate = ctx.camera.centerCoordinate
+            if selectedTab == .location || selectedTab == .access {
+                Map(position: $cameraPosition) {
+                    // Every door at once, plus the centroid — placing one against a blank
+                    // map is how the existing coordinates ended up hundreds of metres out.
+                    Annotation("", coordinate: CLLocationCoordinate2D(
+                        latitude: station.coordinates.lat, longitude: station.coordinates.lng)) {
+                        Circle().fill(.gray.opacity(0.5))
+                            .frame(width: 12, height: 12)
+                            .overlay(Circle().stroke(.white, lineWidth: 2))
                     }
-                    .ignoresSafeArea()
+                    ForEach(accessPoints) { point in
+                        // The one being positioned is hidden: the crosshair is standing in
+                        // for it, and drawing both would show it in two places at once.
+                        if point.id != editingAccessPointID {
+                            Annotation(point.name, coordinate: CLLocationCoordinate2D(
+                                latitude: point.coordinates.lat, longitude: point.coordinates.lng)) {
+                                Image(systemName: point.kind.symbol)
+                                    .font(.caption.weight(.bold))
+                                    .foregroundStyle(.white)
+                                    .padding(5)
+                                    .background(Circle().fill(point.directionTint))
+                                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                            }
+                        }
+                    }
+                }
+                .onMapCameraChange(frequency: .continuous) { ctx in
+                    centerCoordinate = ctx.camera.centerCoordinate
+                }
+                .ignoresSafeArea()
             } else {
                 Color(UIColor.systemGroupedBackground)
                     .ignoresSafeArea()
             }
 
-            // Center pin (location tab only)
-            if selectedTab == .location {
+            // Center pin — the station centroid on the Location tab, and the door being
+            // positioned on the Access tab.
+            if selectedTab == .location || editingAccessPointID != nil {
                 VStack(spacing: 0) {
                     Circle()
                         .fill(.blue)
@@ -1291,9 +1328,11 @@ private struct EditStationView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 56)
 
-                // Details form (fills remaining space on details tab)
+                // Tab body (fills remaining space)
                 if selectedTab == .details {
                     detailsForm
+                } else if selectedTab == .access, editingAccessPointID == nil {
+                    accessList
                 } else {
                     Spacer()
                 }
@@ -1309,7 +1348,9 @@ private struct EditStationView: View {
                         .padding(.bottom, 4)
                 }
 
-                // Tab picker
+                // Tab picker — hidden while positioning a door, since leaving the tab
+                // would abandon a placement the crosshair is still standing in for.
+                if editingAccessPointID == nil {
                 Picker("", selection: $selectedTab) {
                     ForEach(Tab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
@@ -1318,8 +1359,15 @@ private struct EditStationView: View {
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 8)
+                }
 
-                // Cancel / Confirm
+                // Cancel / Confirm — replaced by the placement controls while a door is
+                // being positioned, so "Confirm" never means two things at once.
+                if editingAccessPointID != nil {
+                    accessPlacementBar
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 40)
+                } else {
                 HStack(spacing: 12) {
                     Button("Cancel") { dismiss() }
                         .buttonStyle(.bordered)
@@ -1339,7 +1387,133 @@ private struct EditStationView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 40)
+                }
             }
+        }
+    }
+
+    // MARK: Access tab — add / edit / remove doors
+
+    /// The station's doors. Each row carries the two facts that decide when it is used:
+    /// whether it is an entrance, an exit or both, and which travel direction it serves.
+    private var accessList: some View {
+        List {
+            Section {
+                if accessPoints.isEmpty {
+                    Text("No access points. The station's own coordinate is used for every walk to or from it.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                ForEach($accessPoints) { $point in
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Bound through setters, not `$point.name`: the model is an
+                        // immutable value type like every other in the domain layer.
+                        TextField("Name (e.g. Taft Ave footbridge)", text: Binding(
+                            get: { point.name },
+                            set: { point = point.settingName($0) }
+                        ))
+                        .font(.subheadline.weight(.semibold))
+
+                        Picker("Kind", selection: Binding(
+                            get: { point.kind },
+                            set: { point = point.settingKind($0) }
+                        )) {
+                            Text("Entrance").tag(StationAccessPoint.Kind.entrance)
+                            Text("Exit").tag(StationAccessPoint.Kind.exit)
+                            Text("Both").tag(StationAccessPoint.Kind.both)
+                        }
+                        .pickerStyle(.segmented)
+
+                        // nil == serves every direction. That is the common case, not a
+                        // fallback: only MRT-3 has directional edges at all, so a door on
+                        // any other line can never be matched to one.
+                        Picker("Direction", selection: Binding(
+                            get: { point.direction ?? "" },
+                            set: { point = point.settingDirection($0.isEmpty ? nil : $0) }
+                        )) {
+                            Text("Both directions").tag("")
+                            Text("Northbound").tag("northbound")
+                            Text("Southbound").tag("southbound")
+                        }
+                        .pickerStyle(.segmented)
+
+                        HStack {
+                            Text(String(format: "%.6f,  %.6f",
+                                        point.coordinates.lat, point.coordinates.lng))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Place on map") {
+                                // Fly to the door and hand the crosshair over to it.
+                                editingAccessPointID = point.id
+                                cameraPosition = .camera(MapCamera(
+                                    centerCoordinate: CLLocationCoordinate2D(
+                                        latitude: point.coordinates.lat,
+                                        longitude: point.coordinates.lng),
+                                    distance: 300, heading: 0, pitch: 0))
+                            }
+                            .font(.caption.weight(.semibold))
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .onDelete { accessPoints.remove(atOffsets: $0) }
+            } header: {
+                Text("Access Points")
+            } footer: {
+                Text("Saving replaces this station's full set — a door removed here is deleted on the server. Walks use the nearest door open to the passenger, falling back to the station coordinate when there are none.")
+            }
+
+            Section {
+                Button {
+                    // Placed at the map's current centre rather than at the station, so a
+                    // new door lands where the admin is already looking.
+                    let new = StationAccessPoint(
+                        id: "\(station.id)_AP_\(UUID().uuidString.prefix(8).uppercased())",
+                        name: "",
+                        kind: .both,
+                        direction: nil,
+                        coordinates: Coordinates(lat: centerCoordinate.latitude,
+                                                 lng: centerCoordinate.longitude))
+                    accessPoints.append(new)
+                    editingAccessPointID = new.id
+                } label: {
+                    Label("Add access point", systemImage: "plus.circle.fill")
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+    }
+
+    /// Shown while a door is being positioned: the crosshair is standing in for it, so the
+    /// only controls needed are "keep this spot" and "put it back".
+    private var accessPlacementBar: some View {
+        HStack(spacing: 12) {
+            Button("Cancel") {
+                // Discard the move by restoring the coordinate the door had on entry.
+                if let id = editingAccessPointID,
+                   let idx = accessPoints.firstIndex(where: { $0.id == id }),
+                   let original = (station.accessPoints ?? []).first(where: { $0.id == id }) {
+                    accessPoints[idx] = accessPoints[idx].settingCoordinates(original.coordinates)
+                }
+                editingAccessPointID = nil
+            }
+            .buttonStyle(.bordered)
+            .frame(maxWidth: .infinity)
+
+            Button("Set location") {
+                if let id = editingAccessPointID,
+                   let idx = accessPoints.firstIndex(where: { $0.id == id }) {
+                    accessPoints[idx] = accessPoints[idx].settingCoordinates(
+                        Coordinates(lat: centerCoordinate.latitude,
+                                    lng: centerCoordinate.longitude))
+                }
+                editingAccessPointID = nil
+            }
+            .buttonStyle(.borderedProminent)
+            .frame(maxWidth: .infinity)
         }
     }
 
@@ -1380,7 +1554,10 @@ private struct EditStationView: View {
             name:      name      != station.name                  ? name      : nil,
             shortName: shortName != station.shortName             ? shortName : nil,
             openTime:  openTime  != station.operatingHours.open   ? openTime  : nil,
-            closeTime: closeTime != station.operatingHours.close  ? closeTime : nil
+            closeTime: closeTime != station.operatingHours.close  ? closeTime : nil,
+            // Sent only when the set actually changed: the server replaces wholesale, so
+            // resending an unchanged list would delete and recreate every door for nothing.
+            accessPoints: accessPoints == (station.accessPoints ?? []) ? nil : accessPoints
         )
         do {
             try await onSave(update)

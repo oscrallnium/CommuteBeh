@@ -106,6 +106,14 @@ struct Station: Codable, Identifiable, Hashable {
     let amenities: [String]
     let operatingHours: OperatingHours
 
+    /// Street-level doors, when any have been surveyed for this station.
+    ///
+    /// Optional and absent by default: the server omits the key entirely for a station
+    /// with no doors, and the bundled `transit_graph_v3.json` predates the field. Every
+    /// reader must therefore treat "no access points" as normal and fall back to
+    /// `coordinates` — see `accessPoint(kind:direction:nearestTo:)`.
+    let accessPoints: [StationAccessPoint]?
+
     struct OperatingHours: Codable, Hashable {
         let open: String
         let close: String
@@ -117,6 +125,96 @@ struct Station: Codable, Identifiable, Hashable {
     /// in the middle of a campus, behind a wall. Geometry must not be forced to meet it.
     var isPinnedLocation: Bool {
         id == RouteRequest.virtualOriginID || id == RouteRequest.virtualDestID
+    }
+
+    /// The door a passenger should use, or `coordinates` when none is recorded.
+    ///
+    /// Mirrors `StationAccessPoint.serving` on the server — keep the two in step. A door
+    /// with no `direction` serves every direction, and when `direction` is `nil` here
+    /// (an LRT leg, or any line without directional edges) *every* door is a candidate:
+    /// filtering to the undirected ones would make a station whose doors are all
+    /// direction-tagged report none at all, on exactly the legs that can never supply a
+    /// direction.
+    ///
+    /// `nearestTo` breaks the tie. With several doors open to the passenger the right one
+    /// is the one closest to where they are coming from or going to, which is also what
+    /// makes this correct without knowing anything about the station's internal layout.
+    func accessPoint(kind: StationAccessPoint.Kind,
+                     direction: String?,
+                     nearestTo other: Coordinates) -> Coordinates {
+        guard let accessPoints, !accessPoints.isEmpty else { return coordinates }
+
+        let candidates = accessPoints.filter { point in
+            let kindMatches = point.kind == .both || point.kind == kind
+            let directionMatches = point.direction == nil
+                || direction == nil
+                || point.direction == direction
+            return kindMatches && directionMatches
+        }
+
+        // Squared-degree distance is enough to rank candidates a few hundred metres
+        // apart; the longitude term is scaled by cos(lat) so the comparison is not
+        // stretched east–west. No need for a full Haversine to pick a minimum.
+        let scale = cos(other.lat * .pi / 180)
+        return candidates.min { a, b in
+            func d(_ c: Coordinates) -> Double {
+                let dLat = c.lat - other.lat
+                let dLng = (c.lng - other.lng) * scale
+                return dLat * dLat + dLng * dLng
+            }
+            return d(a.coordinates) < d(b.coordinates)
+        }?.coordinates ?? coordinates
+    }
+}
+
+/// A street-level door into a station: an entrance, an exit, or both.
+///
+/// A station row carries one coordinate — the centroid of the structure — and for rail
+/// that point sits on a viaduct or inside a building, not on any pedestrian way. Walks
+/// measured from it get snapped by MKDirections to whatever footpath happens to be
+/// nearest, which is why the MRT-3 Taft ⇄ LRT-1 EDSA transfer is routed between two
+/// arbitrary points rather than between the doors the footbridge actually joins.
+struct StationAccessPoint: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let kind: Kind
+    /// `"northbound"` / `"southbound"`, or `nil` when the door serves every direction —
+    /// which is the common case. Only MRT-3 has directional edges at all.
+    let direction: String?
+    let coordinates: Coordinates
+
+    /// Decoded leniently: an unrecognised value from a newer server becomes `.both`
+    /// rather than failing the whole graph decode over one station's door.
+    enum Kind: String, Codable, Hashable {
+        case entrance, exit, both
+
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Kind(rawValue: raw) ?? .both
+        }
+    }
+
+    // Immutable setters — the type is all `let`, and the admin editor needs to change one
+    // field at a time without restating the rest.
+
+    func settingName(_ name: String) -> StationAccessPoint {
+        StationAccessPoint(id: id, name: name, kind: kind,
+                           direction: direction, coordinates: coordinates)
+    }
+
+    func settingKind(_ kind: Kind) -> StationAccessPoint {
+        StationAccessPoint(id: id, name: name, kind: kind,
+                           direction: direction, coordinates: coordinates)
+    }
+
+    func settingDirection(_ direction: String?) -> StationAccessPoint {
+        StationAccessPoint(id: id, name: name, kind: kind,
+                           direction: direction, coordinates: coordinates)
+    }
+
+    func settingCoordinates(_ coordinates: Coordinates) -> StationAccessPoint {
+        StationAccessPoint(id: id, name: name, kind: kind,
+                           direction: direction, coordinates: coordinates)
     }
 }
 
@@ -372,9 +470,29 @@ struct RouteResult {
 
 struct RouteOption: Identifiable {
     enum Label { case fastest, cheapest, balanced }
-    let id = UUID()
+
+    /// Stable for as long as the option is on screen — including across walk refinement,
+    /// which sharpens an option's geometry but does not make it a different option.
+    ///
+    /// Refinement lands a network round-trip *after* the results panel is already up, and
+    /// it rebuilds every option. While those rebuilds minted a fresh id, the panel's
+    /// `selectedID` matched nothing for one layout pass: every card rendered collapsed,
+    /// the panel's height snapped to that shorter measurement, and the expanded card —
+    /// still mid-spring — was sliced off by the scroll view's bounds. Carrying the id
+    /// through the rebuild is what keeps the selection, an open detail view and the
+    /// summary cache pointing at the option they were pointing at a moment earlier.
+    ///
+    /// Still a `UUID` and still fresh per search, so it also remains what tells the
+    /// refiner its results are stale (see `refineWalkLegs`).
+    let id: UUID
     let result: RouteResult
     let label: Label
+
+    init(result: RouteResult, label: Label, id: UUID = UUID()) {
+        self.result = result
+        self.label = label
+        self.id = id
+    }
 }
 
 // MARK: - A* Internals
@@ -711,7 +829,9 @@ actor TransitGraphEngine {
             coordinates: coord,
             isTerminal: false, isInterchange: false,
             interchangesWith: nil, amenities: [],
-            operatingHours: Station.OperatingHours(open: "00:00", close: "23:59")
+            operatingHours: Station.OperatingHours(open: "00:00", close: "23:59"),
+            // A dropped pin is not a station and has no doors.
+            accessPoints: nil
         )
     }
 
@@ -1376,66 +1496,163 @@ struct StationCache {
 
 // MARK: - Location Fetcher
 
-/// One-shot CLLocationManager wrapper for "Use my location" in the Commute tab.
-/// Requests WhenInUse authorization and delivers a single coordinate, then stops.
-/// CLLocationManager delivers callbacks on the main thread when the manager is
-/// created on the main thread, so `continuation` accesses are always serialised
-/// on main — `nonisolated(unsafe)` silences the strict-concurrency checker while
-/// preserving that guarantee.
+/// CLLocationManager wrapper for the Commute tab.
+///
+/// Serves two callers off one manager:
+///
+/// * a **live feed** (`startTracking`) that keeps the map's location dot current, and
+/// * **one-shot fixes** (`requestOnce`) for the "use my location" buttons on the search
+///   fields.
+///
+/// One manager, not two, because `requestLocation()` and `startUpdatingLocation()` do not
+/// compose — a `requestLocation()` issued while updates are already running is not
+/// honoured. So there is a single feed, and one-shot callers are served from it: the
+/// latest fix if one is fresh enough, otherwise the next one to arrive.
+///
+/// CLLocationManager delivers callbacks on the thread its manager was created on, which is
+/// main here. The delegate methods are `nonisolated` because the protocol requires it, and
+/// hop back through `Task { @MainActor }` so every access to the state below is provably
+/// serialised on main.
 final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
+
+    /// Called on the main actor for every fix delivered while `startTracking` is in
+    /// effect. Set by whoever owns the dot.
+    var onUpdate: ((Coordinates) -> Void)?
+
+    /// A one-shot fix older than this is not worth handing out — better to wait for the
+    /// next delivery than to drop a search pin where the passenger was a minute ago.
+    private static let freshnessWindow: TimeInterval = 30
+
     private let manager = CLLocationManager()
-    nonisolated(unsafe) private var continuation: CheckedContinuation<Coordinates?, Never>?
+    private var latest: Coordinates?
+    private var latestAt: Date = .distantPast
+    private var isTracking = false
+    /// Callers of `requestOnce()` waiting on the next fix.
+    ///
+    /// An array, not a single slot: origin and destination can both be in flight, and
+    /// overwriting one would leave its continuation unresumed — an `await` that never
+    /// returns and a search button stuck spinning forever.
+    private var waiters: [CheckedContinuation<Coordinates?, Never>] = []
 
     override init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        // The dot is drawn at this coordinate, so accuracy is directly visible as the dot
+        // standing in the wrong place. `kCLLocationAccuracyHundredMeters` put it up to a
+        // block away.
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        // Enough to keep the resting camera and the search fields current, without a fix a
+        // second. The map's location dot is `UserAnnotation`, fed by MapKit's own service,
+        // so nothing on screen is animated from this feed and a filter here costs nothing.
+        manager.distanceFilter = 5
+        manager.activityType = .otherNavigation
     }
 
+    // MARK: Live feed
+
+    /// Start delivering fixes to `onUpdate`. Idempotent.
+    @MainActor
+    func startTracking() {
+        guard !isTracking else { return }
+        isTracking = true
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.startUpdatingLocation()
+        case .notDetermined:
+            // Picked back up in the authorization callback once the passenger answers.
+            manager.requestWhenInUseAuthorization()
+        default:
+            break
+        }
+    }
+
+    /// Stop the GPS. Call this when the map goes away — an unattended location feed is the
+    /// most expensive thing this app can leave running.
+    @MainActor
+    func stopTracking() {
+        guard isTracking else { return }
+        isTracking = false
+        // A one-shot caller may still be waiting on a fix; leave the manager up for them.
+        if waiters.isEmpty { manager.stopUpdatingLocation() }
+    }
+
+    // MARK: One-shot
+
+    /// A single fix, for assigning to a search field. Answers from the live feed when one
+    /// is running, otherwise starts the manager just long enough to get a fix.
     @MainActor
     func requestOnce() async -> Coordinates? {
-        await withCheckedContinuation { cont in
-            continuation = cont
+        if let latest, Date.now.timeIntervalSince(latestAt) < Self.freshnessWindow {
+            return latest
+        }
+        return await withCheckedContinuation { cont in
+            waiters.append(cont)
             switch manager.authorizationStatus {
             case .authorizedWhenInUse, .authorizedAlways:
-                manager.requestLocation()
+                manager.startUpdatingLocation()
             case .notDetermined:
                 manager.requestWhenInUseAuthorization()
             default:
-                cont.resume(returning: nil)
-                continuation = nil
+                resumeWaiters(with: nil)
             }
         }
     }
+
+    // MARK: Delivery
+
+    @MainActor
+    private func deliver(_ coord: Coordinates) {
+        latest = coord
+        latestAt = .now
+        resumeWaiters(with: coord)
+        if isTracking {
+            onUpdate?(coord)
+        } else {
+            // Nobody left to serve — this run was for a one-shot caller only.
+            manager.stopUpdatingLocation()
+        }
+    }
+
+    @MainActor
+    private func resumeWaiters(with coord: Coordinates?) {
+        let pending = waiters
+        waiters.removeAll()
+        for cont in pending { cont.resume(returning: coord) }
+    }
+
+    // MARK: CLLocationManagerDelegate
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
         let coord = Coordinates(lat: loc.coordinate.latitude, lng: loc.coordinate.longitude)
         Task { @MainActor [weak self] in
-            self?.continuation?.resume(returning: coord)
-            self?.continuation = nil
+            self?.deliver(coord)
         }
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor [weak self] in
             guard let self else { return }
-            switch manager.authorizationStatus {
+            switch self.manager.authorizationStatus {
             case .authorizedWhenInUse, .authorizedAlways:
-                manager.requestLocation()
+                if self.isTracking || !self.waiters.isEmpty {
+                    self.manager.startUpdatingLocation()
+                }
             case .notDetermined:
                 break
             default:
-                self.continuation?.resume(returning: nil)
-                self.continuation = nil
+                self.resumeWaiters(with: nil)
+                self.manager.stopUpdatingLocation()
             }
         }
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        // `.locationUnknown` is Core Location saying "not yet" — it keeps trying on its
+        // own, so failing the waiters here would abandon a fix that is still coming.
+        if (error as? CLError)?.code == .locationUnknown { return }
         Task { @MainActor [weak self] in
-            self?.continuation?.resume(returning: nil)
-            self?.continuation = nil
+            self?.resumeWaiters(with: nil)
         }
     }
 }
@@ -1495,8 +1712,9 @@ final class CommuteViewModel {
     /// Populated from JSON — drives the payment method picker UI.
     var availablePayments: [PaymentMethodConfig] = []
 
-    /// Last known position of the passenger, or `nil` until a fix arrives (or if location
-    /// is denied). Read by the map for its location dot and its resting camera.
+    /// Live position of the passenger, or `nil` until the first fix arrives (or if
+    /// location is denied). Read by the map for its location dot and its resting camera,
+    /// and rewritten on every fix while `startTrackingUserLocation` is in effect.
     var userLocation: Coordinates?
 
     private var engine: TransitGraphEngine?
@@ -1673,15 +1891,29 @@ final class CommuteViewModel {
         confirmedDestLabel = "Pinned Location"
     }
 
-    /// The passenger's own position, for the map's location dot and for the camera the
-    /// Commute tab rests at when there is no route to frame.
+    /// Begin following the passenger's own position, for the map's location dot and for
+    /// the camera the Commute tab rests at when there is no route to frame.
     ///
     /// Distinct from `fetchLocation(for:)`, which *assigns* a position to a search field.
-    /// This one only observes, so a denied or unavailable fix leaves it `nil` and the map
-    /// falls back to its default region — nothing else changes.
+    /// This one only observes, so a denied or unavailable fix leaves `userLocation` `nil`
+    /// and the map falls back to its default region — nothing else changes.
+    ///
+    /// Pair every call with `stopTrackingUserLocation()`; the feed runs until it is
+    /// stopped.
     @MainActor
-    func refreshUserLocation() async {
-        if let coord = await locationFetcher.requestOnce() { userLocation = coord }
+    func startTrackingUserLocation() {
+        locationFetcher.onUpdate = { [weak self] coord in
+            self?.userLocation = coord
+        }
+        locationFetcher.startTracking()
+    }
+
+    /// Shut the location feed down. The last known `userLocation` is deliberately kept —
+    /// a dot that vanishes on returning to the tab is worse than one that is a moment
+    /// stale until the first fix of the new session lands.
+    @MainActor
+    func stopTrackingUserLocation() {
+        locationFetcher.stopTracking()
     }
 
     /// Fetch the user's current GPS location and assign it to origin or destination.
