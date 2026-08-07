@@ -1,13 +1,13 @@
 # Branding & Visual Identity
 
-> **Status: To be defined.** This file is a placeholder. Update it once brand decisions are finalized.
+> **Status: Founding tokens defined (2026-07-04).** The token layer lives in `CommuteBeh/DesignTokens.swift` (`DesignTokens.TypeScale/Space/Radius/Colors/Motion`, `extension TransportMode { color/icon/lineWidth }`, `View.cardShadow(y:)`), per `.claude/audits/home-admin-ui-audit.md`. Consume tokens, not literals. Full brand identity (custom typeface, app icon, brand palette beyond `#127BED`) remains to be defined.
 
 ## App Identity
 
 | Property | Current Value | Notes |
 |---|---|---|
-| App name | CommuteBeh | Shorthand for "Commute Behavior" |
-| Display name | CommuteBeh | Update in `Info.plist` / target settings |
+| App name | **Gora** | Product / display name; `CommuteBeh` remains the Xcode project/scheme name |
+| Display name | Gora | Update in `Info.plist` / target settings |
 | App icon | Xcode default | Replace `AppIcon.appiconset` — see below |
 | Accent color | System default | Set in `AccentColor.colorset` |
 
@@ -68,9 +68,4 @@ Conceptual directions to consider:
 
 ## Where Colors Are Currently Duplicated
 
-`modeColor(_:)` for `TransportMode` is defined independently in three places:
-- `ContentView` (polyline strokes and transfer dots)
-- `RouteResultCard` (mode pills)
-- `RouteLegRow` (leg rows)
-
-Once brand colors are confirmed, consolidate these into a single `extension TransportMode { var color: Color }` computed property.
+Consolidated (2026-07-04): the three `modeColor(_:)` copies in `ContentView` / `RouteResultCard` / `RouteLegRow` were replaced by `extension TransportMode { var color: Color; var icon: String; var lineWidth: CGFloat }` in `DesignTokens.swift`. `ExploreViewModel.color(for:)` still holds its own per-line (not per-mode) mapping — intentionally separate; unify only if line colors become tokens.
