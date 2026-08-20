@@ -12,6 +12,9 @@ import UIKit
 
 struct RouteResultsPanel: View {
     let options: [RouteOption]
+    /// True when the user is within 500 m of the route origin — gates the "USE THIS ROUTE"
+    /// button on every card. Recomputed on every GPS fix by `ContentView`.
+    let canStartCommute: Bool
     /// Shared with `ContentView` and, through it, `CommuteModeView` — lets the selected
     /// card's shape morph into the Commute Mode card's shape when `onSelect` fires.
     let morphNS: Namespace.ID
@@ -43,9 +46,10 @@ struct RouteResultsPanel: View {
 
     private static let maxScrollHeight: CGFloat = UIScreen.main.bounds.height * 0.50
 
-    init(options: [RouteOption], morphNS: Namespace.ID,
+    init(options: [RouteOption], canStartCommute: Bool, morphNS: Namespace.ID,
          onSelect: @escaping (RouteOption) -> Void, onPreview: @escaping (RouteOption) -> Void) {
         self.options = options
+        self.canStartCommute = canStartCommute
         self.morphNS = morphNS
         self.onSelect = onSelect
         self.onPreview = onPreview
@@ -223,6 +227,7 @@ struct RouteResultsPanel: View {
                             summary: summaries[option.id] ?? RouteCardSummary(result: option.result),
                             isExpanded: option.id == selectedID,
                             showsDetails: option.id == detailID,
+                            isNearOrigin: canStartCommute,
                             morphNS: morphNS,
                             onExpand: {
                                 withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {

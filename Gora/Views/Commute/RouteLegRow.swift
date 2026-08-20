@@ -261,7 +261,7 @@ private extension RouteLeg {
 
     ZStack(alignment: .bottom) {
         Color(.systemGroupedBackground).ignoresSafeArea()
-        RouteResultsPanel(options: options, morphNS: previewNS, onSelect: { _ in }, onPreview: { _ in }).padding()
+        RouteResultsPanel(options: options, canStartCommute: true, morphNS: previewNS, onSelect: { _ in }, onPreview: { _ in }).padding()
     }
 }
 

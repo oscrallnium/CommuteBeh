@@ -37,6 +37,21 @@ final class CommuteProgressEngine {
     let result: RouteResult
     private let startedAt: Date
     private let legGeometries: [LegGeometry]
+    /// Corrects the dot onto the actual rail alignment for train legs, whose polyline
+    /// is often just a straight chord between stations — the generic road snap below
+    /// would reject a real fix taken on a curved stretch of track as "off route".
+    private let trackSnapper = TrackSnapper()
+    /// Confirmed progress along the current train leg's track. Reset on every leg
+    /// switch, since it's only meaningful within one leg's own geometry.
+    private var trainProgress: LineProgress?
+    /// The in-flight track-snap call. Held so a new fix cancels the previous call
+    /// instead of letting two overlapping calls resolve out of order.
+    private var trainSnapTask: Task<Void, Never>?
+    /// Confirmed within-leg progress for the non-train snap below, so a same-leg
+    /// projection that jumps backward past `legProgressJitterToleranceMeters` holds at the
+    /// last confirmed point instead of jumping there. Reset on every leg switch, like
+    /// `trainProgress`.
+    private var lastConfirmedLegProgress: (metersIntoLeg: CLLocationDistance, coordinate: CLLocationCoordinate2D)?
     /// Planned elapsed seconds (from `startedAt`) at which the passenger should reach
     /// the *start* of each leg — the running sum of every prior leg's planned duration.
     private let plannedElapsedAtLegStart: [Double]
@@ -61,19 +76,38 @@ final class CommuteProgressEngine {
     /// urban GPS error (often 10-30 m, occasionally more between tall buildings)
     /// without being so wide that a real wrong turn still reads as "on the road".
     private static let maxSnapDistanceMeters: CLLocationDistance = 75
+    /// Backward drift below this size on a non-train leg's route-polyline snap is ordinary
+    /// GPS jitter — a segment across the road, or a nearby stretch the route loops back
+    /// past, briefly reading closer than the real one — not the passenger reversing.
+    /// Mirrors `TrackSnapper.progressJitterToleranceMeters`, which guards the same class of
+    /// mismatch for train legs.
+    private static let legProgressJitterToleranceMeters: CLLocationDistance = 8
     /// How far behind the planned pace before the status flips to `.delayed`.
     private static let lateThresholdSeconds: Double = 180
+    /// Used only if a train leg's own distance/time are somehow zero — an MRT-3
+    /// interstation average, so dead reckoning has a sane speed to extrapolate with.
+    private static let fallbackTrainSpeedMetersPerSecond: Double = 12
 
     init(result: RouteResult, startedAt: Date) {
         self.result = result
         self.startedAt = startedAt
 
         legGeometries = result.legs.map { leg in
-            let coords = leg.polylineCoordinates.map {
+            var coords = leg.polylineCoordinates.map {
                 CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
             }
-            guard coords.count >= 2 else {
-                return LegGeometry(coords: coords, cumulativeMeters: coords.isEmpty ? [] : [0])
+            // A leg MKDirections couldn't route has no polyline (see `RouteGeometry`,
+            // which draws nothing for it on purpose). Tracking still needs *some* line
+            // to project fixes onto, or `closestPoint` reports it as infinitely far and
+            // `update(location:)` can never hold it as the current leg — falls back to
+            // the straight line between its own stations.
+            if coords.count < 2 {
+                coords = [
+                    CLLocationCoordinate2D(latitude: leg.fromStation.coordinates.lat,
+                                            longitude: leg.fromStation.coordinates.lng),
+                    CLLocationCoordinate2D(latitude: leg.toStation.coordinates.lat,
+                                            longitude: leg.toStation.coordinates.lng)
+                ]
             }
             var cumulative: [CLLocationDistance] = [0]
             cumulative.reserveCapacity(coords.count)
@@ -128,6 +162,25 @@ final class CommuteProgressEngine {
         return best
     }
 
+    /// Holds a non-train leg's within-leg progress at its last confirmed point when the
+    /// new projection lands more than `legProgressJitterToleranceMeters` behind it, so
+    /// ordinary GPS jitter picking a nearby-but-wrong segment doesn't teleport the
+    /// snapped position (and so the camera following it) backward or sideways along the
+    /// route. Always records whatever it returns as the next call's confirmed point,
+    /// held or fresh alike.
+    private func stabilizedProgress(
+        _ candidate: (distanceFromRoute: CLLocationDistance, metersIntoLeg: CLLocationDistance, coordinate: CLLocationCoordinate2D)
+    ) -> (distanceFromRoute: CLLocationDistance, metersIntoLeg: CLLocationDistance, coordinate: CLLocationCoordinate2D) {
+        guard let last = lastConfirmedLegProgress,
+              candidate.metersIntoLeg - last.metersIntoLeg < -Self.legProgressJitterToleranceMeters
+        else {
+            lastConfirmedLegProgress = (candidate.metersIntoLeg, candidate.coordinate)
+            return candidate
+        }
+        lastConfirmedLegProgress = last
+        return (candidate.distanceFromRoute, last.metersIntoLeg, last.coordinate)
+    }
+
     /// Call on every new GPS fix while commuting.
     func update(location: Coordinates, now: Date = .now) {
         guard !legGeometries.isEmpty else { return }
@@ -146,13 +199,50 @@ final class CommuteProgressEngine {
             chosenIndex = currentLegIndex
         }
 
+        if chosenIndex != currentLegIndex {
+            trainProgress = nil
+            trainSnapTask?.cancel()
+            lastConfirmedLegProgress = nil
+        }
         currentLegIndex = chosenIndex
-        let chosen = candidates[chosenIndex]
+        let leg = result.legs[chosenIndex]
+        // Train legs get their own, track-aware stabilization from `TrackSnapper` further
+        // down; every other mode's route-polyline snap is stabilized here instead.
+        let chosen = leg.mode == .train
+            ? candidates[chosenIndex]
+            : stabilizedProgress(candidates[chosenIndex])
         metersRemainingOnCurrentLeg = max(0, legGeometries[chosenIndex].totalMeters - chosen.metersIntoLeg)
-        snappedLocation = chosen.distanceFromRoute <= Self.maxSnapDistanceMeters
-            ? Coordinates(lat: chosen.coordinate.latitude, lng: chosen.coordinate.longitude)
-            : location
         recomputeOnTimeStatus(now: now, metersIntoLeg: chosen.metersIntoLeg)
+
+        guard leg.mode == .train else {
+            trainProgress = nil
+            trainSnapTask?.cancel()
+            snappedLocation = chosen.distanceFromRoute <= Self.maxSnapDistanceMeters
+                ? Coordinates(lat: chosen.coordinate.latitude, lng: chosen.coordinate.longitude)
+                : location
+            return
+        }
+        snapToTrack(location: location, leg: leg, now: now)
+    }
+
+    /// Runs the train-specific snap on `TrackSnapper`, an actor, and writes the result
+    /// back once it lands. Cancels any call still in flight for the previous fix first,
+    /// so a burst of fast fixes can't let an older call overwrite a newer one.
+    private func snapToTrack(location: Coordinates, leg: RouteLeg, now: Date) {
+        trainSnapTask?.cancel()
+        let edges = leg.rawSteps.map(\.edge)
+        let speed = leg.distanceKm > 0 && leg.effectiveTravelMinutes > 0
+            ? leg.distanceKm * 1000 / (leg.effectiveTravelMinutes * 60)
+            : Self.fallbackTrainSpeedMetersPerSecond
+        let lastConfirmed = trainProgress
+        trainSnapTask = Task { [weak self, trackSnapper] in
+            let snapResult = await trackSnapper.snap(
+                rawCoordinate: location, currentLineEdges: edges, lastConfirmed: lastConfirmed,
+                averageInterstationSpeedMetersPerSecond: speed, now: now)
+            guard !Task.isCancelled, let self else { return }
+            self.trainProgress = snapResult.progress
+            self.snappedLocation = snapResult.coordinate
+        }
     }
 
     /// The on-time half of `update`, split out so it can also be re-run on a plain timer

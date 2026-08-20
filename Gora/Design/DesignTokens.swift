@@ -88,8 +88,42 @@ enum DesignTokens {
         static let cardEnter: Animation = .spring(response: 0.35, dampingFraction: 0.85)
         /// motion.suggestEnter — suggestion list appear/disappear.
         static let suggestEnter: Animation = .easeOut(duration: 0.2)
+        /// motion.cameraFitDuration — length of one camera glide, in seconds. Named because
+        /// `Animation` does not expose its duration and the heading loop must gate itself for
+        /// exactly this long. See `ContentView.isCameraTransitioning`.
+        static let cameraFitDuration: TimeInterval = 0.5
         /// motion.cameraFit — map camera glide to a route's bounds.
-        static let cameraFit: Animation = .easeInOut(duration: 0.5)
+        static let cameraFit: Animation = .easeInOut(duration: cameraFitDuration)
+        /// motion.headingTickInterval — cadence of the 3D camera's own heading-smoothing
+        /// loop (`ContentView.advanceDisplayedHeading()`), which eases toward the compass
+        /// reading at a fixed rate instead of re-animating on every raw, irregularly-timed
+        /// sensor sample.
+        static let headingTickInterval: TimeInterval = 1.0 / 30.0
+        /// motion.headingFollow — one heading-smoothing tick's camera write. Duration
+        /// matches `headingTickInterval` exactly so consecutive ticks hand off with no
+        /// gap and no overlap — either one reintroduces a lag this loop exists to remove.
+        /// Linear, not eased: a curve that decelerates before the next tick lands falls
+        /// behind, which is what read as lag before this was a fixed-rate loop.
+        static let headingFollow: Animation = .linear(duration: headingTickInterval)
+        /// motion.locationFollowMinDuration — shortest glide a GPS-driven camera move is
+        /// allowed, even when two fixes land almost back to back. Below this a linear
+        /// glide reads as a flicker rather than motion.
+        static let locationFollowMinDuration: TimeInterval = 0.3
+        /// motion.locationFollowMaxDuration — longest glide a GPS-driven camera move is
+        /// allowed, when fixes are sparse. Past this a slow crawl reads as lag rather
+        /// than travel, so the camera instead arrives promptly and waits.
+        static let locationFollowMaxDuration: TimeInterval = 1.5
+        /// motion.locationFollow — one GPS fix's camera write, paced to the time since the
+        /// previous fix (clamped to the bounds above) rather than a fixed duration, so
+        /// consecutive glides hand off the way `headingFollow` hands off between compass
+        /// ticks instead of decelerating to a stop and waiting on `cameraFit`'s curve.
+        static func locationFollow(elapsedSinceLastFix: TimeInterval) -> Animation {
+            .linear(duration: min(max(elapsedSinceLastFix, locationFollowMinDuration), locationFollowMaxDuration))
+        }
+        /// motion.locationCorrection — a train leg's async track-snap landing after the
+        /// camera already moved on the raw fix. Short and linear: this corrects the last
+        /// glide's endpoint, it is not a new one, so it must not read as its own move.
+        static let locationCorrection: Animation = .linear(duration: 0.15)
         /// motion.disclose — disclosure expand/collapse.
         static let disclose: Animation = .easeInOut(duration: 0.2)
         /// motion.morph — result card ⇄ full route details.
@@ -106,6 +140,9 @@ enum DesignTokens {
         /// `PassengerPuck`.
         static let locationPulse: Animation = .easeInOut(duration: 1.0).repeatForever(autoreverses: true)
 
+        /// motion.accuracyChange — GPS accuracy circle resize as horizontal accuracy
+        /// improves or degrades between fixes.
+        static let accuracyChange: Animation = .easeInOut(duration: 0.5)
         /// motion.searchProgress — inline progress shows only past this grace delay…
         static let progressGraceDelay: Duration = .milliseconds(250)
         /// …and once shown stays visible at least this long, to avoid flicker.

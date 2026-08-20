@@ -16,6 +16,9 @@ struct RouteOptionCard: View {
     /// Whether this card's leg-by-leg breakdown is open. True for at most one card, and only
     /// one that is also `isExpanded`.
     let showsDetails: Bool
+    /// True when the user is within 500 m of the route's starting point. The "USE THIS ROUTE"
+    /// button is hidden and replaced with a location hint when this is false.
+    let isNearOrigin: Bool
     /// Shared with `CommuteModeView`'s compact card — see `morphNS` on `RouteResultsPanel`.
     let morphNS: Namespace.ID
     let onExpand: () -> Void
@@ -239,16 +242,30 @@ struct RouteOptionCard: View {
                     .fixedSize()
                 }
 
-                Button(action: onSelect) {
-                    Text("USE THIS ROUTE")
-                        .font(.system(.headline, design: .default, weight: .bold))
-                        .kerning(1.0)
-                        .foregroundStyle(.white)
+                Group {
+                    if isNearOrigin {
+                        Button(action: onSelect) {
+                            Text("USE THIS ROUTE")
+                                .font(.system(.headline, design: .default, weight: .bold))
+                                .kerning(1.0)
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(Capsule().fill(DesignTokens.Colors.action))
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        HStack(spacing: 6) {
+                            Image(systemName: "location.slash")
+                                .font(.caption)
+                            Text("Go to the starting point to begin")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Capsule().fill(DesignTokens.Colors.action))
+                        .padding(.vertical, 14)
+                    }
                 }
-                .buttonStyle(.plain)
                 .frame(maxHeight: showsDetails ? 0 : nil)
                 .opacity(showsDetails ? 0 : 1)
                 .clipped()

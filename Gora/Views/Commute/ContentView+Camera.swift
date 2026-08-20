@@ -127,29 +127,88 @@ extension ContentView {
         }
     }
 
+    /// What triggered a `updateCommuteCamera` call — each source paces its glide
+    /// differently, so the animation is picked here rather than left to a bool flag.
+    enum CameraFollowTrigger {
+        /// A route fit, a leg switch, or a camera-mode change — infrequent, deliberate
+        /// jumps that read better eased with `cameraFit`.
+        case fit
+        /// One GPS fix. Paced to the time since the previous fix, so consecutive glides
+        /// hand off the way heading ticks do instead of decelerating to a stop between
+        /// fixes.
+        case location(elapsedSinceLastFix: TimeInterval)
+        /// A train leg's track-snap landing after `TrackSnapper`'s actor call resolves,
+        /// later than the fix that triggered it. Short and linear: this corrects that
+        /// fix's glide, it is not a new one.
+        case locationCorrection
+        /// One tick of a 2D/3D pose transition's own interpolation loop (see
+        /// `beginCameraTransition()`). Duration-matched to that loop's tick cadence.
+        case poseTransition
+    }
+
+    /// The passenger's best live position: the engine's snapped point when one is
+    /// available, the raw GPS fix otherwise. `nil` before either has ever reported
+    /// one. Also what the live route polyline trims against — see `ContentView.body`.
+    var livePassengerCoordinate: CLLocationCoordinate2D? {
+        if let snapped = commuteEngine?.snappedLocation {
+            return CLLocationCoordinate2D(latitude: snapped.lat, longitude: snapped.lng)
+        }
+        if let userLocation = routeStore.userLocation {
+            return CLLocationCoordinate2D(latitude: userLocation.lat, longitude: userLocation.lng)
+        }
+        return nil
+    }
+
+    /// What the live route polyline actually trims against — `livePassengerCoordinate`,
+    /// except during a camera transition, when it holds still at `frozenTrimCoordinate`
+    /// instead. A fix landing mid-glide still reaches `commuteEngine` (progress tracking
+    /// stays live either way), but reading the live coordinate here too would rebuild the
+    /// Map's polyline content on every fix, fighting the glide for the same render pass.
+    var polylineTrimCoordinate: CLLocationCoordinate2D? {
+        isCameraTransitioning ? frozenTrimCoordinate : livePassengerCoordinate
+    }
+
     /// Commute Mode's camera write, called on every fix so the view keeps following.
     /// Writes `.camera(...)` directly, because pitch and heading have no `.region` form.
-    /// Centres on the engine's snapped location, then the raw fix, then the leg's start.
-    func updateCommuteCamera() {
+    /// Centres on the passenger's live position, falling back to the leg's start.
+    ///
+    /// `distanceOverride`/`pitchOverride` let `beginCameraTransition()` write an
+    /// already-interpolated pose for one tick of its own transition loop, rather than
+    /// jumping straight to `commuteCameraMode`'s target values.
+    func updateCommuteCamera(
+        _ trigger: CameraFollowTrigger = .fit,
+        distanceOverride: CLLocationDistance? = nil,
+        pitchOverride: Double? = nil
+    ) {
         guard isCommuting else { return }
         let center: CLLocationCoordinate2D
-        if let snapped = commuteEngine?.snappedLocation {
-            center = CLLocationCoordinate2D(latitude: snapped.lat, longitude: snapped.lng)
-        } else if let userLocation = routeStore.userLocation {
-            center = CLLocationCoordinate2D(latitude: userLocation.lat, longitude: userLocation.lng)
+        if let livePassengerCoordinate {
+            center = livePassengerCoordinate
         } else if let engine = commuteEngine, let leg = currentCommuteLeg(for: engine) {
             center = CLLocationCoordinate2D(latitude: leg.fromStation.coordinates.lat,
                                             longitude: leg.fromStation.coordinates.lng)
         } else {
             return
         }
-        withAnimation(DesignTokens.Motion.cameraFit) {
-            mapPosition = .camera(MapCamera(
-                centerCoordinate: center,
-                distance: commuteCameraMode.distance,
-                heading: 0,
-                pitch: commuteCameraMode.pitch
-            ))
+        let heading = 0.0
+        let animation: Animation
+        switch trigger {
+        case .fit: animation = DesignTokens.Motion.cameraFit
+        case .location(let elapsed): animation = DesignTokens.Motion.locationFollow(elapsedSinceLastFix: elapsed)
+        case .locationCorrection: animation = DesignTokens.Motion.locationCorrection
+        case .poseTransition: animation = DesignTokens.Motion.headingFollow
+        }
+        let camera = MapCamera(
+            centerCoordinate: center,
+            distance: distanceOverride ?? commuteCameraMode.distance,
+            heading: heading,
+            pitch: pitchOverride ?? commuteCameraMode.pitch
+        )
+        #if DEBUG
+        print("[CameraDebug] write trigger=\(trigger) heading=\(heading.rounded()) pitch=\(camera.pitch) distance=\(camera.distance) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+        #endif
+        withAnimation(animation) {
+            mapPosition = .camera(camera)
         }
     }
 

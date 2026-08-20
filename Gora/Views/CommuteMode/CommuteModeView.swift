@@ -10,9 +10,9 @@ import CoreLocation
 
 /// Two fixed camera poses for Commute Mode's map — not a continuous pitch slider.
 /// `pitch: 0` is what every other `MapCamera` in this codebase already uses (there is
-/// no other 2D/3D precedent to match); `threeD` is simply closer and tilted. Neither
-/// mode follows the passenger's heading — `RouteStore.userLocation` carries no course,
-/// so a heading-aligned 3D camera (the Apple Maps convention) is future work.
+/// no other 2D/3D precedent to match); `threeD` is simply closer and tilted. Only
+/// `threeD` follows the passenger's heading — see `updateCommuteCamera()` — so the
+/// camera reads as sitting just behind them, looking the way they're facing.
 enum CommuteCameraMode {
     case twoD
     case threeD
@@ -33,7 +33,6 @@ struct CommuteModeView: View {
     /// which can be an internal station name that doesn't match what they searched for.
     let destinationText: String
     let morphNS: Namespace.ID
-    @Binding var cameraMode: CommuteCameraMode
     let onEndCommute: () -> Void
 
     @State private var isExpanded = false
@@ -59,11 +58,6 @@ struct CommuteModeView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .cardShadow(y: -4)
         .matchedGeometryEffect(id: "commute-card", in: morphNS)
-        .overlay(alignment: .topTrailing) {
-            if !isExpanded {
-                cameraToggleButton.padding(12)
-            }
-        }
     }
 
     // MARK: Compact state
@@ -82,10 +76,6 @@ struct CommuteModeView: View {
             Spacer(minLength: 8)
             seeRouteToggle
         }
-        // The 2D/3D toggle floats as a card-level overlay in this same top-right
-        // corner (only in compact state, which is exactly when this row is showing) —
-        // without this, "See route" runs directly under it.
-        .padding(.trailing, 40)
     }
 
     @ViewBuilder
@@ -192,23 +182,6 @@ struct CommuteModeView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.plain)
-    }
-
-    /// Shows the mode tapping switches *to* — Apple Maps' own convention for this
-    /// control, and why it reads "3D" while the map is actually in 2D.
-    private var cameraToggleButton: some View {
-        Button {
-            cameraMode = cameraMode == .twoD ? .threeD : .twoD
-        } label: {
-            Text(cameraMode == .twoD ? "3D" : "2D")
-                .font(.caption.weight(.heavy))
-                .foregroundStyle(Color.charcoal)
-                .frame(width: 34, height: 34)
-                .background(Circle().fill(DesignTokens.Colors.paper))
-                .overlay(Circle().stroke(.black.opacity(0.08), lineWidth: 1))
-                .cardShadow()
         }
         .buttonStyle(.plain)
     }

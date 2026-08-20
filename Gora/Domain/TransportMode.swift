@@ -1544,12 +1544,28 @@ struct StationCache {
 final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
 
     /// Called on the main actor for every fix delivered while `startTracking` is in
-    /// effect. Set by whoever owns the dot.
-    var onUpdate: ((Coordinates) -> Void)?
+    /// effect. Set by whoever owns the dot. Speed and course are `nil` whenever
+    /// CoreLocation reports its own invalid sentinel (a negative value).
+    var onUpdate: ((Coordinates, CLLocationSpeed?, CLLocationDirection?, CLLocationAccuracy) -> Void)?
+
+    /// Called on the main actor for every compass update while `startTracking` is in
+    /// effect — independent of `onUpdate`, since bearing changes (turning in place)
+    /// carry no position delta and so never arrive as a location fix. `nil` when the
+    /// device has no magnetometer (the Simulator) or hasn't calibrated one yet.
+    var onHeadingUpdate: ((CLLocationDirection?) -> Void)?
 
     /// A one-shot fix older than this is not worth handing out — better to wait for the
     /// next delivery than to drop a search pin where the passenger was a minute ago.
     private static let freshnessWindow: TimeInterval = 30
+    /// A delivered fix older than this is a cached sample, not a fresh reading — CoreLocation
+    /// can flush several fixes in one delegate callback after a gap, and acting on a stale
+    /// one drives the live camera to a point the passenger has already left.
+    private static let maxFixAgeSeconds: TimeInterval = 5
+    /// A fix this inaccurate is not worth acting on. Riding under an elevated structure —
+    /// MRT-3's own viaduct runs the length of EDSA above the buses this app routes onto it —
+    /// is the app's own worst case for GPS multipath, and can degrade one sample into the
+    /// hundreds of metres.
+    private static let maxAcceptableHorizontalAccuracyMeters: CLLocationAccuracy = 100
 
     private let manager = CLLocationManager()
     private var latest: Coordinates?
@@ -1574,11 +1590,14 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
         // so nothing on screen is animated from this feed and a filter here costs nothing.
         manager.distanceFilter = 5
         manager.activityType = .otherNavigation
+        // 1° is imperceptible on screen but cuts the update rate MapKit would otherwise
+        // see from the compass's raw, sub-degree cadence.
+        manager.headingFilter = 1
     }
 
     // MARK: Live feed
 
-    /// Start delivering fixes to `onUpdate`. Idempotent.
+    /// Start delivering fixes to `onUpdate` and bearing to `onHeadingUpdate`. Idempotent.
     @MainActor
     func startTracking() {
         guard !isTracking else { return }
@@ -1586,6 +1605,7 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             manager.startUpdatingLocation()
+            if CLLocationManager.headingAvailable() { manager.startUpdatingHeading() }
         case .notDetermined:
             // Picked back up in the authorization callback once the passenger answers.
             manager.requestWhenInUseAuthorization()
@@ -1594,12 +1614,13 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
         }
     }
 
-    /// Stop the GPS. Call this when the map goes away — an unattended location feed is the
-    /// most expensive thing this app can leave running.
+    /// Stop the GPS and compass. Call this when the map goes away — an unattended
+    /// location feed is the most expensive thing this app can leave running.
     @MainActor
     func stopTracking() {
         guard isTracking else { return }
         isTracking = false
+        manager.stopUpdatingHeading()
         // A one-shot caller may still be waiting on a fix; leave the manager up for them.
         if waiters.isEmpty { manager.stopUpdatingLocation() }
     }
@@ -1629,12 +1650,12 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     // MARK: Delivery
 
     @MainActor
-    private func deliver(_ coord: Coordinates) {
+    private func deliver(_ coord: Coordinates, speed: CLLocationSpeed?, course: CLLocationDirection?, accuracy: CLLocationAccuracy) {
         latest = coord
         latestAt = .now
         resumeWaiters(with: coord)
         if isTracking {
-            onUpdate?(coord)
+            onUpdate?(coord, speed, course, accuracy)
         } else {
             // Nobody left to serve — this run was for a one-shot caller only.
             manager.stopUpdatingLocation()
@@ -1651,10 +1672,18 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     // MARK: CLLocationManagerDelegate
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let loc = locations.last else { return }
+        // A negative accuracy is CoreLocation's own sentinel for an unusable fix.
+        guard let loc = locations.last,
+              loc.horizontalAccuracy >= 0,
+              loc.horizontalAccuracy <= Self.maxAcceptableHorizontalAccuracyMeters,
+              abs(loc.timestamp.timeIntervalSinceNow) <= Self.maxFixAgeSeconds
+        else { return }
         let coord = Coordinates(lat: loc.coordinate.latitude, lng: loc.coordinate.longitude)
+        let speed: CLLocationSpeed? = loc.speed >= 0 ? loc.speed : nil
+        let course: CLLocationDirection? = loc.course >= 0 ? loc.course : nil
+        let accuracy = loc.horizontalAccuracy
         Task { @MainActor [weak self] in
-            self?.deliver(coord)
+            self?.deliver(coord, speed: speed, course: course, accuracy: accuracy)
         }
     }
 
@@ -1666,12 +1695,28 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
                 if self.isTracking || !self.waiters.isEmpty {
                     self.manager.startUpdatingLocation()
                 }
+                if self.isTracking, CLLocationManager.headingAvailable() {
+                    self.manager.startUpdatingHeading()
+                }
             case .notDetermined:
                 break
             default:
                 self.resumeWaiters(with: nil)
                 self.manager.stopUpdatingLocation()
+                self.manager.stopUpdatingHeading()
             }
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
+        // True heading needs a location fix to compute and reads -1 until one lands;
+        // magnetic heading works immediately, so it's the fallback rather than the
+        // other way round — the passenger's dot should turn from the first sample.
+        let bearing: CLLocationDirection? = newHeading.trueHeading >= 0
+            ? newHeading.trueHeading
+            : (newHeading.magneticHeading >= 0 ? newHeading.magneticHeading : nil)
+        Task { @MainActor [weak self] in
+            self?.onHeadingUpdate?(bearing)
         }
     }
 
@@ -1744,6 +1789,26 @@ final class RouteStore {
     /// location is denied). Read by the map for its location dot and its resting camera,
     /// and rewritten on every fix while `startTrackingUserLocation` is in effect.
     var userLocation: Coordinates?
+    /// Ground speed at the last fix, in m/s. `nil` when CoreLocation has no reliable
+    /// reading yet — Commute Mode's speed readout hides itself rather than showing 0.
+    var userSpeed: CLLocationSpeed?
+    /// Direction of travel at the last fix, degrees clockwise from true north. `nil`
+    /// when CoreLocation has no reliable reading — the 3D camera then faces north.
+    var userCourse: CLLocationDirection?
+    /// Compass bearing, degrees clockwise from true north. Updates continuously —
+    /// unlike `userCourse`, which needs the passenger to be moving — so this is what
+    /// the 3D camera follows first, falling back to `userCourse` only when the device
+    /// has no magnetometer (the Simulator). `nil` before the compass has a reading.
+    var userHeading: CLLocationDirection?
+    /// Horizontal accuracy of the last GPS fix, in metres. Drives the accuracy circle
+    /// drawn around the passenger dot — the same visual as the Maps app.
+    var userHorizontalAccuracy: CLLocationAccuracy?
+    #if DEBUG
+    /// True while `DebugTrainSimulator` is driving `userLocation` itself. Real GPS
+    /// fixes are dropped rather than stopped outright — halting `CLLocationManager`
+    /// mid-simulation would just make the *next* real fix stale instead of accurate.
+    var isLocationSimulated = false
+    #endif
 
     private var engine: TransitGraphEngine?
     private let locationFetcher = CommuteLocationFetcher()
@@ -1935,8 +2000,25 @@ final class RouteStore {
     /// stopped.
     @MainActor
     func startTrackingUserLocation() {
-        locationFetcher.onUpdate = { [weak self] coord in
+        locationFetcher.onUpdate = { [weak self] coord, speed, course, accuracy in
+            #if DEBUG
+            guard self?.isLocationSimulated != true else { return }
+            let courseText: String = course.map { String($0) } ?? "nil"
+            let speedText: String = speed.map { String($0) } ?? "nil"
+            let now = Date().timeIntervalSince1970
+            print("[CameraDebug] GPS fix course=\(courseText) speed=\(speedText) t=\(now)")
+            #endif
+            self?.userSpeed = speed
+            self?.userCourse = course
             self?.userLocation = coord
+            self?.userHorizontalAccuracy = accuracy
+        }
+        locationFetcher.onHeadingUpdate = { [weak self] heading in
+            #if DEBUG
+            let now = Date().timeIntervalSince1970
+            print("[CameraDebug] compass heading=\(heading) t=\(now)")
+            #endif
+            self?.userHeading = heading
         }
         locationFetcher.startTracking()
     }
