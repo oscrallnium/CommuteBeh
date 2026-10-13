@@ -11,6 +11,7 @@
 		4CF1A0000000000000000011 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000001 /* FirebaseCore */; };
 		4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000002 /* FirebaseAnalytics */; };
 		4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000003 /* FirebaseFirestore */; };
+		4CF1A0000000000000000014 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000004 /* FirebaseCrashlytics */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -95,6 +96,7 @@
 				4CF1A0000000000000000011 /* FirebaseCore in Frameworks */,
 				4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */,
 				4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */,
+				4CF1A0000000000000000014 /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +139,7 @@
 				4CC335B72FC60F7500D967F3 /* Frameworks */,
 				4CC335B82FC60F7500D967F3 /* Resources */,
 				4CC335E12FD00000000000B1 /* Embed Foundation Extensions */,
+				4CF1A0000000000000000021 /* Upload Crashlytics dSYMs */,
 			);
 			buildRules = (
 			);
@@ -151,6 +154,7 @@
 				4CF1A0000000000000000001 /* FirebaseCore */,
 				4CF1A0000000000000000002 /* FirebaseAnalytics */,
 				4CF1A0000000000000000003 /* FirebaseFirestore */,
+				4CF1A0000000000000000004 /* FirebaseCrashlytics */,
 			);
 			productName = Gora;
 			productReference = 4CC335BA2FC60F7500D967F3 /* Gora.app */;
@@ -260,6 +264,32 @@
 			targetProxy = 4CC335E12FD00000000000A8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4CF1A0000000000000000021 /* Upload Crashlytics dSYMs */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			name = "Upload Crashlytics dSYMs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
 		4CC335C32FC60F7700D967F3 /* Debug */ = {
@@ -381,6 +411,8 @@
 		4CC335C62FC60F7700D967F3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -430,6 +462,8 @@
 		4CC335C72FC60F7700D967F3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -590,6 +624,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		4CF1A0000000000000000004 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

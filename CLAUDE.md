@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Gora** — iOS transit navigation app for Metro Manila. Finds optimal multimodal routes across MRT-3, LRT-1, LRT-2, buses, jeepneys, and tricycles via an A* engine on a bundled JSON graph. No external dependencies.
+**Gora** — iOS transit navigation app for Metro Manila. Finds optimal multimodal routes across MRT-3, LRT-1, LRT-2, buses, jeepneys, and tricycles via an A* engine on a bundled JSON graph. External dependencies come from Swift Package Manager only; see Dependencies.
 
 - iOS 26+ · SwiftUI · MapKit · Swift Concurrency
 - Bundle ID: `com.banaueinc.gora`
@@ -171,7 +171,25 @@ xcodebuild -project Gora.xcodeproj -scheme Gora \
   -only-testing:GoraTests/SuiteName/testMethodName
 ```
 
-No linter is configured. No Swift packages.
+No linter is configured.
+
+## Dependencies
+
+The app uses Swift Package Manager. It uses no CocoaPods and no Carthage.
+
+| Package | Version rule | Products | Target |
+|---|---|---|---|
+| `firebase-ios-sdk` | Up to next major from 13.0.1 | `FirebaseCore`, `FirebaseAnalytics`, `FirebaseFirestore`, `FirebaseCrashlytics` | `Gora` only. `GoraLiveActivity` links no package. |
+
+Rules:
+
+- Use a platform framework first. Add a package only when no Apple framework does the job, and only after the user approves it.
+- Commit `Package.resolved`, so every machine resolves the same versions.
+- A package reference alone does not make a module importable. Link each product to the target in `packageProductDependencies` and in the target's Frameworks build phase.
+- Import product modules, such as `import FirebaseCore`. Do not use the umbrella `import Firebase`.
+- `AppDelegate.application(_:didFinishLaunchingWithOptions:)` calls `FirebaseApp.configure()` once. No other code configures Firebase.
+- The `Gora` target has an "Upload Crashlytics dSYMs" run script phase. It needs `DEBUG_INFORMATION_FORMAT = dwarf-with-dsym` and `ENABLE_USER_SCRIPT_SANDBOXING = NO` on that target. Do not remove either setting.
+- Edit `project.pbxproj` only while Xcode is closed. Xcode overwrites the file from memory when it saves.
 
 ## Critical File Layout
 
