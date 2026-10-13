@@ -46,10 +46,17 @@ actor TrackSnapper {
     static let gpsGapTimeoutSeconds: TimeInterval = 5
     /// How long a reconciling fix takes to fully replace the dead-reckoned position.
     static let reconciliationWindowSeconds: TimeInterval = 6
+    /// Ceiling on how long dead reckoning keeps advancing the dot past `gpsGapTimeoutSeconds`
+    /// without a real fix. Past this, the position holds instead of compounding schedule-speed
+    /// drift indefinitely. Mirrors `CommutePositionResolver.deadReckonCapSeconds`.
+    static let deadReckonCapSeconds: TimeInterval = 10
 
     /// When the current reconciliation stretch began, so blend fraction grows call to
     /// call instead of resetting to zero on every fix. `nil` outside of one.
     private var reconciliationStartedAt: Date?
+    /// When the current unbroken dead-reckoning stretch began. `nil` outside of one, and
+    /// reset the moment a real fix is used again.
+    private var deadReckonStartedAt: Date?
 
     /// Call on every GPS fix while riding a train leg, and on a timer tick with
     /// `rawCoordinate: nil` while waiting for the next fix — that tick is what lets
@@ -67,6 +74,9 @@ actor TrackSnapper {
             return deadReckon(geometry: geometry, lastConfirmed: lastConfirmed,
                                speedMetersPerSecond: averageInterstationSpeedMetersPerSecond, now: now)
         }
+
+        // A real fix landed — the current dead-reckoning stretch, if any, is over.
+        deadReckonStartedAt = nil
 
         guard await geometry.totalMeters > 0 else {
             let fallback = lastConfirmed ?? LineProgress(
@@ -107,8 +117,9 @@ actor TrackSnapper {
     }
 
     /// Advances progress by elapsed time × line speed once a gap exceeds
-    /// `gpsGapTimeoutSeconds`, capped at the line's end. Below the timeout, holds
-    /// the last confirmed point rather than treating a single missed fix as a tunnel.
+    /// `gpsGapTimeoutSeconds`, capped at the line's end and at `deadReckonCapSeconds` of
+    /// unconfirmed advancement. Below the timeout, holds the last confirmed point rather
+    /// than treating a single missed fix as a tunnel.
     private func deadReckon(
         geometry: LineGeometry,
         lastConfirmed: LineProgress?,
@@ -125,6 +136,13 @@ actor TrackSnapper {
         guard gap > Self.gpsGapTimeoutSeconds else {
             return SnapResult(coordinate: lastConfirmed.coordinate, progress: lastConfirmed,
                                isSnapped: true, isDeadReckoned: false)
+        }
+
+        let startedAt = deadReckonStartedAt ?? now
+        deadReckonStartedAt = startedAt
+        guard now.timeIntervalSince(startedAt) <= Self.deadReckonCapSeconds else {
+            return SnapResult(coordinate: lastConfirmed.coordinate, progress: lastConfirmed,
+                               isSnapped: true, isDeadReckoned: true)
         }
 
         let advancedMeters = min(geometry.totalMeters,

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "audit-xcode-security-settings": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "audit-xcode-security-settings/SKILL.md",
+      "computedHash": "01f8e211fb0b3ed9e3a93802ec2eda0714e6fc02cc5050aeb7afc6a3655051a4"
+    },
+    "c-bounds-safety": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "c-bounds-safety/SKILL.md",
+      "computedHash": "251f9732465926bff19be34177b9bde3a99e168a734e6aa58d03e32e2d21aeea"
+    },
+    "device-interaction": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "device-interaction/SKILL.md",
+      "computedHash": "1bff7b118a5ca6206f324e884d1799f375bae3bc8ac13de68791ab2c15d2972c"
+    },
+    "swiftui-specialist": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "swiftui-specialist/SKILL.md",
+      "computedHash": "3822a405011719e955934b3df69a3617fbda4aa86da6dbbed89912a86ed0b994"
+    },
+    "swiftui-whats-new-27": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "swiftui-whats-new-27/SKILL.md",
+      "computedHash": "33c097354c14985ccf7571cfda16b79eabe5ef14db176aa349297341d25dd8d2"
+    },
+    "test-modernizer": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "test-modernizer/SKILL.md",
+      "computedHash": "90d754104fb816ed979d5657001d8d78c8400608cfc11025b570e7e1736c6520"
+    },
+    "uikit-app-modernization": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "uikit-app-modernization/SKILL.md",
+      "computedHash": "c1ff8d90c154bb1376114407a8a2b3ab10138863c7dc3e941c5165142195c5c5"
+    }
+  }
+}

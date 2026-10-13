@@ -1,0 +1,1777 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openstreetmap-cgimap 2.1.0 (1327 spike-07.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <node id="67755137" visible="true" version="23" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6227886" lon="120.9829728"/>
+ <node id="660615376" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6053195" lon="120.9820582"/>
+ <node id="660615391" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6057584" lon="120.9820888"/>
+ <node id="1037147042" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6048269" lon="120.9820237"/>
+ <node id="1279894242" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6057539" lon="120.9821578"/>
+ <node id="1279894293" visible="true" version="6" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6048230" lon="120.9820836"/>
+ <node id="1978892697" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6106436" lon="120.9825147"/>
+ <node id="1978892751" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6108178" lon="120.9825274"/>
+ <node id="1978892775" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6109553" lon="120.9825374"/>
+ <node id="1978892983" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6115756" lon="120.9825828"/>
+ <node id="2915625923" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6162318" lon="120.9827895"/>
+ <node id="2915625936" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6166182" lon="120.9827986"/>
+ <node id="2915625942" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6167398" lon="120.9828014"/>
+ <node id="2915625943" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6171649" lon="120.9828113"/>
+ <node id="2916261699" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6222939" lon="120.9829576"/>
+ <node id="2916263704" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6224901" lon="120.9830589"/>
+ <node id="2916263705" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6224923" lon="120.9829628"/>
+ <node id="2916263725" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6227858" lon="120.9830681"/>
+ <node id="2916263740" visible="true" version="3" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6232448" lon="120.9829869"/>
+ <node id="2916307384" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5987113" lon="120.9813671"/>
+ <node id="2916307390" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5996101" lon="120.9814996"/>
+ <node id="2916330921" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5821431" lon="120.9849321"/>
+ <node id="2916330925" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5828579" lon="120.9845292"/>
+ <node id="2916330931" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5829272" lon="120.9844321"/>
+ <node id="2916330932" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5829542" lon="120.9844168"/>
+ <node id="2916330933" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5829575" lon="120.9844730"/>
+ <node id="2916330934" visible="true" version="6" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5829778" lon="120.9844616"/>
+ <node id="2916651429" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5630510" lon="120.9949764"/>
+ <node id="2916651430" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5630715" lon="120.9950233"/>
+ <node id="2916651432" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5630946" lon="120.9949560"/>
+ <node id="2916651435" visible="true" version="4" changeset="88543929" timestamp="2020-07-27T06:05:43Z" user="Sherwin59" uid="11091438" lat="14.5632995" lon="120.9949160"/>
+ <node id="2916651439" visible="true" version="4" changeset="88543929" timestamp="2020-07-27T06:05:43Z" user="Sherwin59" uid="11091438" lat="14.5634273" lon="120.9948578"/>
+ <node id="2916651443" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5638775" lon="120.9945905"/>
+ <node id="2916651445" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5639128" lon="120.9945740"/>
+ <node id="2916651446" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5639333" lon="120.9946209"/>
+ <node id="2916651448" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5698914" lon="120.9918386"/>
+ <node id="2916651450" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5701077" lon="120.9917241"/>
+ <node id="2916651454" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5705989" lon="120.9914643"/>
+ <node id="2916651457" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5707123" lon="120.9914043"/>
+ <node id="2916651461" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5761817" lon="120.9882811"/>
+ <node id="2916651463" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5762040" lon="120.9883222"/>
+ <node id="2916651464" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5762300" lon="120.9882531"/>
+ <node id="2916651467" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5765045" lon="120.9881482"/>
+ <node id="2916651471" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5766067" lon="120.9880891"/>
+ <node id="2916651476" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5769674" lon="120.9878261"/>
+ <node id="2916651477" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5769958" lon="120.9878096"/>
+ <node id="2916651478" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5770181" lon="120.9878508"/>
+ <node id="2916658491" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5537300" lon="120.9973111"/>
+ <node id="2916658493" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5537751" lon="120.9973008"/>
+ <node id="2916659903" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5544396" lon="120.9971482"/>
+ <node id="2916659905" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5545577" lon="120.9971211"/>
+ <node id="2916659908" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5546114" lon="120.9970649"/>
+ <node id="2916659911" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5546543" lon="120.9970550"/>
+ <node id="2916659912" visible="true" version="5" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5546633" lon="120.9970969"/>
+ <node id="2936254287" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5472909" lon="120.9987502"/>
+ <node id="2936254288" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5473005" lon="120.9987955"/>
+ <node id="2936254290" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5473406" lon="120.9987389"/>
+ <node id="2936254293" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5473999" lon="120.9987731"/>
+ <node id="2936254295" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5474704" lon="120.9987571"/>
+ <node id="2936254401" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5480078" lon="120.9986353"/>
+ <node id="2936254405" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5481743" lon="120.9985972"/>
+ <node id="2936254408" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5481863" lon="120.9985470"/>
+ <node id="2936254411" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5482246" lon="120.9985383"/>
+ <node id="2936254412" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5482342" lon="120.9985836"/>
+ <node id="4202412297" visible="true" version="6" changeset="159552737" timestamp="2024-11-24T23:14:52Z" user="DP24PH" uid="5752740" lat="14.5324780" lon="120.9969613">
+  <tag k="note" v="remove once the Cavite Extension is inaugurated and opened"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="was:railway" v="buffer_stop"/>
+ </node>
+ <node id="4202412300" visible="true" version="3" changeset="85909964" timestamp="2020-05-28T21:50:28Z" user="TagaSanPedroAko" uid="2541613" lat="14.5334203" lon="120.9977069">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4202412302" visible="true" version="3" changeset="85909964" timestamp="2020-05-28T21:50:28Z" user="TagaSanPedroAko" uid="2541613" lat="14.5335747" lon="120.9978278">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4202412305" visible="true" version="6" changeset="159552737" timestamp="2024-11-24T23:14:52Z" user="DP24PH" uid="5752740" lat="14.5338655" lon="120.9980556">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="4202412308" visible="true" version="4" changeset="115447915" timestamp="2021-12-28T00:21:58Z" user="DP24PH" uid="5752740" lat="14.5346219" lon="120.9986468">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="4202412312" visible="true" version="3" changeset="85910152" timestamp="2020-05-28T21:56:36Z" user="TagaSanPedroAko" uid="2541613" lat="14.5347346" lon="120.9987355">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4202412315" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5348826" lon="120.9988511">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="railway_crossing"/>
+ </node>
+ <node id="4202412323" visible="true" version="3" changeset="85910152" timestamp="2020-05-28T21:56:36Z" user="TagaSanPedroAko" uid="2541613" lat="14.5351833" lon="120.9990892">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4202412328" visible="true" version="3" changeset="85910152" timestamp="2020-05-28T21:56:36Z" user="TagaSanPedroAko" uid="2541613" lat="14.5352547" lon="120.9991481">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4202412330" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5368713" lon="121.0003546"/>
+ <node id="4202412331" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5374829" lon="121.0006590"/>
+ <node id="4202412332" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5379788" lon="121.0007513"/>
+ <node id="4202412333" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5381618" lon="121.0007471"/>
+ <node id="4202412334" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5383867" lon="121.0007302"/>
+ <node id="4202412335" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5386323" lon="121.0006840"/>
+ <node id="4475471872" visible="true" version="7" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5345586" lon="120.9985974">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Baclaran"/>
+  <tag k="name:zh" v="墨拉兰"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL06"/>
+ </node>
+ <node id="4568586979" visible="true" version="4" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5952532" lon="120.9808932">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="4568587389" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5956239" lon="120.9807817"/>
+ <node id="4568587390" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5958549" lon="120.9807417"/>
+ <node id="4568587391" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5960885" lon="120.9807233"/>
+ <node id="5251191821" visible="true" version="6" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5272402" lon="120.9933198"/>
+ <node id="5251191823" visible="true" version="6" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5121825" lon="120.9922462"/>
+ <node id="5251191827" visible="true" version="9" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5310499" lon="120.9928640"/>
+ <node id="5251191829" visible="true" version="5" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5222385" lon="120.9933544"/>
+ <node id="5251901978" visible="true" version="7" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5318865" lon="120.9932708"/>
+ <node id="5251901979" visible="true" version="7" changeset="115870690" timestamp="2022-01-07T10:22:18Z" user="TagaSanPedroAko" uid="2541613" lat="14.5320713" lon="120.9938169"/>
+ <node id="5251901980" visible="true" version="3" changeset="115870690" timestamp="2022-01-07T10:22:18Z" user="TagaSanPedroAko" uid="2541613" lat="14.5322198" lon="120.9964139"/>
+ <node id="5251901982" visible="true" version="2" changeset="68459077" timestamp="2019-03-24T01:32:33Z" user="TagaSanPedroAko" uid="2541613" lat="14.5323575" lon="120.9968172"/>
+ <node id="5251901983" visible="true" version="3" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5325243" lon="120.9970058"/>
+ <node id="5397355738" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5987163" lon="120.9813303"/>
+ <node id="5520663501" visible="true" version="7" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5029293" lon="120.9899320"/>
+ <node id="5521709837" visible="true" version="7" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5001808" lon="120.9943635"/>
+ <node id="5521709844" visible="true" version="7" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4979972" lon="120.9943975"/>
+ <node id="5521709846" visible="true" version="8" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4969495" lon="120.9940088"/>
+ <node id="5521709877" visible="true" version="10" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5308113" lon="120.9928929">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Redemptorist-Aseana"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL05"/>
+ </node>
+ <node id="5521709878" visible="true" version="10" changeset="118726118" timestamp="2022-03-21T09:16:42Z" user="DP24PH" uid="5752740" lat="14.5179612" lon="120.9929502">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="5527137132" visible="true" version="4" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5389506" lon="121.0006234">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:zh" v="乙沙"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL07"/>
+ </node>
+ <node id="5527137133" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5393068" lon="121.0005556"/>
+ <node id="5534912927" visible="true" version="7" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4959743" lon="120.9930807"/>
+ <node id="5598565640" visible="true" version="3" changeset="100825129" timestamp="2021-03-11T08:10:32Z" user="DP24PH" uid="5752740" lat="14.5698804" lon="120.9918163"/>
+ <node id="5685808756" visible="true" version="7" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5316482" lon="120.9930223"/>
+ <node id="5763505858" visible="true" version="10" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5015282" lon="120.9938116"/>
+ <node id="5866984085" visible="true" version="17" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5082950" lon="120.9912761">
+  <tag k="alt_name" v="Asia World"/>
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="PITX"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL24"/>
+ </node>
+ <node id="6050245070" visible="true" version="12" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5078327" lon="120.9911474">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="6050245071" visible="true" version="13" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5087651" lon="120.9914015">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="6226130903" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5935843" lon="120.9813980"/>
+ <node id="6226130904" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5933592" lon="120.9814662">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="6357368773" visible="true" version="4" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5120761" lon="120.9922240"/>
+ <node id="6357368775" visible="true" version="4" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5123402" lon="120.9922743"/>
+ <node id="6357368776" visible="true" version="4" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5130849" lon="120.9924012"/>
+ <node id="6357368778" visible="true" version="4" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5127946" lon="120.9923568"/>
+ <node id="6357368890" visible="true" version="4" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5129421" lon="120.9923786"/>
+ <node id="6357368891" visible="true" version="5" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5142281" lon="120.9925466"/>
+ <node id="6357368910" visible="true" version="5" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5268444" lon="120.9933563"/>
+ <node id="6357368911" visible="true" version="5" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5262526" lon="120.9933736"/>
+ <node id="6806533070" visible="true" version="5" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4879337" lon="120.9908037"/>
+ <node id="6814792660" visible="true" version="4" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5822866" lon="120.9848513"/>
+ <node id="6814792663" visible="true" version="4" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5821630" lon="120.9849209"/>
+ <node id="6814792666" visible="true" version="4" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5821638" lon="120.9848624"/>
+ <node id="6814792667" visible="true" version="4" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5821195" lon="120.9848874"/>
+ <node id="7105431093" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:11Z" user="TagaSanPedroAko" uid="2541613" lat="14.5538976" lon="120.9972726"/>
+ <node id="7105431098" visible="true" version="2" changeset="85909536" timestamp="2020-05-28T21:33:11Z" user="TagaSanPedroAko" uid="2541613" lat="14.5537210" lon="120.9972693"/>
+ <node id="7208478627" visible="true" version="6" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4967418" lon="120.9938239"/>
+ <node id="7330612087" visible="true" version="4" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5931393" lon="120.9815326">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Central Terminal"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL15"/>
+ </node>
+ <node id="7461224911" visible="true" version="3" changeset="118726118" timestamp="2022-03-21T09:16:42Z" user="DP24PH" uid="5752740" lat="14.5188984" lon="120.9930608">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="7461224921" visible="true" version="10" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5085800" lon="120.9914447"/>
+ <node id="7461224955" visible="true" version="4" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5312614" lon="120.9928718"/>
+ <node id="7461224957" visible="true" version="3" changeset="115870690" timestamp="2022-01-07T10:22:18Z" user="TagaSanPedroAko" uid="2541613" lat="14.5314652" lon="120.9929349"/>
+ <node id="7461224959" visible="true" version="4" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5317614" lon="120.9931210"/>
+ <node id="7461224964" visible="true" version="3" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5276383" lon="120.9932766"/>
+ <node id="7461224965" visible="true" version="4" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5320087" lon="120.9935328"/>
+ <node id="7465533953" visible="true" version="3" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4894322" lon="120.9915537"/>
+ <node id="7567355501" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.6025404" lon="120.9818847"/>
+ <node id="7567355502" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.6023171" lon="120.9818631"/>
+ <node id="7567355508" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5996142" lon="120.9814695"/>
+ <node id="7567355515" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.6021059" lon="120.9818322"/>
+ <node id="7567355521" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5569570" lon="120.9965134"/>
+ <node id="7567355572" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5372648" lon="121.0005782"/>
+ <node id="7567355574" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5377140" lon="121.0007200"/>
+ <node id="7567355575" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5370625" lon="121.0004783"/>
+ <node id="7567414116" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5998114" lon="120.9814748"/>
+ <node id="7567414119" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5609403" lon="120.9955984"/>
+ <node id="7567414122" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5546564" lon="120.9970650"/>
+ <node id="7567414128" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5630565" lon="120.9949890"/>
+ <node id="7567414131" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5639183" lon="120.9945865"/>
+ <node id="7567414134" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5698748" lon="120.9918051"/>
+ <node id="7567414137" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5707288" lon="120.9913537"/>
+ <node id="7567414139" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5761868" lon="120.9882904"/>
+ <node id="7567414143" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5770022" lon="120.9878214"/>
+ <node id="7567414145" visible="true" version="3" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5821230" lon="120.9848940"/>
+ <node id="7567414147" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5698727" lon="120.9917809"/>
+ <node id="7567414148" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5626949" lon="120.9951328"/>
+ <node id="7567414149" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5625281" lon="120.9952012"/>
+ <node id="7567414150" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5623565" lon="120.9952518"/>
+ <node id="7567414151" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5546515" lon="120.9970430"/>
+ <node id="7567414152" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5537182" lon="120.9972574"/>
+ <node id="7567414153" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5482237" lon="120.9985260"/>
+ <node id="7567414175" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5986911" lon="120.9813107"/>
+ <node id="7567414176" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5984885" lon="120.9812555"/>
+ <node id="7567414177" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5983282" lon="120.9811868"/>
+ <node id="7567414178" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5980229" lon="120.9810508"/>
+ <node id="7567414179" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5977990" lon="120.9809577"/>
+ <node id="7567414180" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5976110" lon="120.9809016"/>
+ <node id="7567414183" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5769879" lon="120.9877944"/>
+ <node id="7567414184" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5698709" lon="120.9917973"/>
+ <node id="7567414187" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5707247" lon="120.9913455"/>
+ <node id="7567414188" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5707180" lon="120.9913337"/>
+ <node id="7567414189" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5755065" lon="120.9886556"/>
+ <node id="7567414191" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5399383" lon="121.0004111"/>
+ <node id="7567414192" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5699104" lon="120.9917764"/>
+ <node id="7567414194" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5706837" lon="120.9913672"/>
+ <node id="7567414197" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5707452" lon="120.9913868"/>
+ <node id="7567414201" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5699830" lon="120.9917901"/>
+ <node id="7567414206" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5805770" lon="120.9857395"/>
+ <node id="7567414207" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5859286" lon="120.9827234"/>
+ <node id="7567414208" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5862685" lon="120.9825226"/>
+ <node id="7567414209" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5864401" lon="120.9824250"/>
+ <node id="7567414210" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5867822" lon="120.9822115"/>
+ <node id="7567414211" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5870003" lon="120.9821108"/>
+ <node id="7567414212" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5872140" lon="120.9820435"/>
+ <node id="7567414213" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5874672" lon="120.9820066"/>
+ <node id="7567414214" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5876927" lon="120.9820101"/>
+ <node id="7567414215" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5879137" lon="120.9820455"/>
+ <node id="7567414216" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5883613" lon="120.9821456"/>
+ <node id="7567414222" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5911778" lon="120.9819480">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="7567414223" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5909843" lon="120.9819604"/>
+ <node id="7567414224" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5885747" lon="120.9821761"/>
+ <node id="7567414225" visible="true" version="2" changeset="176908992" timestamp="2026-01-06T15:46:49Z" user="Karma Howlin" uid="4259372" lat="14.5888277" lon="120.9822033"/>
+ <node id="7567414226" visible="true" version="2" changeset="176908992" timestamp="2026-01-06T15:46:49Z" user="Karma Howlin" uid="4259372" lat="14.5890626" lon="120.9821958"/>
+ <node id="7567414227" visible="true" version="2" changeset="176908992" timestamp="2026-01-06T15:46:49Z" user="Karma Howlin" uid="4259372" lat="14.5892896" lon="120.9821699"/>
+ <node id="7567414228" visible="true" version="2" changeset="176908992" timestamp="2026-01-06T15:46:49Z" user="Karma Howlin" uid="4259372" lat="14.5900723" lon="120.9820616"/>
+ <node id="7567414229" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5905162" lon="120.9819885"/>
+ <node id="7567414286" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5996152" lon="120.9814629"/>
+ <node id="7567414289" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5914606" lon="120.9819295"/>
+ <node id="7567414290" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5917179" lon="120.9819122"/>
+ <node id="7567414292" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5973822" lon="120.9808418"/>
+ <node id="7567414294" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5971714" lon="120.9808147"/>
+ <node id="7567414297" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5919416" lon="120.9818788"/>
+ <node id="7567414327" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5932469" lon="120.9815001"/>
+ <node id="7567414343" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613" lat="14.5921559" lon="120.9818301"/>
+ <node id="7569408431" visible="true" version="3" changeset="95141763" timestamp="2020-12-02T09:33:06Z" user="DP24PH" uid="5752740" lat="14.6573326" lon="121.0222409"/>
+ <node id="7569408432" visible="true" version="3" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6574195" lon="121.0218361"/>
+ <node id="7569408433" visible="true" version="4" changeset="118738424" timestamp="2022-03-21T14:14:41Z" user="DP24PH" uid="5752740" lat="14.6576143" lon="121.0203726"/>
+ <node id="7569408434" visible="true" version="4" changeset="118738424" timestamp="2022-03-21T14:14:41Z" user="DP24PH" uid="5752740" lat="14.6576310" lon="121.0199589"/>
+ <node id="7569408436" visible="true" version="3" changeset="182055447" timestamp="2026-05-01T02:06:21Z" user="TagaSanPedroAko" uid="2541613" lat="14.6573368" lon="120.9985777"/>
+ <node id="7569408438" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6571341" lon="120.9852057"/>
+ <node id="7569408439" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6571178" lon="120.9850025"/>
+ <node id="7569408440" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6570724" lon="120.9847994"/>
+ <node id="7569408441" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6569667" lon="120.9845111"/>
+ <node id="7569408442" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6568091" lon="120.9842857"/>
+ <node id="7569408443" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6566190" lon="120.9841375"/>
+ <node id="7569408444" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6564036" lon="120.9840490"/>
+ <node id="7569408445" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6561279" lon="120.9839679"/>
+ <node id="7569408446" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6559677" lon="120.9839685"/>
+ <node id="7569408447" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6387626" lon="120.9833811"/>
+ <node id="7569408448" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6383214" lon="120.9833114"/>
+ <node id="7569408449" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6378867" lon="120.9831759"/>
+ <node id="7569408450" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6348387" lon="120.9817584"/>
+ <node id="7569408451" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6333607" lon="120.9810556"/>
+ <node id="7569408452" visible="true" version="2" changeset="119276915" timestamp="2022-04-03T19:49:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.6328820" lon="120.9808339"/>
+ <node id="7569408453" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6324446" lon="120.9807164"/>
+ <node id="7569408454" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6317167" lon="120.9807432"/>
+ <node id="7569408455" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6315337" lon="120.9808049"/>
+ <node id="7569408456" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6311016" lon="120.9810396"/>
+ <node id="7569408457" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6291993" lon="120.9827656"/>
+ <node id="7569408458" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6288204" lon="120.9829600"/>
+ <node id="7569408459" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6286011" lon="120.9830271"/>
+ <node id="7569408460" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6281080" lon="120.9830754"/>
+ <node id="7569408461" visible="true" version="2" changeset="182174797" timestamp="2026-05-03T18:59:57Z" user="TagaSanPedroAko" uid="2541613" lat="14.6249345" lon="120.9829883"/>
+ <node id="7569408462" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6131566" lon="120.9826386"/>
+ <node id="7569408463" visible="true" version="2" changeset="135686316" timestamp="2023-05-04T06:47:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.6045000" lon="120.9819856"/>
+ <node id="7569408464" visible="true" version="7" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6053428" lon="120.9820475">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Doroteo Jose"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL17"/>
+ </node>
+ <node id="7569408465" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6111091" lon="120.9824899">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Bambang"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL18"/>
+ </node>
+ <node id="7569408466" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6167013" lon="120.9827503">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Tayuman"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL19"/>
+ </node>
+ <node id="7569408467" visible="true" version="5" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6227642" lon="120.9829169">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Blumentritt"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL20"/>
+ </node>
+ <node id="7569408470" visible="true" version="4" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.6306216" lon="120.9814620">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Abad Santos"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL21"/>
+ </node>
+ <node id="7569408472" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6312794" lon="120.9809108"/>
+ <node id="7569408474" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6318970" lon="120.9807036"/>
+ <node id="7569408476" visible="true" version="2" changeset="119276915" timestamp="2022-04-03T19:49:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.6326641" lon="120.9807533"/>
+ <node id="7569408477" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.6360105" lon="120.9823082">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="R. Papa"/>
+  <tag k="name:zh" v="R·巴巴"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL22"/>
+ </node>
+ <node id="7569408478" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6444188" lon="120.9835822">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="5th Avenue"/>
+  <tag k="name:zh" v="第五大道"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+ </node>
+ <node id="7569408479" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6463150" lon="120.9836273"/>
+ <node id="7569408480" visible="true" version="3" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6546493" lon="120.9839225">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Yamaha Monumento"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+ </node>
+ <node id="7569408481" visible="true" version="2" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6548445" lon="120.9839293">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="7569408482" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6549106" lon="120.9839390"/>
+ <node id="7569408483" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6549727" lon="120.9839500"/>
+ <node id="7569422987" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6550156" lon="120.9839561"/>
+ <node id="7569422990" visible="true" version="2" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6553971" lon="120.9839611">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="7569422996" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6565104" lon="120.9840896"/>
+ <node id="7569422998" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6566731" lon="120.9841707"/>
+ <node id="7569422999" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6567395" lon="120.9842212"/>
+ <node id="7569423000" visible="true" version="1" changeset="85945175" timestamp="2020-05-29T11:57:19Z" user="Sherwin59" uid="11091438" lat="14.6568918" lon="120.9843856"/>
+ <node id="7569423001" visible="true" version="2" changeset="103337114" timestamp="2021-04-21T11:38:56Z" user="HikkaduwaBeach" uid="10529581" lat="14.6570136" lon="120.9846209"/>
+ <node id="7569423003" visible="true" version="3" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6573992" lon="121.0043728">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Balintawak"/>
+  <tag k="name:zh" v="描林沓瓦"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+ </node>
+ <node id="7569423005" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6574171" lon="121.0055834">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="7569423006" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6574741" lon="121.0088844"/>
+ <node id="7569423007" visible="true" version="3" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6575334" lon="121.0125131"/>
+ <node id="7569423008" visible="true" version="2" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6575399" lon="121.0130258"/>
+ <node id="7569423011" visible="true" version="3" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6575451" lon="121.0133931"/>
+ <node id="7569423013" visible="true" version="8" changeset="141011113" timestamp="2023-09-09T06:14:42Z" user="TagaSanPedroAko" uid="2541613" lat="14.6574551" lon="121.0215856">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Fernando Poe Jr."/>
+  <tag k="network" v="LRTA"/>
+  <tag k="old_name" v="Roosevelt"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+ </node>
+ <node id="7569423015" visible="true" version="2" changeset="135686316" timestamp="2023-05-04T06:47:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.6034697" lon="120.9819147"/>
+ <node id="7797754057" visible="true" version="1" changeset="89142648" timestamp="2020-08-09T03:11:23Z" user="TagaSanPedroAko" uid="2541613" lat="14.6562899" lon="120.9840035"/>
+ <node id="7800049076" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6052666" lon="120.9821146"/>
+ <node id="7800049084" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6052660" lon="120.9821237"/>
+ <node id="7805277816" visible="true" version="1" changeset="89274862" timestamp="2020-08-12T02:41:03Z" user="Sherwin59" uid="11091438" lat="14.5989280" lon="120.9813990"/>
+ <node id="7805277817" visible="true" version="1" changeset="89274862" timestamp="2020-08-12T02:41:03Z" user="Sherwin59" uid="11091438" lat="14.5993969" lon="120.9814682"/>
+ <node id="7819286057" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6162327" lon="120.9827522"/>
+ <node id="7819286059" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6162758" lon="120.9827532"/>
+ <node id="7819286061" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6171657" lon="120.9827740"/>
+ <node id="7819286063" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6171263" lon="120.9827731"/>
+ <node id="7838739167" visible="true" version="7" changeset="175512616" timestamp="2025-12-04T18:51:49Z" user="smaptious" uid="15166886" lat="14.5821357" lon="120.9849195"/>
+ <node id="7841782514" visible="true" version="1" changeset="89884583" timestamp="2020-08-25T03:24:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.5324326" lon="120.9969176"/>
+ <node id="7841782516" visible="true" version="2" changeset="115870690" timestamp="2022-01-07T10:22:18Z" user="TagaSanPedroAko" uid="2541613" lat="14.5322684" lon="120.9966514"/>
+ <node id="7961437439" visible="true" version="1" changeset="91793874" timestamp="2020-10-01T02:46:06Z" user="GrabPHJoshua" uid="10044745" lat="14.6574277" lon="121.0061567"/>
+ <node id="7961970631" visible="true" version="2" changeset="182055778" timestamp="2026-05-01T02:28:16Z" user="TagaSanPedroAko" uid="2541613" lat="14.6572205" lon="120.9904669"/>
+ <node id="8458472476" visible="true" version="1" changeset="99992269" timestamp="2021-02-25T16:54:13Z" user="rowcherryrow" uid="11880368" lat="14.5632448" lon="120.9949417"/>
+ <node id="8461957359" visible="true" version="1" changeset="100070505" timestamp="2021-02-26T19:01:15Z" user="ruggs" uid="7294560" lat="14.6360718" lon="120.9823365"/>
+ <node id="8477431604" visible="true" version="2" changeset="100825129" timestamp="2021-03-11T08:14:49Z" user="DP24PH" uid="5752740" lat="14.5707354" lon="120.9913671"/>
+ <node id="8506216735" visible="true" version="1" changeset="100825129" timestamp="2021-03-11T08:37:13Z" user="DP24PH" uid="5752740" lat="14.5761937" lon="120.9883032"/>
+ <node id="9371316870" visible="true" version="4" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5188770" lon="120.9930583">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="MIA Road"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL04"/>
+ </node>
+ <node id="9399217428" visible="true" version="2" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5319608" lon="120.9934006"/>
+ <node id="9399217430" visible="true" version="2" changeset="133787836" timestamp="2023-03-17T13:08:01Z" user="relaemanila" uid="15297177" lat="14.5320474" lon="120.9936750"/>
+ <node id="9461838684" visible="true" version="4" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5043266" lon="120.9898343"/>
+ <node id="9594503093" visible="true" version="1" changeset="118738424" timestamp="2022-03-21T14:14:41Z" user="DP24PH" uid="5752740" lat="14.6576246" lon="121.0202500"/>
+ <node id="9839547726" visible="true" version="1" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532" lat="14.5770093" lon="120.9878344"/>
+ <node id="9839547728" visible="true" version="3" changeset="175512616" timestamp="2025-12-04T18:51:49Z" user="smaptious" uid="15166886" lat="14.5829719" lon="120.9844486"/>
+ <node id="10053766604" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5826319" lon="120.9845814">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="United Nations"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL14"/>
+ </node>
+ <node id="10053766605" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5765892" lon="120.9880262">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Pedro Gil"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL12"/>
+ </node>
+ <node id="10053766606" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5702329" lon="120.9915904">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Quirino"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL11"/>
+ </node>
+ <node id="10053766607" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5634708" lon="120.9947705">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Vito Cruz"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL10"/>
+ </node>
+ <node id="10053766608" visible="true" version="2" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5540601" lon="120.9971788">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Gil Puyat"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL09"/>
+ </node>
+ <node id="10053766609" visible="true" version="2" changeset="183379151" timestamp="2026-05-30T01:02:20Z" user="TagaSanPedroAko" uid="2541613" lat="14.5476902" lon="120.9986474">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Libertad"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL08"/>
+ </node>
+ <node id="10239695808" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6547440" lon="120.9839258">
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="10239727210" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6574504" lon="121.0216188">
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="10239727212" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6573997" lon="121.0044064">
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="10239727213" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6563279" lon="121.0268941">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="10239727214" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6563690" lon="121.0264838">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="10239727215" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740" lat="14.6570648" lon="121.0234198"/>
+ <node id="10741511864" visible="true" version="2" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4872270" lon="120.9904160"/>
+ <node id="10741511871" visible="true" version="2" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5021058" lon="120.9923960"/>
+ <node id="12345180246" visible="true" version="6" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.4989399" lon="120.9943902">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Ninoy Aquino Avenue"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL25"/>
+ </node>
+ <node id="12345180248" visible="true" version="6" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.4852335" lon="120.9894335">
+  <tag k="alt_name" v="Sucat"/>
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Dr. Santos"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL26"/>
+ </node>
+ <node id="12350462790" visible="true" version="5" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5078378" lon="120.9911742"/>
+ <node id="12350462799" visible="true" version="3" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4859310" lon="120.9897718">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="12350466803" visible="true" version="3" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4857881" lon="120.9897008">
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="12372570955" visible="true" version="1" changeset="159552737" timestamp="2024-11-24T23:14:52Z" user="DP24PH" uid="5752740" lat="14.5297130" lon="120.9930257">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="12372570956" visible="true" version="1" changeset="159552737" timestamp="2024-11-24T23:14:52Z" user="DP24PH" uid="5752740" lat="14.5308499" lon="120.9928882">
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="signal"/>
+ </node>
+ <node id="13319452339" visible="true" version="1" changeset="174911502" timestamp="2025-11-20T15:28:40Z" user="Nekoatthegates" uid="22507476" lat="14.5996114" lon="120.9814901">
+  <tag k="railway" v="subway_entrance"/>
+ </node>
+ <node id="13649883948" visible="true" version="1" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176" lat="14.4851219" lon="120.9894325"/>
+ <node id="13649883949" visible="true" version="1" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176" lat="14.4847598" lon="120.9892533"/>
+ <node id="13649883950" visible="true" version="1" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176" lat="14.4856793" lon="120.9896716"/>
+ <node id="13649883951" visible="true" version="1" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176" lat="14.4856655" lon="120.9897014"/>
+ <node id="13649883952" visible="true" version="1" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176" lat="14.4847737" lon="120.9892235"/>
+ <node id="13649894951" visible="true" version="2" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4856869" lon="120.9896505"/>
+ <node id="13684218938" visible="true" version="2" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4947213" lon="120.9924328"/>
+ <node id="13791320538" visible="true" version="2" changeset="185228296" timestamp="2026-07-06T20:53:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5995648" lon="120.9814387">
+  <tag k="light_rail" v="yes"/>
+  <tag k="name" v="Carriedo"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="public_transport" v="stop_position"/>
+  <tag k="railway" v="stop"/>
+  <tag k="ref" v="GL16"/>
+ </node>
+ <node id="13791369630" visible="true" version="2" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6143917" lon="120.9826761"/>
+ <node id="13791369631" visible="true" version="1" changeset="182174797" timestamp="2026-05-03T18:59:57Z" user="TagaSanPedroAko" uid="2541613" lat="14.6283698" lon="120.9830681"/>
+ <node id="13791369632" visible="true" version="1" changeset="182174797" timestamp="2026-05-03T18:59:57Z" user="TagaSanPedroAko" uid="2541613" lat="14.6289492" lon="120.9829053"/>
+ <node id="13797818325" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5226734" lon="120.9933693"/>
+ <node id="13797818327" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5266447" lon="120.9933699"/>
+ <node id="13797818328" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5248742" lon="120.9933747"/>
+ <node id="13797818330" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5209761" lon="120.9932818"/>
+ <node id="13797818333" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5230644" lon="120.9933732"/>
+ <node id="13797818335" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5217353" lon="120.9933326"/>
+ <node id="13797818336" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5212883" lon="120.9933059"/>
+ <node id="13797818338" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5203925" lon="120.9932248"/>
+ <node id="13797830320" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5137095" lon="120.9924870"/>
+ <node id="13797830322" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5110064" lon="120.9919830"/>
+ <node id="13797830324" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5114488" lon="120.9920863"/>
+ <node id="13797830326" visible="true" version="1" changeset="182232837" timestamp="2026-05-05T05:51:48Z" user="HueMan1" uid="7895478" lat="14.5103281" lon="120.9918075"/>
+ <node id="13797830328" visible="true" version="2" changeset="184464387" timestamp="2026-06-23T08:14:55Z" user="HueMan1" uid="7895478" lat="14.5095921" lon="120.9916134"/>
+ <node id="13797972901" visible="true" version="2" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5075922" lon="120.9910826"/>
+ <node id="13797972905" visible="true" version="2" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5067030" lon="120.9907939"/>
+ <node id="13830996115" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4983325" lon="120.9943977"/>
+ <node id="13830996117" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4994478" lon="120.9943839"/>
+ <node id="13830996123" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4983387" lon="120.9944185"/>
+ <node id="13830996124" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4983390" lon="120.9944522"/>
+ <node id="13830996125" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4988362" lon="120.9944456"/>
+ <node id="13830996126" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4994408" lon="120.9944396"/>
+ <node id="13830996127" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4994404" lon="120.9944062"/>
+ <node id="13830996154" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4970412" lon="120.9940797"/>
+ <node id="13830996156" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4971362" lon="120.9941431"/>
+ <node id="13830996158" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4972348" lon="120.9942009"/>
+ <node id="13830996160" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4973381" lon="120.9942515"/>
+ <node id="13830996162" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4974434" lon="120.9942954"/>
+ <node id="13830996164" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4975512" lon="120.9943314"/>
+ <node id="13830996166" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4976607" lon="120.9943595"/>
+ <node id="13830996168" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4977730" lon="120.9943806"/>
+ <node id="13830996170" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4978851" lon="120.9943938"/>
+ <node id="13830996178" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4948472" lon="120.9924552"/>
+ <node id="13830996179" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4949716" lon="120.9924851"/>
+ <node id="13830996180" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4950942" lon="120.9925223"/>
+ <node id="13830996181" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4952144" lon="120.9925668"/>
+ <node id="13830996182" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4953320" lon="120.9926184"/>
+ <node id="13830996183" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4954465" lon="120.9926770"/>
+ <node id="13830996184" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4956689" lon="120.9928170"/>
+ <node id="13830996185" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4957758" lon="120.9928985"/>
+ <node id="13830996186" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4958777" lon="120.9929865"/>
+ <node id="13830996196" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4955575" lon="120.9927422"/>
+ <node id="13830996198" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4885594" lon="120.9912272"/>
+ <node id="13830996199" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4886753" lon="120.9912958"/>
+ <node id="13830996200" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4887949" lon="120.9913574"/>
+ <node id="13831005301" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4890432" lon="120.9914587"/>
+ <node id="13831005302" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4891710" lon="120.9914981"/>
+ <node id="13831005303" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4893009" lon="120.9915298"/>
+ <node id="13831005310" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4889177" lon="120.9914118"/>
+ <node id="13831005311" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4884474" lon="120.9911518"/>
+ <node id="13831005315" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4877602" lon="120.9907005"/>
+ <node id="13831005316" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4874068" lon="120.9905066"/>
+ <node id="13831005317" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176" lat="14.4875845" lon="120.9906014"/>
+ <node id="13895710232" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5062945" lon="120.9906290">
+  <tag k="railway" v="switch"/>
+ </node>
+ <node id="13895710233" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5021632" lon="120.9911882"/>
+ <node id="13895710234" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5021768" lon="120.9910698"/>
+ <node id="13895710235" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5021989" lon="120.9909528"/>
+ <node id="13895710236" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5022294" lon="120.9908378"/>
+ <node id="13895710237" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5022680" lon="120.9907255"/>
+ <node id="13895710238" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5023146" lon="120.9906164"/>
+ <node id="13895710239" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5024302" lon="120.9904113"/>
+ <node id="13895710240" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5024983" lon="120.9903162"/>
+ <node id="13895710241" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5025731" lon="120.9902267"/>
+ <node id="13895710242" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5026540" lon="120.9901430"/>
+ <node id="13895710243" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5027406" lon="120.9900657"/>
+ <node id="13895710244" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5028326" lon="120.9899953"/>
+ <node id="13895710257" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5023690" lon="120.9905112"/>
+ <node id="13895710259" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5030346" lon="120.9898730"/>
+ <node id="13895710260" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5031440" lon="120.9898226"/>
+ <node id="13895710261" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5032568" lon="120.9897811"/>
+ <node id="13895710262" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5033724" lon="120.9897487"/>
+ <node id="13895710263" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5034901" lon="120.9897255"/>
+ <node id="13895710264" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5037139" lon="120.9897076"/>
+ <node id="13895710265" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5038186" lon="120.9897107"/>
+ <node id="13895710266" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5039230" lon="120.9897211"/>
+ <node id="13895710267" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5040264" lon="120.9897388"/>
+ <node id="13895710268" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5041285" lon="120.9897636"/>
+ <node id="13895710269" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5042287" lon="120.9897955"/>
+ <node id="13895710281" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5036091" lon="120.9897118"/>
+ <node id="13895710285" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5073664" lon="120.9910203"/>
+ <node id="13895710286" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5069216" lon="120.9908758"/>
+ <node id="13895710287" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5071423" lon="120.9909512"/>
+ <node id="13895765910" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5003159" lon="120.9943605"/>
+ <node id="13895765911" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5004505" lon="120.9943476"/>
+ <node id="13895765912" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5005839" lon="120.9943248"/>
+ <node id="13895765913" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5007154" lon="120.9942923"/>
+ <node id="13895765914" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5008442" lon="120.9942502"/>
+ <node id="13895765915" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5009699" lon="120.9941988"/>
+ <node id="13895765916" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5010917" lon="120.9941382"/>
+ <node id="13895765917" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5012090" lon="120.9940688"/>
+ <node id="13895765918" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5013212" lon="120.9939910"/>
+ <node id="13895765919" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5014278" lon="120.9939051"/>
+ <node id="13895765920" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5016166" lon="120.9937170"/>
+ <node id="13895765921" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5016988" lon="120.9936165"/>
+ <node id="13895765922" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5017742" lon="120.9935105"/>
+ <node id="13895765923" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5018425" lon="120.9933996"/>
+ <node id="13895765924" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5019035" lon="120.9932841"/>
+ <node id="13895765925" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5019569" lon="120.9931647"/>
+ <node id="13895765926" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5020023" lon="120.9930418"/>
+ <node id="13895765927" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5020397" lon="120.9929161"/>
+ <node id="13895765928" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5020689" lon="120.9927881"/>
+ <node id="13895765929" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5020897" lon="120.9926583"/>
+ <node id="13895765930" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5021020" lon="120.9925274"/>
+ <node id="13895765934" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5080164" lon="120.9912929"/>
+ <node id="13895765935" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5081591" lon="120.9913507"/>
+ <node id="13895765936" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5081691" lon="120.9913116"/>
+ <node id="13895765937" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5080218" lon="120.9912716"/>
+ <node id="13895765938" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5080109" lon="120.9913143"/>
+ <node id="13895765939" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5078877" lon="120.9912809"/>
+ <node id="13895765940" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5078986" lon="120.9912382"/>
+ <node id="13895765941" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5078265" lon="120.9912186"/>
+ <node id="13895765943" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5084585" lon="120.9914119"/>
+ <node id="13895765944" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5083063" lon="120.9913906"/>
+ <node id="13895765945" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5083163" lon="120.9913516"/>
+ <node id="13895765946" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5084637" lon="120.9913916"/>
+ <node id="13895765947" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5084535" lon="120.9914314"/>
+ <node id="13895765954" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5085750" lon="120.9914644"/>
+ <node id="13895765955" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5085851" lon="120.9914246"/>
+ <node id="13895765957" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5087361" lon="120.9914656"/>
+ <node id="13895765958" visible="true" version="1" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176" lat="14.5087474" lon="120.9914213"/>
+ <node id="14065286152" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6077761" lon="120.9822328"/>
+ <node id="14065286153" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6057145" lon="120.9820734"/>
+ <node id="14065286155" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6048591" lon="120.9820138"/>
+ <node id="14065286159" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6048583" lon="120.9820259"/>
+ <node id="14065286160" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6057137" lon="120.9820857"/>
+ <node id="14065286173" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6055091" lon="120.9821407"/>
+ <node id="14065286177" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6106790" lon="120.9824585"/>
+ <node id="14065286180" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6115393" lon="120.9825214"/>
+ <node id="14065286183" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6115384" lon="120.9825337"/>
+ <node id="14065286186" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6106782" lon="120.9824708"/>
+ <node id="14065286189" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6115788" lon="120.9825366"/>
+ <node id="14065286190" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6106468" lon="120.9824685"/>
+ <node id="14065286197" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6166436" lon="120.9827992"/>
+ <node id="14065312792" visible="true" version="1" changeset="186738062" timestamp="2026-08-01T01:00:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.6108628" lon="120.9825307"/>
+ <node id="14065320507" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6162761" lon="120.9827403"/>
+ <node id="14065320509" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6171266" lon="120.9827603"/>
+ <node id="14065320525" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6223289" lon="120.9829034"/>
+ <node id="14065320527" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6231996" lon="120.9829304"/>
+ <node id="14065320530" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6227872" lon="120.9830204"/>
+ <node id="14065320532" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6224912" lon="120.9830108"/>
+ <node id="14065320535" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6231992" lon="120.9829438"/>
+ <node id="14065320536" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6223285" lon="120.9829168"/>
+ <node id="14065320537" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6222951" lon="120.9829158"/>
+ <node id="14065320538" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613" lat="14.6232460" lon="120.9829452"/>
+ <way id="51765639" visible="true" version="4" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1037147042"/>
+  <nd ref="14065286159"/>
+  <nd ref="660615376"/>
+  <nd ref="14065286160"/>
+  <nd ref="660615391"/>
+  <nd ref="1279894242"/>
+  <nd ref="14065286173"/>
+  <nd ref="7800049084"/>
+  <nd ref="7800049076"/>
+  <nd ref="1279894293"/>
+  <nd ref="1037147042"/>
+  <tag k="bench" v="yes"/>
+  <tag k="bin" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="layer" v="1"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Doroteo Jose"/>
+  <tag k="passenger_information_display" v="yes"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <way id="420302935" visible="true" version="10" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4202412308"/>
+  <nd ref="4202412312"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="railway:track_ref" v="2"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="420302942" visible="true" version="13" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4475471872"/>
+  <nd ref="4202412308"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="railway:track_ref" v="2"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="420302943" visible="true" version="12" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="12372570956"/>
+  <nd ref="5251191827"/>
+  <nd ref="7461224955"/>
+  <nd ref="7461224957"/>
+  <nd ref="5685808756"/>
+  <nd ref="7461224959"/>
+  <nd ref="5251901978"/>
+  <nd ref="9399217428"/>
+  <nd ref="7461224965"/>
+  <nd ref="9399217430"/>
+  <nd ref="5251901979"/>
+  <nd ref="5251901980"/>
+  <nd ref="7841782516"/>
+  <nd ref="5251901982"/>
+  <nd ref="7841782514"/>
+  <nd ref="4202412297"/>
+  <nd ref="5251901983"/>
+  <nd ref="4202412300"/>
+  <nd ref="4202412302"/>
+  <nd ref="4202412305"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="bridge:support" v="pier"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="source" v="Build Build Build;Light Rail Manila Corporation;Light Rail Transit Authority;Maxar"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="576201875" visible="true" version="10" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4202412312"/>
+  <nd ref="4202412315"/>
+  <nd ref="4202412323"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="576201877" visible="true" version="9" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4202412323"/>
+  <nd ref="4202412328"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="576201878" visible="true" version="24" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="4202412334"/>
+  <nd ref="4202412335"/>
+  <nd ref="5527137132"/>
+  <nd ref="5527137133"/>
+  <nd ref="7567414191"/>
+  <nd ref="10053766609"/>
+  <nd ref="7567414153"/>
+  <nd ref="7567414152"/>
+  <nd ref="10053766608"/>
+  <nd ref="7567414151"/>
+  <nd ref="7567355521"/>
+  <nd ref="7567414119"/>
+  <nd ref="7567414150"/>
+  <nd ref="7567414149"/>
+  <nd ref="7567414148"/>
+  <nd ref="10053766607"/>
+  <nd ref="7567414147"/>
+  <nd ref="10053766606"/>
+  <nd ref="7567414188"/>
+  <nd ref="7567414189"/>
+  <nd ref="10053766605"/>
+  <nd ref="7567414183"/>
+  <nd ref="7567414206"/>
+  <nd ref="10053766604"/>
+  <nd ref="7567414207"/>
+  <nd ref="7567414208"/>
+  <nd ref="7567414209"/>
+  <nd ref="7567414210"/>
+  <nd ref="7567414211"/>
+  <nd ref="7567414212"/>
+  <nd ref="7567414213"/>
+  <nd ref="7567414214"/>
+  <nd ref="7567414215"/>
+  <nd ref="7567414216"/>
+  <nd ref="7567414224"/>
+  <nd ref="7567414225"/>
+  <nd ref="7567414226"/>
+  <nd ref="7567414227"/>
+  <nd ref="7567414228"/>
+  <nd ref="7567414229"/>
+  <nd ref="7567414223"/>
+  <nd ref="7567414222"/>
+  <nd ref="7567414289"/>
+  <nd ref="7567414290"/>
+  <nd ref="7567414297"/>
+  <nd ref="7567414343"/>
+  <nd ref="7330612087"/>
+  <nd ref="7567414327"/>
+  <nd ref="6226130904"/>
+  <nd ref="6226130903"/>
+  <nd ref="4568586979"/>
+  <nd ref="4568587389"/>
+  <nd ref="4568587390"/>
+  <nd ref="4568587391"/>
+  <nd ref="7567414294"/>
+  <nd ref="7567414292"/>
+  <nd ref="7567414180"/>
+  <nd ref="7567414179"/>
+  <nd ref="7567414178"/>
+  <nd ref="7567414177"/>
+  <nd ref="7567414176"/>
+  <nd ref="7567414175"/>
+  <nd ref="13791320538"/>
+  <nd ref="7567414116"/>
+  <nd ref="7567355515"/>
+  <nd ref="7567355502"/>
+  <nd ref="7567355501"/>
+  <nd ref="7569423015"/>
+  <nd ref="7569408463"/>
+  <nd ref="14065286155"/>
+  <nd ref="7569408464"/>
+  <nd ref="14065286153"/>
+  <nd ref="14065286152"/>
+  <nd ref="14065286177"/>
+  <nd ref="7569408465"/>
+  <nd ref="14065286180"/>
+  <nd ref="7569408462"/>
+  <nd ref="13791369630"/>
+  <nd ref="14065320507"/>
+  <nd ref="7569408466"/>
+  <nd ref="14065320509"/>
+  <nd ref="14065320525"/>
+  <nd ref="7569408467"/>
+  <nd ref="14065320527"/>
+  <nd ref="7569408461"/>
+  <nd ref="7569408460"/>
+  <nd ref="13791369631"/>
+  <nd ref="7569408459"/>
+  <nd ref="7569408458"/>
+  <nd ref="13791369632"/>
+  <nd ref="7569408457"/>
+  <nd ref="7569408470"/>
+  <nd ref="7569408456"/>
+  <nd ref="7569408472"/>
+  <nd ref="7569408455"/>
+  <nd ref="7569408454"/>
+  <nd ref="7569408474"/>
+  <nd ref="7569408453"/>
+  <nd ref="7569408476"/>
+  <nd ref="7569408452"/>
+  <nd ref="7569408451"/>
+  <nd ref="7569408450"/>
+  <nd ref="7569408477"/>
+  <nd ref="8461957359"/>
+  <nd ref="7569408449"/>
+  <nd ref="7569408448"/>
+  <nd ref="7569408447"/>
+  <nd ref="7569408478"/>
+  <nd ref="7569408479"/>
+  <nd ref="7569408480"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="馬尼拉輕軌1號線"/>
+  <tag k="name:zh-Hans" v="马尼拉轻轨1号线"/>
+  <tag k="name:zh-Latn-pinyin" v="Mǎnílā qīngguǐ yīhào xiàn"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="628734505" visible="true" version="22" changeset="184464387" timestamp="2026-06-23T08:14:55Z" user="HueMan1" uid="7895478">
+  <nd ref="6050245071"/>
+  <nd ref="13797830328"/>
+  <nd ref="13797830326"/>
+  <nd ref="13797830322"/>
+  <nd ref="13797830324"/>
+  <nd ref="6357368773"/>
+  <nd ref="5251191823"/>
+  <nd ref="6357368775"/>
+  <nd ref="6357368778"/>
+  <nd ref="6357368890"/>
+  <nd ref="6357368776"/>
+  <nd ref="13797830320"/>
+  <nd ref="6357368891"/>
+  <nd ref="5521709878"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="bridge:support" v="pier"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="source" v="Build Build Build;Light Rail Manila Corporation;Light Rail Transit Authority;Maxar"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="642764196" visible="true" version="20" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="7461224911"/>
+  <nd ref="13797818338"/>
+  <nd ref="13797818330"/>
+  <nd ref="13797818336"/>
+  <nd ref="13797818335"/>
+  <nd ref="5251191829"/>
+  <nd ref="13797818325"/>
+  <nd ref="13797818333"/>
+  <nd ref="13797818328"/>
+  <nd ref="6357368911"/>
+  <nd ref="13797818327"/>
+  <nd ref="6357368910"/>
+  <nd ref="5251191821"/>
+  <nd ref="7461224964"/>
+  <nd ref="12372570955"/>
+  <nd ref="5521709877"/>
+  <nd ref="12372570956"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="bridge:support" v="pier"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="source" v="Build Build Build;Light Rail Manila Corporation;Light Rail Transit Authority;Maxar"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="678960760" visible="true" version="13" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176">
+  <nd ref="6050245070"/>
+  <nd ref="5866984085"/>
+  <nd ref="6050245071"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="covered" v="yes"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="678960766" visible="true" version="21" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176">
+  <nd ref="12350462799"/>
+  <nd ref="10741511864"/>
+  <nd ref="13831005316"/>
+  <nd ref="13831005317"/>
+  <nd ref="13831005315"/>
+  <nd ref="6806533070"/>
+  <nd ref="13831005311"/>
+  <nd ref="13830996198"/>
+  <nd ref="13830996199"/>
+  <nd ref="13830996200"/>
+  <nd ref="13831005310"/>
+  <nd ref="13831005301"/>
+  <nd ref="13831005302"/>
+  <nd ref="13831005303"/>
+  <nd ref="7465533953"/>
+  <nd ref="13684218938"/>
+  <nd ref="13830996178"/>
+  <nd ref="13830996179"/>
+  <nd ref="13830996180"/>
+  <nd ref="13830996181"/>
+  <nd ref="13830996182"/>
+  <nd ref="13830996183"/>
+  <nd ref="13830996196"/>
+  <nd ref="13830996184"/>
+  <nd ref="13830996185"/>
+  <nd ref="13830996186"/>
+  <nd ref="5534912927"/>
+  <nd ref="7208478627"/>
+  <nd ref="5521709846"/>
+  <nd ref="13830996154"/>
+  <nd ref="13830996156"/>
+  <nd ref="13830996158"/>
+  <nd ref="13830996160"/>
+  <nd ref="13830996162"/>
+  <nd ref="13830996164"/>
+  <nd ref="13830996166"/>
+  <nd ref="13830996168"/>
+  <nd ref="13830996170"/>
+  <nd ref="5521709844"/>
+  <nd ref="13830996115"/>
+  <nd ref="12345180246"/>
+  <nd ref="13830996117"/>
+  <nd ref="5521709837"/>
+  <nd ref="13895765910"/>
+  <nd ref="13895765911"/>
+  <nd ref="13895765912"/>
+  <nd ref="13895765913"/>
+  <nd ref="13895765914"/>
+  <nd ref="13895765915"/>
+  <nd ref="13895765916"/>
+  <nd ref="13895765917"/>
+  <nd ref="13895765918"/>
+  <nd ref="13895765919"/>
+  <nd ref="5763505858"/>
+  <nd ref="13895765920"/>
+  <nd ref="13895765921"/>
+  <nd ref="13895765922"/>
+  <nd ref="13895765923"/>
+  <nd ref="13895765924"/>
+  <nd ref="13895765925"/>
+  <nd ref="13895765926"/>
+  <nd ref="13895765927"/>
+  <nd ref="13895765928"/>
+  <nd ref="13895765929"/>
+  <nd ref="13895765930"/>
+  <nd ref="10741511871"/>
+  <nd ref="13895710233"/>
+  <nd ref="13895710234"/>
+  <nd ref="13895710235"/>
+  <nd ref="13895710236"/>
+  <nd ref="13895710237"/>
+  <nd ref="13895710238"/>
+  <nd ref="13895710257"/>
+  <nd ref="13895710239"/>
+  <nd ref="13895710240"/>
+  <nd ref="13895710241"/>
+  <nd ref="13895710242"/>
+  <nd ref="13895710243"/>
+  <nd ref="13895710244"/>
+  <nd ref="5520663501"/>
+  <nd ref="13895710259"/>
+  <nd ref="13895710260"/>
+  <nd ref="13895710261"/>
+  <nd ref="13895710262"/>
+  <nd ref="13895710263"/>
+  <nd ref="13895710281"/>
+  <nd ref="13895710264"/>
+  <nd ref="13895710265"/>
+  <nd ref="13895710266"/>
+  <nd ref="13895710267"/>
+  <nd ref="13895710268"/>
+  <nd ref="13895710269"/>
+  <nd ref="9461838684"/>
+  <nd ref="13895710232"/>
+  <nd ref="13797972905"/>
+  <nd ref="13895710286"/>
+  <nd ref="13895710287"/>
+  <nd ref="13895710285"/>
+  <nd ref="13797972901"/>
+  <nd ref="6050245070"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="758005274" visible="true" version="8" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4202412305"/>
+  <nd ref="4475471872"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="covered" v="yes"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="railway:track_ref" v="2"/>
+  <tag k="ref" v="LRT1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="809323011" visible="true" version="4" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="4202412328"/>
+  <nd ref="4202412330"/>
+  <nd ref="7567355575"/>
+  <nd ref="7567355572"/>
+  <nd ref="4202412331"/>
+  <nd ref="7567355574"/>
+  <nd ref="4202412332"/>
+  <nd ref="4202412333"/>
+  <nd ref="4202412334"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="809323022" visible="true" version="3" changeset="122765846" timestamp="2022-06-23T15:58:12Z" user="Baconcrisp" uid="3778777">
+  <nd ref="2916651443"/>
+  <nd ref="2916651445"/>
+  <nd ref="7567414131"/>
+  <nd ref="2916651446"/>
+  <nd ref="2916651439"/>
+  <nd ref="2916651435"/>
+  <nd ref="8458472476"/>
+  <nd ref="2916651430"/>
+  <nd ref="7567414128"/>
+  <nd ref="2916651429"/>
+  <nd ref="2916651432"/>
+  <nd ref="2916651443"/>
+  <tag k="bench" v="yes"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Vito Cruz"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323023" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="2936254412"/>
+  <nd ref="2936254411"/>
+  <nd ref="2936254408"/>
+  <nd ref="2936254290"/>
+  <nd ref="2936254287"/>
+  <nd ref="2936254288"/>
+  <nd ref="2936254293"/>
+  <nd ref="2936254295"/>
+  <nd ref="2936254401"/>
+  <nd ref="2936254405"/>
+  <nd ref="2936254412"/>
+  <tag k="bench" v="yes"/>
+  <tag k="layer" v="1"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Libertad"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323026" visible="true" version="1" changeset="85909536" timestamp="2020-05-28T21:33:09Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="2916659912"/>
+  <nd ref="2916659905"/>
+  <nd ref="2916659903"/>
+  <nd ref="7105431093"/>
+  <nd ref="2916658493"/>
+  <nd ref="2916658491"/>
+  <nd ref="7105431098"/>
+  <nd ref="2916659908"/>
+  <nd ref="2916659911"/>
+  <nd ref="7567414122"/>
+  <nd ref="2916659912"/>
+  <tag k="level" v="1"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323028" visible="true" version="3" changeset="122724841" timestamp="2022-06-22T18:55:51Z" user="JAAS" uid="3321532">
+  <nd ref="2916651463"/>
+  <nd ref="8506216735"/>
+  <nd ref="7567414139"/>
+  <nd ref="2916651461"/>
+  <nd ref="2916651464"/>
+  <nd ref="2916651476"/>
+  <nd ref="2916651477"/>
+  <nd ref="7567414143"/>
+  <nd ref="9839547726"/>
+  <nd ref="2916651478"/>
+  <nd ref="2916651471"/>
+  <nd ref="2916651467"/>
+  <nd ref="2916651463"/>
+  <tag k="bench" v="yes"/>
+  <tag k="layer" v="1"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Pedro Gil"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323030" visible="true" version="3" changeset="100825129" timestamp="2021-03-11T08:14:49Z" user="DP24PH" uid="5752740">
+  <nd ref="7567414184"/>
+  <nd ref="7567414192"/>
+  <nd ref="7567414194"/>
+  <nd ref="7567414187"/>
+  <nd ref="7567414137"/>
+  <nd ref="8477431604"/>
+  <nd ref="7567414197"/>
+  <nd ref="2916651457"/>
+  <nd ref="2916651454"/>
+  <nd ref="2916651450"/>
+  <nd ref="7567414201"/>
+  <nd ref="2916651448"/>
+  <nd ref="5598565640"/>
+  <nd ref="7567414134"/>
+  <nd ref="7567414184"/>
+  <tag k="bench" v="yes"/>
+  <tag k="layer" v="1"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Quirino"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323036" visible="true" version="5" changeset="148408045" timestamp="2024-03-09T03:40:09Z" user="GOwin" uid="1041828">
+  <nd ref="2916330932"/>
+  <nd ref="2916330931"/>
+  <nd ref="6814792666"/>
+  <nd ref="6814792667"/>
+  <nd ref="7567414145"/>
+  <nd ref="7838739167"/>
+  <nd ref="2916330921"/>
+  <nd ref="6814792663"/>
+  <nd ref="6814792660"/>
+  <nd ref="2916330925"/>
+  <nd ref="2916330933"/>
+  <nd ref="2916330934"/>
+  <nd ref="9839547728"/>
+  <nd ref="2916330932"/>
+  <tag k="bench" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="level" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="United Nations"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="LRT 1"/>
+ </way>
+ <way id="809323038" visible="true" version="7" changeset="174911502" timestamp="2025-11-20T15:28:40Z" user="Nekoatthegates" uid="22507476">
+  <nd ref="2916307390"/>
+  <nd ref="13319452339"/>
+  <nd ref="7567355508"/>
+  <nd ref="7567414286"/>
+  <nd ref="5397355738"/>
+  <nd ref="2916307384"/>
+  <nd ref="7805277816"/>
+  <nd ref="7805277817"/>
+  <nd ref="2916307390"/>
+  <tag k="bench" v="yes"/>
+  <tag k="level" v="2"/>
+  <tag k="name" v="Carriedo"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="route_ref" v="1"/>
+  <tag k="shelter" v="yes"/>
+ </way>
+ <way id="809547004" visible="true" version="12" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="7569408480"/>
+  <nd ref="10239695808"/>
+  <nd ref="7569408481"/>
+  <nd ref="7569408482"/>
+  <nd ref="7569408483"/>
+  <nd ref="7569422987"/>
+  <nd ref="7569422990"/>
+  <nd ref="7569408446"/>
+  <nd ref="7569408445"/>
+  <nd ref="7797754057"/>
+  <nd ref="7569408444"/>
+  <nd ref="7569422996"/>
+  <nd ref="7569408443"/>
+  <nd ref="7569422998"/>
+  <nd ref="7569422999"/>
+  <nd ref="7569408442"/>
+  <nd ref="7569423000"/>
+  <nd ref="7569408441"/>
+  <nd ref="7569423001"/>
+  <nd ref="7569408440"/>
+  <nd ref="7569408439"/>
+  <nd ref="7569408438"/>
+  <nd ref="7961970631"/>
+  <nd ref="7569408436"/>
+  <nd ref="7569423003"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="3"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh-Hant" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="812988118" visible="true" version="10" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="7569423003"/>
+  <nd ref="10239727212"/>
+  <nd ref="7569423005"/>
+  <nd ref="7961437439"/>
+  <nd ref="7569423006"/>
+  <nd ref="7569423007"/>
+  <nd ref="7569423008"/>
+  <nd ref="7569423011"/>
+  <nd ref="7569408434"/>
+  <nd ref="9594503093"/>
+  <nd ref="7569408433"/>
+  <nd ref="7569423013"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh-Hant" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="1015988494" visible="true" version="2" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="5521709878"/>
+  <nd ref="9371316870"/>
+  <nd ref="7461224911"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="bridge:support" v="pier"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="covered" v="yes"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="source" v="Build Build Build;Light Rail Manila Corporation;Light Rail Transit Authority;Maxar"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="1119539476" visible="true" version="1" changeset="129730777" timestamp="2022-12-05T08:24:41Z" user="DP24PH" uid="5752740">
+  <nd ref="10239727214"/>
+  <nd ref="10239727213"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="layer" v="2"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="railway" v="light_rail"/>
+ </way>
+ <way id="1119539478" visible="true" version="3" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="7569423013"/>
+  <nd ref="10239727210"/>
+  <nd ref="7569408432"/>
+  <nd ref="7569408431"/>
+  <nd ref="10239727215"/>
+  <nd ref="10239727214"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="name:zh-Hant" v="马尼拉轻轨1号线"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="1334970145" visible="true" version="3" changeset="179898331" timestamp="2026-03-15T13:30:04Z" user="bukaskalyemapa" uid="11782176">
+  <nd ref="13649883950"/>
+  <nd ref="13649883951"/>
+  <nd ref="13649883948"/>
+  <nd ref="13649883949"/>
+  <nd ref="13649883952"/>
+  <nd ref="13649883950"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="layer" v="2"/>
+  <tag k="level" v="1"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="tactile_paving" v="yes"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <way id="1334970166" visible="true" version="3" changeset="183399678" timestamp="2026-05-30T13:07:36Z" user="bukaskalyemapa" uid="11782176">
+  <nd ref="12350462790"/>
+  <nd ref="13895765958"/>
+  <nd ref="13895765957"/>
+  <nd ref="13895765955"/>
+  <nd ref="7461224921"/>
+  <nd ref="13895765954"/>
+  <nd ref="13895765947"/>
+  <nd ref="13895765943"/>
+  <nd ref="13895765946"/>
+  <nd ref="13895765945"/>
+  <nd ref="13895765944"/>
+  <nd ref="13895765935"/>
+  <nd ref="13895765936"/>
+  <nd ref="13895765937"/>
+  <nd ref="13895765934"/>
+  <nd ref="13895765938"/>
+  <nd ref="13895765939"/>
+  <nd ref="13895765940"/>
+  <nd ref="13895765941"/>
+  <nd ref="12350462790"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="layer" v="2"/>
+  <tag k="level" v="1"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="tactile_paving" v="yes"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <way id="1334970172" visible="true" version="7" changeset="182769862" timestamp="2026-05-17T07:36:35Z" user="Claudius Henrichs" uid="18069">
+  <nd ref="12345180248"/>
+  <nd ref="13649894951"/>
+  <nd ref="12350466803"/>
+  <nd ref="12350462799"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:structure" v="beam"/>
+  <tag k="construction_date" v="2019-04"/>
+  <tag k="electrified" v="contact_line"/>
+  <tag k="frequency" v="0"/>
+  <tag k="gauge" v="1435"/>
+  <tag k="layer" v="2"/>
+  <tag k="maxspeed" v="15"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="owner" v="Light Rail Transit Authority"/>
+  <tag k="railway" v="light_rail"/>
+  <tag k="railway:etcs" v="1"/>
+  <tag k="ref" v="1"/>
+  <tag k="usage" v="main"/>
+  <tag k="voltage" v="750"/>
+ </way>
+ <way id="1514005461" visible="true" version="1" changeset="182702927" timestamp="2026-05-15T14:52:12Z" user="bukaskalyemapa" uid="11782176">
+  <nd ref="13830996127"/>
+  <nd ref="13830996126"/>
+  <nd ref="13830996125"/>
+  <nd ref="13830996124"/>
+  <nd ref="13830996123"/>
+  <nd ref="13830996127"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="layer" v="2"/>
+  <tag k="level" v="1"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="tactile_paving" v="yes"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <way id="1546439924" visible="true" version="2" changeset="186738062" timestamp="2026-08-01T01:00:27Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1978892697"/>
+  <nd ref="14065286190"/>
+  <nd ref="14065286186"/>
+  <nd ref="14065286183"/>
+  <nd ref="14065286189"/>
+  <nd ref="1978892983"/>
+  <nd ref="1978892775"/>
+  <nd ref="14065312792"/>
+  <nd ref="1978892751"/>
+  <nd ref="1978892697"/>
+  <tag k="bench" v="yes"/>
+  <tag k="bin" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Bambang"/>
+  <tag k="passenger_information_display" v="yes"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+ </way>
+ <way id="1546439926" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="2915625923"/>
+  <nd ref="7819286057"/>
+  <nd ref="7819286059"/>
+  <nd ref="7819286063"/>
+  <nd ref="7819286061"/>
+  <nd ref="2915625943"/>
+  <nd ref="2915625942"/>
+  <nd ref="14065286197"/>
+  <nd ref="2915625936"/>
+  <nd ref="2915625923"/>
+  <tag k="bench" v="yes"/>
+  <tag k="bin" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Tayuman"/>
+  <tag k="passenger_information_display" v="yes"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+ </way>
+ <way id="1546439927" visible="true" version="1" changeset="186737945" timestamp="2026-08-01T00:55:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="14065320538"/>
+  <nd ref="2916263740"/>
+  <nd ref="67755137"/>
+  <nd ref="14065320530"/>
+  <nd ref="2916263725"/>
+  <nd ref="2916263704"/>
+  <nd ref="14065320532"/>
+  <nd ref="2916263705"/>
+  <nd ref="2916261699"/>
+  <nd ref="14065320537"/>
+  <nd ref="14065320536"/>
+  <nd ref="14065320535"/>
+  <nd ref="14065320538"/>
+  <tag k="bench" v="yes"/>
+  <tag k="bin" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="level" v="1"/>
+  <tag k="name" v="Blumentritt"/>
+  <tag k="passenger_information_display" v="yes"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="railway" v="platform"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <relation id="8000260" visible="true" version="42" changeset="187129981" timestamp="2026-08-08T11:45:58Z" user="Claudius Henrichs" uid="18069">
+  <member type="way" ref="1334970145" role="platform_entry_only"/>
+  <member type="node" ref="12345180248" role="stop_entry_only"/>
+  <member type="way" ref="1514005461" role="platform"/>
+  <member type="node" ref="12345180246" role="stop"/>
+  <member type="way" ref="1334970166" role="platform"/>
+  <member type="node" ref="5866984085" role="stop"/>
+  <member type="node" ref="9371316870" role="stop"/>
+  <member type="node" ref="5521709877" role="stop"/>
+  <member type="node" ref="4475471872" role="stop"/>
+  <member type="node" ref="5527137132" role="stop"/>
+  <member type="way" ref="809323023" role="platform"/>
+  <member type="node" ref="10053766609" role="stop"/>
+  <member type="way" ref="809323026" role="platform"/>
+  <member type="node" ref="10053766608" role="stop"/>
+  <member type="way" ref="809323022" role="platform"/>
+  <member type="node" ref="10053766607" role="stop"/>
+  <member type="way" ref="809323030" role="platform"/>
+  <member type="node" ref="10053766606" role="stop"/>
+  <member type="way" ref="809323028" role="platform"/>
+  <member type="node" ref="10053766605" role="stop"/>
+  <member type="way" ref="809323036" role="platform"/>
+  <member type="node" ref="10053766604" role="stop"/>
+  <member type="node" ref="7330612087" role="stop"/>
+  <member type="node" ref="13791320538" role="stop"/>
+  <member type="way" ref="809323038" role="platform"/>
+  <member type="way" ref="51765639" role="platform"/>
+  <member type="node" ref="7569408464" role="stop"/>
+  <member type="way" ref="1546439924" role="platform"/>
+  <member type="node" ref="7569408465" role="stop"/>
+  <member type="way" ref="1546439926" role="platform"/>
+  <member type="node" ref="7569408466" role="stop"/>
+  <member type="way" ref="1546439927" role="platform"/>
+  <member type="node" ref="7569408467" role="stop"/>
+  <member type="node" ref="7569408470" role="stop"/>
+  <member type="node" ref="7569408477" role="stop"/>
+  <member type="node" ref="7569408478" role="stop"/>
+  <member type="node" ref="7569408480" role="stop"/>
+  <member type="node" ref="7569423003" role="stop"/>
+  <member type="node" ref="7569423013" role="stop_exit_only"/>
+  <member type="way" ref="1334970172" role=""/>
+  <member type="way" ref="678960766" role=""/>
+  <member type="way" ref="678960760" role=""/>
+  <member type="way" ref="628734505" role=""/>
+  <member type="way" ref="1015988494" role=""/>
+  <member type="way" ref="642764196" role=""/>
+  <member type="way" ref="420302943" role=""/>
+  <member type="way" ref="758005274" role=""/>
+  <member type="way" ref="420302942" role=""/>
+  <member type="way" ref="420302935" role=""/>
+  <member type="way" ref="576201875" role=""/>
+  <member type="way" ref="576201877" role=""/>
+  <member type="way" ref="809323011" role=""/>
+  <member type="way" ref="576201878" role=""/>
+  <member type="way" ref="809547004" role=""/>
+  <member type="way" ref="812988118" role=""/>
+  <member type="way" ref="1119539478" role="inactive"/>
+  <member type="way" ref="1119539476" role="inactive"/>
+  <tag k="air_conditioning" v="yes"/>
+  <tag k="colour" v="#008000"/>
+  <tag k="duration" v="67"/>
+  <tag k="from" v="Dr. Santos"/>
+  <tag k="interval" v="5"/>
+  <tag k="name" v="LRT Line 1"/>
+  <tag k="network" v="Manila LRT"/>
+  <tag k="opening_hours" v="Mo-Fr 04:30-23:52; Sa-Su 05:00-22:52"/>
+  <tag k="operator" v="Light Rail Manila Corporation"/>
+  <tag k="operator:wikidata" v="Q65087474"/>
+  <tag k="operator:wikipedia" v="en:Light Rail Manila Corporation"/>
+  <tag k="public_transport:version" v="2"/>
+  <tag k="ref" v="1"/>
+  <tag k="route" v="light_rail"/>
+  <tag k="to" v="Fernando Poe Jr."/>
+  <tag k="type" v="route"/>
+  <tag k="website" v="http://www.lrmc.com.ph"/>
+  <tag k="wikidata" v="Q4165124"/>
+ </relation>
+</osm>

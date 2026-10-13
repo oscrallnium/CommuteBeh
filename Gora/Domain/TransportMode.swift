@@ -57,7 +57,7 @@ enum PaymentMethod: String, Codable, CaseIterable, Hashable {
 
 // MARK: - Data Models (mirror the JSON schema)
 
-struct Coordinates: Codable, Hashable {
+nonisolated struct Coordinates: Codable, Hashable, Sendable {
     let lat: Double
     let lng: Double
 }
@@ -100,6 +100,11 @@ struct LineConfig: Codable {
     /// Present on every line seeded server-side; optional only so a hand-written test
     /// fixture that omits it still decodes.
     let mode: String?
+    /// Highest `_S<n>` number the server has issued on this line. Absent in graphs cached
+    /// before the counter existed.
+    let lastStopNumber: Int?
+    /// `#RRGGBB`. Absent when the line has no own color or the graph predates the field.
+    let colorHex: String?
 }
 
 /// A stop, or one of the two synthetic nodes the engine injects for a pinned coordinate
@@ -124,6 +129,27 @@ struct Station: Codable, Identifiable, Hashable {
     /// reader must therefore treat "no access points" as normal and fall back to
     /// `coordinates` — see `accessPoint(kind:direction:nearestTo:)`.
     let accessPoints: [StationAccessPoint]?
+
+    /// 1-based position in the stop chain. Absent on hand-authored stations and on graphs
+    /// cached before the field existed; `StationChain.ordered` then falls back to the id.
+    let sequence: Int?
+
+    /// Absent means passengers may board and alight.
+    let boarding: Boarding?
+
+    /// Decoded leniently: an unrecognised value becomes `.both`.
+    enum Boarding: String, Codable, Hashable {
+        case both
+        case alightOnly = "alight_only"
+
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Boarding(rawValue: raw) ?? .both
+        }
+    }
+
+    /// True when a vehicle stops here only to let passengers off.
+    var isAlightOnly: Bool { boarding == .alightOnly }
 
     struct OperatingHours: Codable, Hashable {
         let open: String
@@ -342,6 +368,11 @@ struct TransitGraph: Codable {
         lines                = try c.decodeIfPresent([String: LineConfig].self,   forKey: .lines) ?? [:]
         enforceOperatingHours = try c.decodeIfPresent(Bool.self, forKey: .enforceOperatingHours) ?? true
     }
+
+    /// The graph color of a line, or nil when the line has no `colorHex`.
+    func lineColor(for lineID: String) -> Color? {
+        lines[lineID]?.colorHex.flatMap(Color.init(hex:))
+    }
 }
 
 // MARK: - Route Request / Result
@@ -392,7 +423,7 @@ struct RouteRequest {
 /// One segment of the A* path — exactly one graph edge.
 /// Used internally for polyline stitching and fare calculation.
 /// Consolidated into RouteLeg before being surfaced to the UI.
-struct RawStep {
+struct RawStep: Codable {
     let fromStation: Station
     let toStation: Station
     let edge: TransitEdge
@@ -408,8 +439,9 @@ struct RawStep {
 ///
 /// For trains this means one boarding → one alighting regardless of how many
 /// stations the train passes through.
-struct RouteLeg: Identifiable {
-    let id = UUID()
+struct RouteLeg: Identifiable, Codable {
+    /// `copy(...)` carries the id over, so a refined leg keeps the identity of the leg it replaces.
+    var id = UUID()
 
     /// Station where the passenger boards / starts walking.
     let fromStation: Station
@@ -470,9 +502,15 @@ struct RouteLeg: Identifiable {
         guard let stop = accessStop else { return false }
         return distanceKm > AccessPolicy.comfortableRadiusKm(for: stop)
     }
+
+    /// `id` is transient and absent from the saved form.
+    private enum CodingKeys: String, CodingKey {
+        case fromStation, toStation, mode, line, direction, stops, effectiveTravelMinutes, fare
+        case distanceKm, polylineCoordinates, estimatedArrival, instruction, rawSteps
+    }
 }
 
-struct RouteResult {
+struct RouteResult: Codable {
     /// User-facing legs — one entry per continuous ride, no spurious reboarding.
     let legs: [RouteLeg]
     let totalTimeMinutes: Double
@@ -484,6 +522,14 @@ struct RouteResult {
     let modes: [TransportMode]
 
     var isEmpty: Bool { legs.isEmpty }
+
+    /// Legs that start a transfer dot: a leg whose mode differs from the leg before it.
+    /// Access walks get no dot because the origin and destination markers cover them.
+    var modeChangeLegs: [RouteLeg] {
+        zip(legs, legs.dropFirst()).compactMap { previous, leg in
+            leg.line != "ACCESS_WALK" && leg.mode != previous.mode ? leg : nil
+        }
+    }
 }
 
 struct RouteOption: Identifiable {
@@ -608,7 +654,7 @@ private struct MinHeap<T: Comparable> {
 /// read from inside `TransitGraphEngine`'s actor during the search.
 nonisolated enum AccessPolicy {
     /// Comfortable walk to an ordinary mid-route stop.
-    static let midRouteKm: Double = 0.6
+    static let midRouteKm: Double = 1.0
     /// Terminals earn a longer allowance — walking to a terminal is normal behaviour.
     static let terminalKm: Double = 1.2
     /// Absolute ceiling. Past this the location is simply not served by the network,
@@ -636,6 +682,18 @@ nonisolated enum AccessPolicy {
     static func walkMinutes(forKm km: Double) -> Double {
         km * detourFactor / walkSpeedKmPerMin
     }
+}
+
+// MARK: - Route Mode Preference
+
+/// Tunes A* to favour one mode over another when their real durations are close.
+/// `nonisolated` for the same reason as `AccessPolicy` — read inside the engine actor.
+nonisolated enum RoutePreference {
+    /// Search-only discount on train edges. Trains run on a fixed, congestion-free
+    /// right of way, so a route that rides rail is preferred over a same-length
+    /// bus, jeepney, or walk leg. Applies to search cost only — displayed durations
+    /// stay honest.
+    static let trainDiscountFactor: Double = 0.85
 }
 
 // MARK: - Transit Graph Engine (actor for thread safety)
@@ -712,6 +770,11 @@ actor TransitGraphEngine {
             }
         }
 
+        let walkMode = graph.transportModes.values.first(where: \.isAlwaysAllowed)?.id ?? "walk"
+        for transfer in TransferPolicy.edges(stations: graph.stations, existing: graph.edges, walkModeID: walkMode) {
+            adj[transfer.from, default: []].append(transfer)
+        }
+
         adjacency = adj
         stationMap = stMap
         peakHours = graph.peakHourMultipliers
@@ -725,7 +788,7 @@ actor TransitGraphEngine {
                 .filter(\.isAlwaysAllowed)
                 .map(\.id)
         )
-        walkModeID = graph.transportModes.values.first(where: \.isAlwaysAllowed)?.id ?? "walk"
+        walkModeID = walkMode
         enforceOperatingHours = graph.enforceOperatingHours
     }
 
@@ -853,7 +916,9 @@ actor TransitGraphEngine {
             interchangesWith: nil, amenities: [],
             operatingHours: Station.OperatingHours(open: "00:00", close: "23:59"),
             // A dropped pin is not a station and has no doors.
-            accessPoints: nil
+            accessPoints: nil,
+            sequence: nil,
+            boarding: nil
         )
     }
 
@@ -864,11 +929,9 @@ actor TransitGraphEngine {
     /// `widened: false` uses the comfortable, role-aware radius (`AccessPolicy`); `true`
     /// relaxes every candidate to the hard ceiling for the fallback pass.
     ///
-    /// Candidates are reduced to **the nearest stop on each line**, not the k nearest stops
-    /// overall. Taking the k nearest globally hands every access edge to whichever line is
-    /// densest around `coord` — around UPLB's Carabao Park all five nearest stops belong to
-    /// UPLB_KANAN — so a line whose stop sits slightly further away gets no way in at all
-    /// and the search reports "no route" for a trip that plainly exists.
+    /// Lines are capped per line, not per stop, so a dense line cannot take every slot from
+    /// a line slightly further away. Every in-range stop of a kept line gets an edge: a loop
+    /// or a two-way road passes `coord` more than once, and A* must compare both passes.
     private func buildAccessEdges(
         coord: Coordinates,
         virtualID: StationID,
@@ -885,9 +948,10 @@ actor TransitGraphEngine {
             }
 
         let nearby = Dictionary(grouping: candidates, by: { $0.station.line })
-            .compactMap { $0.value.min { $0.dist < $1.dist } }
-            .sorted { $0.dist < $1.dist }
+            .map { (nearest: $0.value.map(\.dist).min() ?? .infinity, stops: $0.value) }
+            .sorted { $0.nearest < $1.nearest }
             .prefix(AccessPolicy.maxLines)
+            .flatMap(\.stops)
 
         var extraAdj: [StationID: [TransitEdge]] = [:]
         for item in nearby {
@@ -1051,6 +1115,8 @@ actor TransitGraphEngine {
             for edge in neighbors {
                 let neighbor = edge.to
                 guard !closed.contains(neighbor) else { continue }
+                guard canTraverse(edge, from: effectiveStation(edge.from), to: effectiveStation(edge.to),
+                                  arrivedVia: cameFrom[currentID]?.edge) else { continue }
 
                 // ── Payment filter ──────────────────────────────────────────
                 // Modes marked isAlwaysAllowed (e.g. walk) bypass both filters.
@@ -1082,17 +1148,28 @@ actor TransitGraphEngine {
                 case .fastest:
                     effectiveMinutes = rawMinutes * peakMultiplier
                 case .cheapest:
-                    // Weight fare at 1.5 min/peso so fare-heavy routes are penalised relative to time.
-                    let fare = (edge.line == "INTERCHANGE" || edge.line == "ACCESS_WALK")
-                               ? 0.0 : edge.baseFare + edge.farePerKm * edge.distanceKm
-                    effectiveMinutes = rawMinutes * peakMultiplier + fare * 1.5
+                    effectiveMinutes = rawMinutes * peakMultiplier
                 }
+
+                // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
+                // cost only, so the shown travel time stays real minutes.
+                let isFareFree = edge.line == "INTERCHANGE" || edge.line == "ACCESS_WALK"
+                let fareSearchMinutes = request.costStrategy == .cheapest && !isFareFree
+                    ? (edge.baseFare + edge.farePerKm * edge.distanceKm) * 1.5
+                    : 0.0
 
                 // Access walking costs more than it takes: without this weight A* will walk
                 // 1.2 km to a stop to shave two riding minutes off, which no passenger does.
-                let searchMinutes = edge.line == "ACCESS_WALK"
+                let accessWeighted = edge.line == "ACCESS_WALK"
                     ? effectiveMinutes * AccessPolicy.discomfortFactor
                     : effectiveMinutes
+
+                // A train ride gets a matching search-only discount, so A* settles on rail
+                // over a bus, jeepney, or walk alternative of similar real duration.
+                let weightedMinutes = accessWeighted + fareSearchMinutes
+                let searchMinutes = TransportMode(rawValue: edge.mode) == .train
+                    ? weightedMinutes * RoutePreference.trainDiscountFactor
+                    : weightedMinutes
 
                 let tentativeG = (gScore[currentID] ?? .infinity) + searchMinutes
                 let tentativeTime = (timeScore[currentID] ?? .infinity) + effectiveMinutes
@@ -1101,7 +1178,7 @@ actor TransitGraphEngine {
                 // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
                 if enforceOperatingHours, !neighbor.hasPrefix("__"),
                    let neighborStation = effectiveStation(neighbor) {
-                    let arrivalMinutes = departureMinutes + Int(tentativeG)
+                    let arrivalMinutes = departureMinutes + Int(tentativeTime)
                     guard stationOpen(neighborStation, arrivalMinutes: arrivalMinutes,
                                       isAlwaysAllowed: isAlwaysAllowed) else { continue }
                 }
@@ -1124,6 +1201,22 @@ actor TransitGraphEngine {
         }
 
         return nil
+    }
+
+    /// An alight-only station accepts a ride in and releases a walk out. A ride out needs a
+    /// ride on the same line in, because boarding there is forbidden.
+    private func canTraverse(_ edge: TransitEdge, from: Station?, to: Station?,
+                             arrivedVia incoming: TransitEdge?) -> Bool {
+        let isWalkLike = alwaysAllowedModes.contains(edge.mode)
+            || edge.line == "ACCESS_WALK" || edge.line == "INTERCHANGE"
+        if isWalkLike {
+            return !(to?.isAlightOnly ?? false)
+        }
+        guard from?.isAlightOnly ?? false else { return true }
+        guard let incoming else { return false }
+        return incoming.line == edge.line
+            && !alwaysAllowedModes.contains(incoming.mode)
+            && incoming.line != "ACCESS_WALK" && incoming.line != "INTERCHANGE"
     }
 
     // MARK: - Heuristic
@@ -1324,8 +1417,7 @@ actor TransitGraphEngine {
                 line: line,
                 direction: legDirection,
                 from: first.fromStation,
-                to: last.toStation,
-                stopCount: stops.count - 1
+                to: last.toStation
             )
 
             // Direction: all merged steps must agree on direction (they will —
@@ -1392,10 +1484,8 @@ actor TransitGraphEngine {
         line: String,
         direction: String?,
         from: Station,
-        to: Station,
-        stopCount: Int
+        to: Station
     ) -> String {
-        let stopsLabel = stopCount == 1 ? "1 stop" : "\(stopCount) stops"
         // The line's human name where one exists — "UPLB Kanan" rather than the raw
         // "UPLB_KANAN" key every instruction used to print verbatim. Falls back to the
         // key itself for a line the `lines` config doesn't (yet) cover, which for a
@@ -1405,10 +1495,10 @@ actor TransitGraphEngine {
         switch mode {
         case .train:
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Board \(lineName)\(dirLabel) at \(from.shortName), ride to \(to.shortName) (\(stopsLabel))"
+            return "Board \(lineName)\(dirLabel) at \(from.shortName), ride to \(to.shortName)"
         case .bus:
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Take \(lineName) bus\(dirLabel) from \(from.shortName) to \(to.shortName) (\(stopsLabel))"
+            return "Take \(lineName) bus\(dirLabel) from \(from.shortName) to \(to.shortName)"
         case .jeepney:
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
             return "Ride jeepney (\(lineName))\(dirLabel) from \(from.shortName) to \(to.shortName)"
@@ -1571,6 +1661,8 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     private var latest: Coordinates?
     private var latestAt: Date = .distantPast
     private var isTracking = false
+    /// Held for the whole commute so the system keeps the app running in the background.
+    private var backgroundSession: CLBackgroundActivitySession?
     /// Callers of `requestOnce()` waiting on the next fix.
     ///
     /// An array, not a single slot: origin and destination can both be in flight, and
@@ -1611,6 +1703,20 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
             manager.requestWhenInUseAuthorization()
         default:
             break
+        }
+    }
+
+    /// Keeps GPS fixes arriving while the app is in the background. Turn it on only during a commute.
+    @MainActor
+    func setBackgroundUpdates(_ enabled: Bool) {
+        manager.allowsBackgroundLocationUpdates = enabled
+        manager.showsBackgroundLocationIndicator = enabled
+        manager.pausesLocationUpdatesAutomatically = !enabled
+        if enabled {
+            backgroundSession = backgroundSession ?? CLBackgroundActivitySession()
+        } else {
+            backgroundSession?.invalidate()
+            backgroundSession = nil
         }
     }
 
@@ -1751,6 +1857,10 @@ final class RouteStore {
     var routeOptions: [RouteOption] = []
     var isLoading: Bool = false
     var isLocating: Bool = false
+    /// True while `CommuteRerouter` is re-measuring the current walk leg after
+    /// `CommuteRerouteMonitor` decided the passenger left it. Drives the "Rerouting…"
+    /// state `CommuteModeView` shows in place of the leg instruction.
+    var isRerouting: Bool = false
     var errorMessage: String?
     var allStations: [Station] = []
     var searchQuery: String = ""
@@ -1758,7 +1868,7 @@ final class RouteStore {
 
     // MARK: Address Search — LocationSuggestion state
     // Implementation (MKLocalSearchCompleter wiring, merging, invalidation) lives in
-    // LocationSearch.swift so this file stays MapKit-free. See FEATURE_ADDRESS_ROUTING_FINDINGS.md §2.
+    // LocationSearch.swift so this file stays MapKit-free.
     var originSuggestions: [LocationSuggestion] = []
     var destSuggestions: [LocationSuggestion] = []
     var showOriginSuggestions = false
@@ -1804,10 +1914,38 @@ final class RouteStore {
     /// drawn around the passenger dot — the same visual as the Maps app.
     var userHorizontalAccuracy: CLLocationAccuracy?
     #if DEBUG
-    /// True while `DebugTrainSimulator` is driving `userLocation` itself. Real GPS
-    /// fixes are dropped rather than stopped outright — halting `CLLocationManager`
-    /// mid-simulation would just make the *next* real fix stale instead of accurate.
-    var isLocationSimulated = false
+    /// True while `DebugTrainSimulator` owns `userLocation`. Real fixes are stored but not applied.
+    private(set) var isLocationSimulated = false
+    /// Newest real fix. `endSimulatedLocation()` restores it so real GPS resumes at once.
+    @ObservationIgnored private var lastRealFix: (coordinate: Coordinates, speed: CLLocationSpeed?,
+                                                  course: CLLocationDirection?, accuracy: CLLocationAccuracy)?
+
+    /// Moves the passenger to `coordinate` at rest and blocks real fixes until the run ends.
+    func beginSimulatedLocation(at coordinate: Coordinates) {
+        isLocationSimulated = true
+        userLocation = coordinate
+        userSpeed = 0
+        userCourse = nil
+        userHorizontalAccuracy = nil
+    }
+
+    /// The only way the simulator writes the passenger position.
+    func applySimulatedFix(_ coordinate: Coordinates, speed: CLLocationSpeed, course: CLLocationDirection?) {
+        guard isLocationSimulated else { return }
+        userLocation = coordinate
+        userSpeed = speed
+        userCourse = course
+    }
+
+    /// Unblocks real fixes and puts the newest real fix back. Keeps the position when none exists.
+    func endSimulatedLocation() {
+        isLocationSimulated = false
+        guard let fix = lastRealFix else { return }
+        userSpeed = fix.speed
+        userCourse = fix.course
+        userLocation = fix.coordinate
+        userHorizontalAccuracy = fix.accuracy
+    }
     #endif
 
     private var engine: TransitGraphEngine?
@@ -1948,6 +2086,14 @@ final class RouteStore {
         addIfNew(cheapest, label: .cheapest)
         addIfNew(balanced, label: .balanced)
 
+        // Shortest time first. Fewer transfers break a tie in time, and the index keeps the
+        // insertion order after that.
+        options = options.enumerated()
+            .sorted {
+                ($0.element.result.totalTimeMinutes, $0.element.result.transfers, $0.offset)
+                    < ($1.element.result.totalTimeMinutes, $1.element.result.transfers, $1.offset)
+            }
+            .map(\.element)
         routeOptions = Array(options.prefix(3))
         routeResult  = routeOptions.first?.result
 
@@ -2002,6 +2148,7 @@ final class RouteStore {
     func startTrackingUserLocation() {
         locationFetcher.onUpdate = { [weak self] coord, speed, course, accuracy in
             #if DEBUG
+            self?.lastRealFix = (coord, speed, course, accuracy)
             guard self?.isLocationSimulated != true else { return }
             let courseText: String = course.map { String($0) } ?? "nil"
             let speedText: String = speed.map { String($0) } ?? "nil"
@@ -2021,6 +2168,27 @@ final class RouteStore {
             self?.userHeading = heading
         }
         locationFetcher.startTracking()
+    }
+
+    @MainActor
+    func setBackgroundLocationUpdates(_ enabled: Bool) {
+        locationFetcher.setBackgroundUpdates(enabled)
+    }
+
+    /// Display name of a line from the loaded graph, or the line key before the graph loads.
+    func lineDisplayName(_ key: String) -> String {
+        engine?.lines[key]?.displayName ?? key
+    }
+
+    /// Color of a line from the loaded graph, or nil when the line has no `colorHex`.
+    func lineColor(_ key: String) -> Color? {
+        engine?.lines[key]?.colorHex.flatMap(Color.init(hex:))
+    }
+
+    /// Map and rail color of a leg. Walk legs keep the walk color. A ride leg uses its line
+    /// color from the graph, or its mode color when the line has none.
+    func legColor(_ leg: RouteLeg) -> Color {
+        leg.mode == .walk ? leg.mode.color : lineColor(leg.line) ?? leg.mode.color
     }
 
     /// Shut the location feed down. The last known `userLocation` is deliberately kept —

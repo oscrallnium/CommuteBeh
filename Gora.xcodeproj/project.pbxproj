@@ -6,20 +6,99 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4CC335E12FD00000000000B2 /* GoraLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4CC335E12FD00000000000A2 /* GoraLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4CF1A0000000000000000011 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000001 /* FirebaseCore */; };
+		4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000002 /* FirebaseAnalytics */; };
+		4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000003 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4CC335E12FD00000000000A8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4CC335B22FC60F7500D967F3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4CC335E12FD00000000000A1;
+			remoteInfo = GoraLiveActivity;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		4CC335E12FD00000000000B1 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4CC335E12FD00000000000B2 /* GoraLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		4CC335BA2FC60F7500D967F3 /* Gora.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gora.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4CC335E12FD00000000000A2 /* GoraLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GoraLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4CC335E12FD00000000000A4 /* Exceptions for "GoraLiveActivity" folder in "GoraLiveActivity" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4CC335E12FD00000000000A1 /* GoraLiveActivity */;
+		};
+		4CC335F12FD00000000000C1 /* Exceptions for "Gora" folder in "Gora" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4CC335B92FC60F7500D967F3 /* Gora */;
+		};
+		4CC335F12FD00000000000C2 /* Exceptions for "Gora" folder in "GoraLiveActivity" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+				LiveActivity/CommuteActivityAttributes.swift,
+			);
+			target = 4CC335E12FD00000000000A1 /* GoraLiveActivity */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4CC335BC2FC60F7500D967F3 /* Gora */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4CC335F12FD00000000000C1 /* Exceptions for "Gora" folder in "Gora" target */,
+				4CC335F12FD00000000000C2 /* Exceptions for "Gora" folder in "GoraLiveActivity" target */,
+			);
 			path = Gora;
+			sourceTree = "<group>";
+		};
+		4CC335E12FD00000000000A3 /* GoraLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4CC335E12FD00000000000A4 /* Exceptions for "GoraLiveActivity" folder in "GoraLiveActivity" target */,
+			);
+			path = GoraLiveActivity;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		4CC335B72FC60F7500D967F3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4CF1A0000000000000000011 /* FirebaseCore in Frameworks */,
+				4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */,
+				4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4CC335E12FD00000000000A6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				4CC335BC2FC60F7500D967F3 /* Gora */,
+				4CC335E12FD00000000000A3 /* GoraLiveActivity */,
 				4CC335BB2FC60F7500D967F3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				4CC335BA2FC60F7500D967F3 /* Gora.app */,
+				4CC335E12FD00000000000A2 /* GoraLiveActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,20 +136,47 @@
 				4CC335B62FC60F7500D967F3 /* Sources */,
 				4CC335B72FC60F7500D967F3 /* Frameworks */,
 				4CC335B82FC60F7500D967F3 /* Resources */,
+				4CC335E12FD00000000000B1 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4CC335E12FD00000000000A9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4CC335BC2FC60F7500D967F3 /* Gora */,
 			);
 			name = Gora;
 			packageProductDependencies = (
+				4CF1A0000000000000000001 /* FirebaseCore */,
+				4CF1A0000000000000000002 /* FirebaseAnalytics */,
+				4CF1A0000000000000000003 /* FirebaseFirestore */,
 			);
 			productName = Gora;
 			productReference = 4CC335BA2FC60F7500D967F3 /* Gora.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4CC335E12FD00000000000A1 /* GoraLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4CC335E12FD00000000000B5 /* Build configuration list for PBXNativeTarget "GoraLiveActivity" */;
+			buildPhases = (
+				4CC335E12FD00000000000A5 /* Sources */,
+				4CC335E12FD00000000000A6 /* Frameworks */,
+				4CC335E12FD00000000000A7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4CC335E12FD00000000000A3 /* GoraLiveActivity */,
+			);
+			name = GoraLiveActivity;
+			packageProductDependencies = (
+			);
+			productName = GoraLiveActivity;
+			productReference = 4CC335E12FD00000000000A2 /* GoraLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -83,6 +191,9 @@
 					4CC335B92FC60F7500D967F3 = {
 						CreatedOnToolsVersion = 26.5;
 					};
+					4CC335E12FD00000000000A1 = {
+						CreatedOnToolsVersion = 26.5;
+					};
 				};
 			};
 			buildConfigurationList = 4CC335B52FC60F7500D967F3 /* Build configuration list for PBXProject "Gora" */;
@@ -94,18 +205,29 @@
 			);
 			mainGroup = 4CC335B12FC60F7500D967F3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4CC335BB2FC60F7500D967F3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				4CC335B92FC60F7500D967F3 /* Gora */,
+				4CC335E12FD00000000000A1 /* GoraLiveActivity */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		4CC335B82FC60F7500D967F3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4CC335E12FD00000000000A7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +244,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4CC335E12FD00000000000A5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4CC335E12FD00000000000A9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4CC335E12FD00000000000A1 /* GoraLiveActivity */;
+			targetProxy = 4CC335E12FD00000000000A8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		4CC335C32FC60F7700D967F3 /* Debug */ = {
@@ -251,15 +388,17 @@
 				DEVELOPMENT_TEAM = HXW4W3DD76;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Gora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Gora uses the camera to show walking directions and the signs you place in AR.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Records your commute path in the background so you can create transit routes.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your lcoation is used to gather location data";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Records your commute path for route creation.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_UIBackgroundModes = location;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
@@ -298,15 +437,17 @@
 				DEVELOPMENT_TEAM = HXW4W3DD76;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Gora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Gora uses the camera to show walking directions and the signs you place in AR.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Records your commute path in the background so you can create transit routes.";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your lcoation is used to gather location data";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Records your commute path for route creation.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
-				INFOPLIST_KEY_UIBackgroundModes = location;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
@@ -335,6 +476,62 @@
 			};
 			name = Release;
 		};
+		4CC335E12FD00000000000B3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HXW4W3DD76;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GoraLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GoraLiveActivity;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.banaueinc.gora.GoraLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		4CC335E12FD00000000000B4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = HXW4W3DD76;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GoraLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GoraLiveActivity;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.banaueinc.gora.GoraLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -356,7 +553,45 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4CC335E12FD00000000000B5 /* Build configuration list for PBXNativeTarget "GoraLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4CC335E12FD00000000000B3 /* Debug */,
+				4CC335E12FD00000000000B4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4CF1A0000000000000000001 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		4CF1A0000000000000000002 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		4CF1A0000000000000000003 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4CC335B22FC60F7500D967F3 /* Project object */;
 }

@@ -28,13 +28,13 @@ final class UserSession {
             Task { await refreshSession() }
         }
 
-        // Any 401 from the API layer broadcasts this; force a sign-out
+        // Any 401 from the API layer broadcasts this; force re-authentication
         NotificationCenter.default.addObserver(
             forName: .sessionExpired,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor [weak self] in self?.clearSession() }
+            Task { @MainActor [weak self] in self?.expireSession() }
         }
     }
 
@@ -58,7 +58,7 @@ final class UserSession {
             persist(user)
         } catch APIError.unauthorized {
             // Token was revoked — force the user back to login
-            clearSession()
+            expireSession()
         } catch {
             // Network failure — keep showing the cached profile until connectivity returns
         }
@@ -67,6 +67,14 @@ final class UserSession {
     private func persist(_ user: UserProfile) {
         guard let data = try? JSONEncoder().encode(user) else { return }
         UserDefaults.standard.set(data, forKey: Self.profileKey)
+    }
+
+    /// Forces the login cover back up without discarding `currentUser`, so tabs gated on
+    /// `isAdmin` and any in-progress state underneath the cover stay mounted. A later
+    /// `login(user:)` call overwrites the cached profile with the fresh one.
+    private func expireSession() {
+        Keychain.delete()
+        isLoggedIn = false
     }
 
     private func clearSession() {

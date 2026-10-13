@@ -140,10 +140,6 @@ enum DebugRouteSeed {
     }
 
     private static func confirmDestination(_ place: Place, on vm: RouteStore) -> String {
-        if let station = vm.nearestStation(to: place.coordinate, within: 150) {
-            vm.confirmDestinationStation(station)
-            return station.name
-        }
         vm.destinationID = RouteRequest.virtualDestID
         vm.destinationCoordinate = place.coordinate
         vm.confirmedDestLabel = place.name

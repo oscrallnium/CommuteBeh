@@ -1,0 +1,3255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="openstreetmap-cgimap 2.1.0 (1312 spike-08.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <node id="12182002" visible="true" version="34" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4855269" lon="121.0450574"/>
+ <node id="12182012" visible="true" version="11" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4154479" lon="121.0453262"/>
+ <node id="12182016" visible="true" version="15" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4146536" lon="121.0451654"/>
+ <node id="12182021" visible="true" version="11" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4137872" lon="121.0448100"/>
+ <node id="12182030" visible="true" version="12" changeset="117347746" timestamp="2022-02-13T10:26:07Z" user="TagaSanPedroAko" uid="2541613" lat="14.4107841" lon="121.0429294"/>
+ <node id="12182035" visible="true" version="8" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4086183" lon="121.0417514"/>
+ <node id="12182039" visible="true" version="14" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4065642" lon="121.0407977"/>
+ <node id="12182040" visible="true" version="19" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4046653" lon="121.0400785"/>
+ <node id="12182041" visible="true" version="14" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4015415" lon="121.0392758"/>
+ <node id="12182042" visible="true" version="13" changeset="180436619" timestamp="2026-03-26T05:40:43Z" user="Patrick Correa" uid="23943637" lat="14.3988517" lon="121.0388585"/>
+ <node id="12182043" visible="true" version="16" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3955358" lon="121.0386774"/>
+ <node id="12182082" visible="true" version="16" changeset="120820000" timestamp="2022-05-11T05:26:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.3501941" lon="121.0462010"/>
+ <node id="12182087" visible="true" version="17" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3481982" lon="121.0468295"/>
+ <node id="29273094" visible="true" version="16" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4031961" lon="121.0396477"/>
+ <node id="29350285" visible="true" version="21" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4162040" lon="121.0453850"/>
+ <node id="32167765" visible="true" version="12" changeset="180679172" timestamp="2026-03-31T15:14:38Z" user="bukaskalyemapa" uid="11782176" lat="14.5411945" lon="121.0178638"/>
+ <node id="32167768" visible="true" version="9" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411092" lon="121.0176268"/>
+ <node id="32167769" visible="true" version="10" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410796" lon="121.0172988"/>
+ <node id="32167770" visible="true" version="9" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411080" lon="121.0171247"/>
+ <node id="32167771" visible="true" version="10" changeset="76231900" timestamp="2019-10-26T00:12:11Z" user="Rally" uid="24338" lat="14.5411554" lon="121.0168560"/>
+ <node id="32168157" visible="true" version="10" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411383" lon="121.0167186"/>
+ <node id="32168158" visible="true" version="11" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410884" lon="121.0166077"/>
+ <node id="32168164" visible="true" version="16" changeset="79353517" timestamp="2020-01-08T19:28:39Z" user="Rally" uid="24338" lat="14.5405577" lon="121.0164044"/>
+ <node id="224266089" visible="true" version="12" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5408766" lon="121.0164326"/>
+ <node id="243903263" visible="true" version="41" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4559277" lon="121.0452047">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Sucat"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="243903270" visible="true" version="27" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4518029" lon="121.0452166"/>
+ <node id="244452511" visible="true" version="20" changeset="164317646" timestamp="2025-03-31T08:25:24Z" user="TagaSanPedroAko" uid="2541613" lat="14.5424449" lon="121.0198144"/>
+ <node id="244452853" visible="true" version="14" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5322553" lon="121.0211593"/>
+ <node id="244455883" visible="true" version="11" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5239794" lon="121.0256584">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="253125400" visible="true" version="26" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4128892" lon="121.0442769">
+  <tag k="destination" v="Filinvest"/>
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Filinvest"/>
+  <tag k="ref" v="23"/>
+ </node>
+ <node id="253125865" visible="true" version="18" changeset="113029136" timestamp="2021-10-27T09:56:11Z" user="GOwin" uid="1041828" lat="14.4090506" lon="121.0419650">
+  <tag k="distance" v="23"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="inscription" v="Kilometer 23"/>
+ </node>
+ <node id="259655618" visible="true" version="25" changeset="133658521" timestamp="2023-03-14T09:38:52Z" user="DP24PH" uid="5752740" lat="14.5454154" lon="121.0233650"/>
+ <node id="259656916" visible="true" version="9" changeset="79352848" timestamp="2020-01-08T19:03:46Z" user="Rally" uid="24338" lat="14.5396641" lon="121.0169401"/>
+ <node id="259657170" visible="true" version="8" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5407356" lon="121.0164142"/>
+ <node id="259657220" visible="true" version="8" changeset="54721135" timestamp="2017-12-18T06:33:45Z" user="webwires" uid="7193721" lat="14.5393925" lon="121.0171567"/>
+ <node id="261606218" visible="true" version="11" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3309877" lon="121.0509288"/>
+ <node id="261660802" visible="true" version="8" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3326372" lon="121.0525546"/>
+ <node id="261663161" visible="true" version="16" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3338299" lon="121.0529349">
+  <tag k="barrier" v="toll_booth"/>
+  <tag k="currency:others" v="no"/>
+  <tag k="currency:PHP" v="yes"/>
+  <tag k="name" v="Southwoods"/>
+  <tag k="old_name" v="Biñan"/>
+  <tag k="operator" v="South Luzon Tollway Corporation;Manila Toll Expressway Systems"/>
+  <tag k="payment:autosweep_rfid" v="yes"/>
+  <tag k="payment:cash" v="yes"/>
+ </node>
+ <node id="261663164" visible="true" version="5" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3330086" lon="121.0529197"/>
+ <node id="261663165" visible="true" version="5" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3329159" lon="121.0528910"/>
+ <node id="261663166" visible="true" version="6" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3328247" lon="121.0528276">
+  <tag k="highway" v="give_way"/>
+ </node>
+ <node id="261663167" visible="true" version="7" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3327435" lon="121.0527351"/>
+ <node id="261663774" visible="true" version="12" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3369295" lon="121.0521925"/>
+ <node id="261663912" visible="true" version="11" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613" lat="14.3324752" lon="121.0517694"/>
+ <node id="261663913" visible="true" version="9" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3323896" lon="121.0516830">
+  <tag k="hazard" v="dangerous_junction"/>
+ </node>
+ <node id="261663914" visible="true" version="5" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3321515" lon="121.0514645"/>
+ <node id="261663915" visible="true" version="8" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3318967" lon="121.0512389"/>
+ <node id="261663916" visible="true" version="8" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3317928" lon="121.0511699"/>
+ <node id="261663917" visible="true" version="7" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3312548" lon="121.0509698"/>
+ <node id="262432005" visible="true" version="17" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4240091" lon="121.0454103"/>
+ <node id="266788219" visible="true" version="18" changeset="153710318" timestamp="2024-07-08T16:04:42Z" user="GbabethemapGod" uid="15314242" lat="14.5361843" lon="121.0190197"/>
+ <node id="267162208" visible="true" version="7" changeset="124407379" timestamp="2022-08-02T19:48:49Z" user="Baconcrisp" uid="3778777" lat="14.3322269" lon="121.0515353">
+  <tag k="crossing" v="uncontrolled"/>
+  <tag k="crossing_ref" v="zebra"/>
+  <tag k="highway" v="crossing"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="267162209" visible="true" version="7" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3320838" lon="121.0513992"/>
+ <node id="267162211" visible="true" version="7" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3315840" lon="121.0510766"/>
+ <node id="267162272" visible="true" version="7" changeset="94982362" timestamp="2020-11-29T12:47:14Z" user="DP24PH" uid="5752740" lat="14.3332161" lon="121.0529475"/>
+ <node id="270280683" visible="true" version="17" changeset="154501886" timestamp="2024-07-27T22:45:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.5114496" lon="121.0324095"/>
+ <node id="270280686" visible="true" version="21" changeset="60292001" timestamp="2018-06-30T00:50:29Z" user="Rally" uid="24338" lat="14.5164559" lon="121.0297085"/>
+ <node id="301310216" visible="true" version="15" changeset="79352848" timestamp="2020-01-08T19:03:46Z" user="Rally" uid="24338" lat="14.5400177" lon="121.0166842"/>
+ <node id="306939617" visible="true" version="32" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4790196" lon="121.0451025"/>
+ <node id="313867013" visible="true" version="10" changeset="60292001" timestamp="2018-06-30T00:50:30Z" user="Rally" uid="24338" lat="14.5208214" lon="121.0270158"/>
+ <node id="313867014" visible="true" version="8" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5186737" lon="121.0281271"/>
+ <node id="313867015" visible="true" version="7" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5183094" lon="121.0283202"/>
+ <node id="313867016" visible="true" version="6" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5175714" lon="121.0288797"/>
+ <node id="313867017" visible="true" version="7" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5169727" lon="121.0293444"/>
+ <node id="313867128" visible="true" version="11" changeset="60292472" timestamp="2018-06-30T02:19:57Z" user="Rally" uid="24338" lat="14.5225721" lon="121.0263354"/>
+ <node id="316006645" visible="true" version="8" changeset="123289457" timestamp="2022-07-06T18:53:45Z" user="Pegasus21" uid="13510663" lat="14.5202616" lon="121.0272967"/>
+ <node id="358813408" visible="true" version="25" changeset="113465678" timestamp="2021-11-07T02:02:58Z" user="DP24PH" uid="5752740" lat="14.4232830" lon="121.0454104">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Alabang"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="358820866" visible="true" version="23" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4818801" lon="121.0450883">
+  <tag k="distance" v="15"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 15"/>
+ </node>
+ <node id="358822365" visible="true" version="21" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4864484" lon="121.0449889"/>
+ <node id="358828773" visible="true" version="16" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4918078" lon="121.0429768"/>
+ <node id="358828774" visible="true" version="19" changeset="159591283" timestamp="2024-11-25T21:54:11Z" user="TagaSanPedroAko" uid="2541613" lat="14.4894116" lon="121.0441950">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Bicutan"/>
+ </node>
+ <node id="358828776" visible="true" version="16" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4880760" lon="121.0446911"/>
+ <node id="358830689" visible="true" version="12" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.5028478" lon="121.0370203"/>
+ <node id="358836900" visible="true" version="14" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.5079164" lon="121.0343255"/>
+ <node id="358837605" visible="true" version="9" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.5083811" lon="121.0340644"/>
+ <node id="377644157" visible="true" version="12" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3950955" lon="121.0386865">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="382908638" visible="true" version="9" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4132426" lon="121.0444918"/>
+ <node id="382908846" visible="true" version="18" changeset="113465678" timestamp="2021-11-07T01:57:03Z" user="DP24PH" uid="5752740" lat="14.4226011" lon="121.0453800"/>
+ <node id="410579888" visible="true" version="12" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3787807" lon="121.0410926"/>
+ <node id="474489262" visible="true" version="8" changeset="120820000" timestamp="2022-05-11T05:26:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.3532852" lon="121.0455710"/>
+ <node id="474489393" visible="true" version="9" changeset="120820000" timestamp="2022-05-11T05:26:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.3526455" lon="121.0456870"/>
+ <node id="474490663" visible="true" version="12" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3569079" lon="121.0449535">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="474491452" visible="true" version="8" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3541781" lon="121.0454046"/>
+ <node id="474491980" visible="true" version="9" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3613225" lon="121.0441743"/>
+ <node id="474493923" visible="true" version="11" changeset="180433627" timestamp="2026-03-26T02:22:39Z" user="That Wa'er" uid="23663294" lat="14.3677487" lon="121.0430200"/>
+ <node id="496063135" visible="true" version="14" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4173356" lon="121.0453908">
+  <tag k="distance" v="22"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 22"/>
+ </node>
+ <node id="521372914" visible="true" version="15" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3377400" lon="121.0519129">
+  <tag k="destination" v="Southwoods; Binan"/>
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Southwoods"/>
+  <tag k="old_name" v="Halang"/>
+  <tag k="ref" v="31"/>
+ </node>
+ <node id="521376966" visible="true" version="14" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3703761" lon="121.0425844">
+  <tag k="destination" v="La Marea; San Pedro"/>
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="San Pedro"/>
+  <tag k="ref" v="27"/>
+ </node>
+ <node id="554199711" visible="true" version="7" changeset="110679002" timestamp="2021-09-03T13:24:39Z" user="ionut_radu" uid="10664319" lat="14.5153999" lon="121.0302848">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Merville"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="680994834" visible="true" version="5" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3314420" lon="121.0510280"/>
+ <node id="680994859" visible="true" version="6" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3308677" lon="121.0509197"/>
+ <node id="680994887" visible="true" version="8" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3305429" lon="121.0509301"/>
+ <node id="840105211" visible="true" version="4" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5278297" lon="121.0235383"/>
+ <node id="840105213" visible="true" version="5" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5277074" lon="121.0236116"/>
+ <node id="840105294" visible="true" version="4" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5280053" lon="121.0234408"/>
+ <node id="910197023" visible="true" version="14" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3656425" lon="121.0434196">
+  <tag k="distance" v="28"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 28"/>
+ </node>
+ <node id="910197027" visible="true" version="13" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3739593" lon="121.0419347">
+  <tag k="distance" v="27"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 27"/>
+ </node>
+ <node id="964753449" visible="true" version="10" changeset="141491819" timestamp="2023-09-20T03:17:39Z" user="GOwin" uid="1041828" lat="14.5061987" lon="121.0352511">
+  <tag k="distance" v="12"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="inscription" v="K | 12"/>
+ </node>
+ <node id="964753481" visible="true" version="13" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4271569" lon="121.0453887">
+  <tag k="distance" v="21"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 21"/>
+ </node>
+ <node id="966639604" visible="true" version="9" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3922886" lon="121.0388340">
+  <tag k="distance" v="25"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 25"/>
+ </node>
+ <node id="966639948" visible="true" version="10" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.4002567" lon="121.0390274">
+  <tag k="distance" v="24"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 24"/>
+ </node>
+ <node id="966641215" visible="true" version="12" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3389842" lon="121.0513013">
+  <tag k="distance" v="31"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 31"/>
+ </node>
+ <node id="966641305" visible="true" version="14" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3565110" lon="121.0450233">
+  <tag k="distance" v="29"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 29"/>
+ </node>
+ <node id="966666040" visible="true" version="9" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4902320" lon="121.0438264"/>
+ <node id="966666042" visible="true" version="15" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4851832" lon="121.0450687"/>
+ <node id="977206392" visible="true" version="8" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5312610" lon="121.0217006"/>
+ <node id="1021657032" visible="true" version="12" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3469772" lon="121.0473736">
+  <tag k="distance" v="30"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 30"/>
+ </node>
+ <node id="1074451660" visible="true" version="10" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4900007" lon="121.0439421">
+  <tag k="distance" v="14"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 14"/>
+ </node>
+ <node id="1074451671" visible="true" version="11" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4804727" lon="121.0451011"/>
+ <node id="1074451684" visible="true" version="13" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4723396" lon="121.0451323">
+  <tag k="distance" v="16"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 16"/>
+ </node>
+ <node id="1074451972" visible="true" version="16" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4359792" lon="121.0453201">
+  <tag k="distance" v="20"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 20"/>
+ </node>
+ <node id="1075300753" visible="true" version="11" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4980287" lon="121.0396118">
+  <tag k="distance" v="13"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 13"/>
+ </node>
+ <node id="1075300756" visible="true" version="11" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4733349" lon="121.0451288"/>
+ <node id="1075300811" visible="true" version="8" changeset="55688662" timestamp="2018-01-23T16:19:46Z" user="Rally" uid="24338" lat="14.5138981" lon="121.0311082">
+  <tag k="distance" v="11"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 11"/>
+ </node>
+ <node id="1078586457" visible="true" version="10" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3324877" lon="121.0520075"/>
+ <node id="1078586460" visible="true" version="4" changeset="120820000" timestamp="2022-05-11T05:26:27Z" user="TagaSanPedroAko" uid="2541613" lat="14.3514073" lon="121.0459233"/>
+ <node id="1078599663" visible="true" version="4" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4075259" lon="121.0412221"/>
+ <node id="1078603659" visible="true" version="3" changeset="117347746" timestamp="2022-02-13T10:26:07Z" user="TagaSanPedroAko" uid="2541613" lat="14.4113128" lon="121.0432790"/>
+ <node id="1150059960" visible="true" version="13" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3827463" lon="121.0404146">
+  <tag k="distance" v="26"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 26"/>
+ </node>
+ <node id="1237869766" visible="true" version="18" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4363507" lon="121.0453140"/>
+ <node id="1238696382" visible="true" version="7" changeset="60292001" timestamp="2018-06-30T00:50:30Z" user="Rally" uid="24338" lat="14.5217350" lon="121.0266591">
+  <tag k="distance" v="10"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 10"/>
+ </node>
+ <node id="1238696419" visible="true" version="3" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5172736" lon="121.0291055"/>
+ <node id="1238696421" visible="true" version="3" changeset="16994545" timestamp="2013-07-18T03:11:58Z" user="Pizza1016" uid="838520" lat="14.5149168" lon="121.0305316"/>
+ <node id="1238696437" visible="true" version="5" changeset="60292001" timestamp="2018-06-30T00:50:30Z" user="Rally" uid="24338" lat="14.5194734" lon="121.0277032"/>
+ <node id="1410727179" visible="true" version="9" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4759761" lon="121.0451143"/>
+ <node id="1410727183" visible="true" version="9" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4542311" lon="121.0452139">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="1410727243" visible="true" version="8" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3711895" lon="121.0424283">
+  <tag k="name" v="San Pedro"/>
+  <tag k="traffic_sign" v="city_limit"/>
+ </node>
+ <node id="1410727250" visible="true" version="11" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4670881" lon="121.0451479"/>
+ <node id="1410727268" visible="true" version="5" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5266264" lon="121.0241826"/>
+ <node id="1410727283" visible="true" version="9" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4524380" lon="121.0452167">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="1411125995" visible="true" version="6" changeset="81878818" timestamp="2020-03-06T17:31:26Z" user="caspermonte" uid="1888269" lat="14.5301790" lon="121.0222799">
+  <tag k="distance" v="9"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="name" v="Kilometer 9"/>
+ </node>
+ <node id="1411126027" visible="true" version="10" changeset="132143734" timestamp="2023-02-06T06:56:55Z" user="GOwin" uid="1041828" lat="14.5387684" lon="121.0176049">
+  <tag k="distance" v="8"/>
+  <tag k="highway" v="milestone"/>
+ </node>
+ <node id="1573792127" visible="true" version="7" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4871837" lon="121.0448902"/>
+ <node id="1708033310" visible="true" version="12" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3852956" lon="121.0399751"/>
+ <node id="1738028080" visible="true" version="11" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4539503" lon="121.0452168">
+  <tag k="distance" v="18"/>
+  <tag k="highway" v="milestone"/>
+  <tag k="inscription" v="K|18"/>
+ </node>
+ <node id="1738028081" visible="true" version="11" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4590081" lon="121.0452200"/>
+ <node id="1738028088" visible="true" version="12" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4593248" lon="121.0452174"/>
+ <node id="1915796941" visible="true" version="2" changeset="25851609" timestamp="2014-10-04T13:44:32Z" user="GreenPH" uid="2331271" lat="14.5211128" lon="121.0268837"/>
+ <node id="1923268681" visible="true" version="4" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5309917" lon="121.0218472"/>
+ <node id="2138807721" visible="true" version="6" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3454429" lon="121.0481250"/>
+ <node id="2138807723" visible="true" version="6" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3456779" lon="121.0480038"/>
+ <node id="2894909234" visible="true" version="3" changeset="83449057" timestamp="2020-04-13T05:02:33Z" user="DP24PH" uid="5752740" lat="14.3325491" lon="121.0521610"/>
+ <node id="2894909257" visible="true" version="6" changeset="184140028" timestamp="2026-06-15T14:10:14Z" user="NeilisEditing" uid="24187756" lat="14.3351249" lon="121.0526655"/>
+ <node id="2894947764" visible="true" version="12" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4385130" lon="121.0452949"/>
+ <node id="2894947768" visible="true" version="8" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4461183" lon="121.0452472"/>
+ <node id="3224816462" visible="true" version="11" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3840490" lon="121.0401869"/>
+ <node id="3308928597" visible="true" version="7" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410152" lon="121.0165114"/>
+ <node id="3309552986" visible="true" version="5" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411315" lon="121.0177004"/>
+ <node id="3397742401" visible="true" version="3" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3341889" lon="121.0528611"/>
+ <node id="3400180751" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.5004946" lon="121.0382761"/>
+ <node id="3400180753" visible="true" version="7" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4971098" lon="121.0401070"/>
+ <node id="3400180755" visible="true" version="6" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4581072" lon="121.0452200"/>
+ <node id="3400180758" visible="true" version="8" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4413162" lon="121.0452799"/>
+ <node id="3400237410" visible="true" version="4" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4310476" lon="121.0453638"/>
+ <node id="3400237411" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4483448" lon="121.0452308"/>
+ <node id="3461035950" visible="true" version="10" changeset="183981968" timestamp="2026-06-11T17:22:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.5128667" lon="121.0316270">
+  <tag k="barrier" v="toll_booth"/>
+  <tag k="name" v="Nichols Toll Gate A"/>
+ </node>
+ <node id="3633211806" visible="true" version="5" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4141997" lon="121.0450064"/>
+ <node id="3660612248" visible="true" version="11" changeset="130733742" timestamp="2022-12-31T21:25:45Z" user="TagaSanPedroAko" uid="2541613" lat="14.3882039" lon="121.0394749">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Susana Heights"/>
+  <tag k="ref" v="26"/>
+ </node>
+ <node id="3660612266" visible="true" version="13" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3806342" lon="121.0407904"/>
+ <node id="3660612284" visible="true" version="9" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3836296" lon="121.0402583"/>
+ <node id="3660612294" visible="true" version="9" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3845759" lon="121.0400976"/>
+ <node id="3660612298" visible="true" version="10" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3849829" lon="121.0400176"/>
+ <node id="3775223373" visible="true" version="7" changeset="174686466" timestamp="2025-11-15T13:11:31Z" user="TagaSanPedroAko" uid="2541613" lat="14.5463362" lon="121.0245200"/>
+ <node id="3775223374" visible="true" version="8" changeset="182397316" timestamp="2026-05-08T19:01:50Z" user="TagaSanPedroAko" uid="2541613" lat="14.5467036" lon="121.0250283"/>
+ <node id="3775223377" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5471393" lon="121.0255181"/>
+ <node id="3775223380" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5473851" lon="121.0257956"/>
+ <node id="3775223384" visible="true" version="7" changeset="174686466" timestamp="2025-11-15T13:11:31Z" user="TagaSanPedroAko" uid="2541613" lat="14.5477525" lon="121.0262407"/>
+ <node id="3775223387" visible="true" version="10" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5487495" lon="121.0274268"/>
+ <node id="3775223391" visible="true" version="9" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5496026" lon="121.0282819">
+  <tag k="barrier" v="height_restrictor"/>
+  <tag k="maxheight" v="5"/>
+ </node>
+ <node id="3815332672" visible="true" version="5" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3336669" lon="121.0529538"/>
+ <node id="3919242248" visible="true" version="9" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3758493" lon="121.0416206"/>
+ <node id="3919253717" visible="true" version="8" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3727314" lon="121.0421518"/>
+ <node id="3919848961" visible="true" version="5" changeset="130733742" timestamp="2022-12-31T21:25:45Z" user="TagaSanPedroAko" uid="2541613" lat="14.3889459" lon="121.0393440"/>
+ <node id="3919848962" visible="true" version="7" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3964592" lon="121.0387029"/>
+ <node id="3919848964" visible="true" version="4" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4079641" lon="121.0414215"/>
+ <node id="3919858886" visible="true" version="7" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3398233" lon="121.0508899"/>
+ <node id="4049913662" visible="true" version="4" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3931450" lon="121.0387629"/>
+ <node id="4049913993" visible="true" version="4" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3938717" lon="121.0387137"/>
+ <node id="4049914016" visible="true" version="7" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3944277" lon="121.0386884"/>
+ <node id="4049914044" visible="true" version="5" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3976173" lon="121.0387648"/>
+ <node id="4204641095" visible="true" version="3" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5235413" lon="121.0258891"/>
+ <node id="5286836718" visible="true" version="9" changeset="164317646" timestamp="2025-03-31T08:25:24Z" user="TagaSanPedroAko" uid="2541613" lat="14.5420943" lon="121.0193223">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Magallanes Interchange"/>
+  <tag k="noref" v="yes"/>
+ </node>
+ <node id="5286836720" visible="true" version="5" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411453" lon="121.0177479"/>
+ <node id="5286836721" visible="true" version="5" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411799" lon="121.0178292"/>
+ <node id="5286836722" visible="true" version="4" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410864" lon="121.0175419"/>
+ <node id="5286836723" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410763" lon="121.0174744"/>
+ <node id="5286836741" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5411151" lon="121.0166564"/>
+ <node id="5286836742" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5407922" lon="121.0164205"/>
+ <node id="5286836743" visible="true" version="7" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5409363" lon="121.0164606"/>
+ <node id="5286842787" visible="true" version="5" changeset="79352848" timestamp="2020-01-08T19:03:46Z" user="Rally" uid="24338" lat="14.5399406" lon="121.0167360"/>
+ <node id="5286842789" visible="true" version="7" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5406747" lon="121.0164107"/>
+ <node id="5286842790" visible="true" version="4" changeset="79352848" timestamp="2020-01-08T19:03:46Z" user="Rally" uid="24338" lat="14.5397918" lon="121.0168407"/>
+ <node id="5286842791" visible="true" version="4" changeset="78024721" timestamp="2019-12-06T03:45:37Z" user="TagaSanPedroAko" uid="2541613" lat="14.5388977" lon="121.0175256"/>
+ <node id="5286842792" visible="true" version="4" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5304614" lon="121.0221329">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Magallanes"/>
+ </node>
+ <node id="5291024644" visible="true" version="2" changeset="72919587" timestamp="2019-08-02T02:07:20Z" user="DP24PH" uid="5752740" lat="14.5390854" lon="121.0173884"/>
+ <node id="5291036101" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5408294" lon="121.0164249"/>
+ <node id="5291036102" visible="true" version="6" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5409826" lon="121.0164875"/>
+ <node id="5291036103" visible="true" version="5" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410511" lon="121.0165523"/>
+ <node id="5291062536" visible="true" version="4" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5410758" lon="121.0173936"/>
+ <node id="5291609741" visible="true" version="5" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5459116" lon="121.0239884"/>
+ <node id="5291609742" visible="true" version="8" changeset="133658521" timestamp="2023-03-14T09:38:52Z" user="DP24PH" uid="5752740" lat="14.5455720" lon="121.0235817"/>
+ <node id="5291609744" visible="true" version="7" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5430454" lon="121.0205863"/>
+ <node id="5357222721" visible="true" version="1" changeset="55688662" timestamp="2018-01-23T16:19:43Z" user="Rally" uid="24338" lat="14.5143008" lon="121.0308706"/>
+ <node id="5524087800" visible="true" version="5" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3718572" lon="121.0423122"/>
+ <node id="5524124946" visible="true" version="7" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3799495" lon="121.0408937"/>
+ <node id="5693646969" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4775075" lon="121.0451061"/>
+ <node id="5695091813" visible="true" version="10" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4604452" lon="121.0452073"/>
+ <node id="5695091814" visible="true" version="8" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4629445" lon="121.0451847"/>
+ <node id="5703604545" visible="true" version="3" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4055837" lon="121.0404116"/>
+ <node id="5703604648" visible="true" version="8" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3994952" lon="121.0389358"/>
+ <node id="5703604649" visible="true" version="3" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4023712" lon="121.0394445"/>
+ <node id="5703604652" visible="true" version="4" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4039453" lon="121.0398537"/>
+ <node id="5704188273" visible="true" version="3" changeset="117347746" timestamp="2022-02-13T10:26:07Z" user="TagaSanPedroAko" uid="2541613" lat="14.4099245" lon="121.0424201"/>
+ <node id="5709836060" visible="true" version="5" changeset="130733742" timestamp="2022-12-31T21:25:45Z" user="TagaSanPedroAko" uid="2541613" lat="14.3907712" lon="121.0390436"/>
+ <node id="5710029489" visible="true" version="5" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3857253" lon="121.0398991"/>
+ <node id="5710029491" visible="true" version="6" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3865133" lon="121.0397666"/>
+ <node id="5729312910" visible="true" version="1" changeset="60292001" timestamp="2018-06-30T00:50:29Z" user="Rally" uid="24338" lat="14.5159514" lon="121.0299987"/>
+ <node id="5729373409" visible="true" version="3" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5231305" lon="121.0260805"/>
+ <node id="5729374138" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.5016617" lon="121.0376496"/>
+ <node id="5729374166" visible="true" version="3" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.5064873" lon="121.0350975"/>
+ <node id="5729374169" visible="true" version="3" changeset="154501886" timestamp="2024-07-27T22:45:53Z" user="TagaSanPedroAko" uid="2541613" lat="14.5122637" lon="121.0319837"/>
+ <node id="6168058533" visible="true" version="11" changeset="113465678" timestamp="2021-11-07T01:57:03Z" user="DP24PH" uid="5752740" lat="14.4202563" lon="121.0453774"/>
+ <node id="6389983949" visible="true" version="7" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3997641" lon="121.0389682"/>
+ <node id="6439927222" visible="true" version="6" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3554040" lon="121.0451967"/>
+ <node id="6439927225" visible="true" version="4" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3487709" lon="121.0466129"/>
+ <node id="6439927226" visible="true" version="5" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3493044" lon="121.0464391"/>
+ <node id="6503105517" visible="true" version="7" changeset="180679172" timestamp="2026-03-31T15:14:38Z" user="bukaskalyemapa" uid="11782176" lat="14.5419308" lon="121.0190235"/>
+ <node id="6609504791" visible="true" version="4" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5259653" lon="121.0245663"/>
+ <node id="6622649387" visible="true" version="7" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5490766" lon="121.0276592"/>
+ <node id="6622952431" visible="true" version="3" changeset="85321102" timestamp="2020-05-17T01:29:32Z" user="DP24PH" uid="5752740" lat="14.5489459" lon="121.0276005"/>
+ <node id="6624577864" visible="true" version="5" changeset="130742930" timestamp="2023-01-01T10:48:22Z" user="TagaSanPedroAko" uid="2541613" lat="14.5502230" lon="121.0282742">
+  <tag k="bus" v="yes"/>
+  <tag k="name" v="One Ayala"/>
+  <tag k="public_transport" v="stop_position"/>
+ </node>
+ <node id="6669603568" visible="true" version="4" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4295165" lon="121.0453738"/>
+ <node id="6669603569" visible="true" version="7" changeset="130425610" timestamp="2022-12-23T15:11:59Z" user="mapper03" uid="10698955" lat="14.4339541" lon="121.0453334"/>
+ <node id="6672900918" visible="true" version="4" changeset="153515706" timestamp="2024-07-03T18:57:28Z" user="GbabethemapGod" uid="15314242" lat="14.5379211" lon="121.0180777"/>
+ <node id="6672984152" visible="true" version="5" changeset="153710318" timestamp="2024-07-08T16:04:42Z" user="GbabethemapGod" uid="15314242" lat="14.5359375" lon="121.0191670"/>
+ <node id="6834443526" visible="true" version="7" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3769943" lon="121.0414077"/>
+ <node id="6869530281" visible="true" version="3" changeset="116642554" timestamp="2022-01-26T23:15:01Z" user="TagaSanPedroAko" uid="2541613" lat="14.4059866" lon="121.0405720"/>
+ <node id="6916433131" visible="true" version="5" changeset="180679172" timestamp="2026-03-31T15:14:38Z" user="bukaskalyemapa" uid="11782176" lat="14.5417961" lon="121.0188297"/>
+ <node id="6916433132" visible="true" version="4" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5416209" lon="121.0185642"/>
+ <node id="6916433138" visible="true" version="3" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5446789" lon="121.0225264"/>
+ <node id="7042640528" visible="true" version="8" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4458671" lon="121.0452465"/>
+ <node id="7042640529" visible="true" version="7" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4456752" lon="121.0452467"/>
+ <node id="7045434319" visible="true" version="3" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4302073" lon="121.0453661"/>
+ <node id="7045434320" visible="true" version="3" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4302918" lon="121.0453659"/>
+ <node id="7045434330" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4553649" lon="121.0452077"/>
+ <node id="7045434336" visible="true" version="3" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4237813" lon="121.0454120"/>
+ <node id="7045459455" visible="true" version="5" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.5037832" lon="121.0365179"/>
+ <node id="7045459457" visible="true" version="3" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4961284" lon="121.0406428"/>
+ <node id="7054581041" visible="true" version="3" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5255039" lon="121.0248203">
+  <tag k="highway" v="motorway_junction"/>
+  <tag k="name" v="Nichols"/>
+ </node>
+ <node id="7054581042" visible="true" version="3" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5245704" lon="121.0253311"/>
+ <node id="7057436503" visible="true" version="2" changeset="115525566" timestamp="2021-12-29T15:33:31Z" user="dasmarinas_mapper" uid="752940" lat="14.3333662" lon="121.0529195"/>
+ <node id="7276806308" visible="true" version="6" changeset="113465678" timestamp="2021-11-07T01:57:03Z" user="DP24PH" uid="5752740" lat="14.4210664" lon="121.0453616"/>
+ <node id="7276887426" visible="true" version="4" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4651389" lon="121.0451587"/>
+ <node id="7276887427" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4531888" lon="121.0452185"/>
+ <node id="7276887428" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4493146" lon="121.0452198"/>
+ <node id="7277966697" visible="true" version="6" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4840149" lon="121.0450787"/>
+ <node id="7396665617" visible="true" version="2" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3321878" lon="121.0514986"/>
+ <node id="7461984178" visible="true" version="3" changeset="130733742" timestamp="2022-12-31T21:25:45Z" user="TagaSanPedroAko" uid="2541613" lat="14.3899209" lon="121.0391800"/>
+ <node id="7474757257" visible="true" version="6" changeset="138621954" timestamp="2023-07-17T13:09:09Z" user="DP24PH" uid="5752740" lat="14.5497501" lon="121.0283121"/>
+ <node id="7474757282" visible="true" version="3" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5437961" lon="121.0214815"/>
+ <node id="7780008802" visible="true" version="3" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3310453" lon="121.0512798">
+  <tag k="bus" v="yes"/>
+  <tag k="name" v="Southwoods Mall Bus Station"/>
+  <tag k="public_transport" v="stop_position"/>
+ </node>
+ <node id="7828448246" visible="true" version="2" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4122117" lon="121.0438599"/>
+ <node id="7828448247" visible="true" version="3" changeset="105153831" timestamp="2021-05-23T06:23:25Z" user="TagaSanPedroAko" uid="2541613" lat="14.4183286" lon="121.0453878"/>
+ <node id="7828448252" visible="true" version="3" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4690161" lon="121.0451429"/>
+ <node id="7828448254" visible="true" version="3" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4703245" lon="121.0451387"/>
+ <node id="8175508897" visible="true" version="2" changeset="124376785" timestamp="2022-08-02T07:26:47Z" user="Rally" uid="24338" lat="14.3320137" lon="121.0513330"/>
+ <node id="8175508903" visible="true" version="5" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3324730" lon="121.0519412"/>
+ <node id="8176407263" visible="true" version="4" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3310470" lon="121.0509328">
+  <tag k="crossing" v="uncontrolled"/>
+  <tag k="crossing_ref" v="zebra"/>
+  <tag k="highway" v="crossing"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="8340010268" visible="true" version="3" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4859399" lon="121.0450290"/>
+ <node id="8416009533" visible="true" version="6" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3670405" lon="121.0431429"/>
+ <node id="8416009536" visible="true" version="4" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3599119" lon="121.0444224"/>
+ <node id="8416009537" visible="true" version="6" changeset="182086138" timestamp="2026-05-01T17:34:30Z" user="TagaSanPedroAko" uid="2541613" lat="14.3589430" lon="121.0445845"/>
+ <node id="8426325045" visible="true" version="5" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3779891" lon="121.0412284"/>
+ <node id="8435702502" visible="true" version="5" changeset="182974337" timestamp="2026-05-21T12:40:35Z" user="IslandCorfu" uid="23470745" lat="14.5322096" lon="121.0211793"/>
+ <node id="8462892724" visible="true" version="2" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5315262" lon="121.0215552"/>
+ <node id="8597960108" visible="true" version="2" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5308943" lon="121.0218964"/>
+ <node id="8632539392" visible="true" version="2" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613" lat="14.5316967" lon="121.0214628"/>
+ <node id="8688016942" visible="true" version="3" changeset="178393939" timestamp="2026-02-11T07:59:53Z" user="HueMan1" uid="7895478" lat="14.5128086" lon="121.0316581"/>
+ <node id="8688016943" visible="true" version="3" changeset="178393939" timestamp="2026-02-11T07:59:53Z" user="HueMan1" uid="7895478" lat="14.5129331" lon="121.0315913"/>
+ <node id="8688080464" visible="true" version="2" changeset="131090280" timestamp="2023-01-10T03:21:44Z" user="TagaSanPedroAko" uid="2541613" lat="14.5423038" lon="121.0196254"/>
+ <node id="8757251593" visible="true" version="2" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4876305" lon="121.0448001"/>
+ <node id="8757251595" visible="true" version="3" changeset="130498336" timestamp="2022-12-26T02:16:00Z" user="TagaSanPedroAko" uid="2541613" lat="14.4847858" lon="121.0450793"/>
+ <node id="8757251596" visible="true" version="1" changeset="105153539" timestamp="2021-05-23T06:06:56Z" user="TagaSanPedroAko" uid="2541613" lat="14.4885473" lon="121.0445503"/>
+ <node id="8757279426" visible="true" version="2" changeset="113465678" timestamp="2021-11-07T01:57:03Z" user="DP24PH" uid="5752740" lat="14.4208801" lon="121.0453594">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="8772735722" visible="true" version="3" changeset="180413163" timestamp="2026-03-25T15:39:39Z" user="That Wa'er" uid="23663294" lat="14.4007030" lon="121.0390810"/>
+ <node id="9073250785" visible="true" version="4" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3547486" lon="121.0453082"/>
+ <node id="9336024043" visible="true" version="3" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3310829" lon="121.0511439"/>
+ <node id="9336024045" visible="true" version="3" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3309056" lon="121.0511217"/>
+ <node id="9376531630" visible="true" version="1" changeset="115525566" timestamp="2021-12-29T15:33:31Z" user="dasmarinas_mapper" uid="752940" lat="14.3334768" lon="121.0529127"/>
+ <node id="9376531633" visible="true" version="3" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3324699" lon="121.0518352"/>
+ <node id="9376531634" visible="true" version="3" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3324697" lon="121.0518899"/>
+ <node id="9451418122" visible="true" version="2" changeset="130733742" timestamp="2022-12-31T21:25:45Z" user="TagaSanPedroAko" uid="2541613" lat="14.3872634" lon="121.0396427"/>
+ <node id="9612117019" visible="true" version="3" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3307928" lon="121.0509206"/>
+ <node id="9870886388" visible="true" version="1" changeset="123289457" timestamp="2022-07-06T18:53:45Z" user="Pegasus21" uid="13510663" lat="14.5217995" lon="121.0266342"/>
+ <node id="9870920996" visible="true" version="1" changeset="123290023" timestamp="2022-07-06T19:12:54Z" user="Pegasus21" uid="13510663" lat="14.5162953" lon="121.0298009"/>
+ <node id="9872642767" visible="true" version="8" changeset="178138641" timestamp="2026-02-05T12:36:04Z" user="DP24PH" uid="5752740" lat="14.5503754" lon="121.0281373">
+  <tag k="bus" v="yes"/>
+  <tag k="name" v="One Ayala"/>
+  <tag k="public_transport" v="stop_position"/>
+ </node>
+ <node id="9926042814" visible="true" version="1" changeset="124371337" timestamp="2022-08-02T04:36:45Z" user="TuggeranongHill" uid="15059246" lat="14.5378399" lon="121.0181220"/>
+ <node id="9926289935" visible="true" version="2" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3307409" lon="121.0511230">
+  <tag k="door" v="no"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="9926290007" visible="true" version="2" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3306295" lon="121.0509263">
+  <tag k="crossing" v="uncontrolled"/>
+  <tag k="crossing_ref" v="zebra"/>
+  <tag k="highway" v="crossing"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="9926290151" visible="true" version="2" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3317362" lon="121.0511398"/>
+ <node id="9926770854" visible="true" version="1" changeset="124386809" timestamp="2022-08-02T11:17:20Z" user="TuggeranongHill" uid="15059246" lat="14.5341735" lon="121.0201213"/>
+ <node id="9927827898" visible="true" version="2" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740" lat="14.3317988" lon="121.0511737">
+  <tag k="crossing" v="uncontrolled"/>
+  <tag k="crossing:markings" v="zebra"/>
+  <tag k="crossing_ref" v="zebra"/>
+  <tag k="highway" v="crossing"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="10216071891" visible="true" version="6" changeset="178138641" timestamp="2026-02-05T12:36:04Z" user="DP24PH" uid="5752740" lat="14.5505289" lon="121.0279994">
+  <tag k="bus" v="yes"/>
+  <tag k="name" v="One Ayala"/>
+  <tag k="public_transport" v="stop_position"/>
+ </node>
+ <node id="10216071897" visible="true" version="3" changeset="129346930" timestamp="2022-11-25T01:54:06Z" user="DP24PH" uid="5752740" lat="14.5505531" lon="121.0279777"/>
+ <node id="10216071898" visible="true" version="3" changeset="129346930" timestamp="2022-11-25T01:54:06Z" user="DP24PH" uid="5752740" lat="14.5504686" lon="121.0278772"/>
+ <node id="10216071900" visible="true" version="4" changeset="129346930" timestamp="2022-11-25T01:54:06Z" user="DP24PH" uid="5752740" lat="14.5498168" lon="121.0282522">
+  <tag k="barrier" v="height_restrictor"/>
+  <tag k="height" v="5"/>
+ </node>
+ <node id="10216071901" visible="true" version="3" changeset="129346930" timestamp="2022-11-25T01:54:06Z" user="DP24PH" uid="5752740" lat="14.5503678" lon="121.0277574"/>
+ <node id="10216071903" visible="true" version="3" changeset="129346930" timestamp="2022-11-25T01:54:06Z" user="DP24PH" uid="5752740" lat="14.5497077" lon="121.0283502"/>
+ <node id="12041998697" visible="true" version="1" changeset="153710318" timestamp="2024-07-08T16:04:42Z" user="GbabethemapGod" uid="15314242" lat="14.5348260" lon="121.0197687"/>
+ <node id="12041998699" visible="true" version="1" changeset="153710318" timestamp="2024-07-08T16:04:42Z" user="GbabethemapGod" uid="15314242" lat="14.5362116" lon="121.0190043"/>
+ <node id="12285012372" visible="true" version="1" changeset="158289067" timestamp="2024-10-24T10:05:16Z" user="andreidulgheru" uid="14127875" lat="14.4897834" lon="121.0440354">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="12285012373" visible="true" version="1" changeset="158289067" timestamp="2024-10-24T10:05:16Z" user="andreidulgheru" uid="14127875" lat="14.4905230" lon="121.0436695">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="12293214100" visible="true" version="1" changeset="158441420" timestamp="2024-10-28T06:47:10Z" user="rat_lorand_grab" uid="10678755" lat="14.4041620" lon="121.0399213">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="12293502492" visible="true" version="1" changeset="158447329" timestamp="2024-10-28T09:44:02Z" user="rat_lorand_grab" uid="10678755" lat="14.4896374" lon="121.0440981">
+  <tag k="traffic_calming" v="rumble_strip"/>
+ </node>
+ <node id="13260869031" visible="true" version="2" changeset="174686466" timestamp="2025-11-15T13:11:31Z" user="TagaSanPedroAko" uid="2541613" lat="14.5502445" lon="121.0283008">
+  <tag k="bus" v="yes"/>
+  <tag k="description" v="buses to Biñan"/>
+  <tag k="highway" v="bus_stop"/>
+  <tag k="local_ref" v="D"/>
+  <tag k="name" v="One Ayala"/>
+  <tag k="network" v="LTFRB National Capital Region"/>
+  <tag k="network:wikidata" v="Q6483998"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="wheelchair" v="yes"/>
+ </node>
+ <node id="13678909888" visible="true" version="1" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3921481" lon="121.0388534"/>
+ <node id="13678969842" visible="true" version="1" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294" lat="14.3538356" lon="121.0454686"/>
+ <node id="13724382513" visible="true" version="1" changeset="181211799" timestamp="2026-04-12T00:45:46Z" user="Jclopena26" uid="23617620" lat="14.4339729" lon="121.0453333"/>
+ <node id="13724382514" visible="true" version="1" changeset="181211799" timestamp="2026-04-12T00:45:46Z" user="Jclopena26" uid="23617620" lat="14.4339838" lon="121.0453332"/>
+ <node id="13731349540" visible="true" version="1" changeset="181347488" timestamp="2026-04-15T03:12:22Z" user="Jclopena26" uid="23617620" lat="14.3559575" lon="121.0451100"/>
+ <node id="13793647566" visible="true" version="1" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3960801" lon="121.0386898"/>
+ <node id="13793647569" visible="true" version="1" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3981700" lon="121.0388032"/>
+ <node id="13793647570" visible="true" version="1" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478" lat="14.3970259" lon="121.0387275"/>
+ <node id="13942985117" visible="true" version="1" changeset="184140028" timestamp="2026-06-15T14:10:14Z" user="NeilisEditing" uid="24187756" lat="14.3356957" lon="121.0524951"/>
+ <node id="14021437777" visible="true" version="1" changeset="185883240" timestamp="2026-07-17T04:47:49Z" user="GrabPH_Dale" uid="22938286" lat="14.4780944" lon="121.0451047"/>
+ <way id="4350919" visible="true" version="74" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1237869766"/>
+  <nd ref="1074451972"/>
+  <nd ref="13724382514"/>
+  <nd ref="13724382513"/>
+  <nd ref="6669603569"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="4914876" visible="true" version="40" changeset="185378712" timestamp="2026-07-09T01:28:00Z" user="GrabPH_JAL" uid="24268398">
+  <nd ref="32167771"/>
+  <nd ref="32168157"/>
+  <nd ref="5286836741"/>
+  <nd ref="32168158"/>
+  <nd ref="5291036103"/>
+  <nd ref="3308928597"/>
+  <nd ref="5291036102"/>
+  <nd ref="5286836743"/>
+  <nd ref="224266089"/>
+  <nd ref="5291036101"/>
+  <nd ref="5286836742"/>
+  <nd ref="259657170"/>
+  <nd ref="5286842789"/>
+  <nd ref="32168164"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="destination" v="Alabang"/>
+  <tag k="destination:street" v="SLEX"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="22737273" visible="true" version="30" changeset="118089034" timestamp="2022-03-04T11:21:06Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="243903263"/>
+  <nd ref="7045434330"/>
+  <nd ref="1410727183"/>
+  <nd ref="1738028080"/>
+  <nd ref="7276887427"/>
+  <nd ref="1410727283"/>
+  <nd ref="243903270"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="23952556" visible="true" version="33" changeset="171413885" timestamp="2025-09-03T15:40:14Z" user="Sky Harbor" uid="23214955">
+  <nd ref="244452511"/>
+  <nd ref="8688080464"/>
+  <nd ref="5286836718"/>
+  <tag k="alt_name" v="Magallanes Flyover"/>
+  <tag k="destination:lanes" v="Taft Avenue;Roxas Blvd.|SLEX;Alabang|SLEX;Manila"/>
+  <tag k="destination:symbol" v="airport"/>
+  <tag k="foot" v="no"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="1"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="turn:lanes" v="through|slight_right|slight_right"/>
+ </way>
+ <way id="23952736" visible="true" version="69" changeset="153713418" timestamp="2024-07-08T17:28:20Z" user="Pegasus21" uid="13510663">
+  <nd ref="1411125995"/>
+  <nd ref="840105294"/>
+  <nd ref="840105211"/>
+  <nd ref="840105213"/>
+  <nd ref="1410727268"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no||"/>
+  <tag k="goods:lanes" v="no||"/>
+  <tag k="hgv:lanes" v="no|no|"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="27443153" visible="true" version="38" changeset="185378712" timestamp="2026-07-09T01:28:00Z" user="GrabPH_JAL" uid="24268398">
+  <nd ref="5286836722"/>
+  <nd ref="5286836723"/>
+  <nd ref="5291062536"/>
+  <nd ref="32167769"/>
+  <nd ref="32167770"/>
+  <nd ref="32167771"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="destination" v="Alabang;Manila"/>
+  <tag k="destination:lanes" v="SLEX;Alabang|Manila"/>
+  <tag k="destination:ref" v="E2;145"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="turn:lanes" v="slight_left|slight_left;slight_right"/>
+ </way>
+ <way id="27949215" visible="true" version="68" changeset="185883240" timestamp="2026-07-17T04:47:49Z" user="GrabPH_Dale" uid="22938286">
+  <nd ref="966666042"/>
+  <nd ref="8757251595"/>
+  <nd ref="7277966697"/>
+  <nd ref="358820866"/>
+  <nd ref="1074451671"/>
+  <nd ref="306939617"/>
+  <nd ref="14021437777"/>
+  <nd ref="5693646969"/>
+  <nd ref="1410727179"/>
+  <nd ref="1075300756"/>
+  <nd ref="1074451684"/>
+  <nd ref="7828448254"/>
+  <nd ref="7828448252"/>
+  <nd ref="1410727250"/>
+  <nd ref="7276887426"/>
+  <nd ref="5695091814"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="check_date" v="2024-04-09"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="28535211" visible="true" version="33" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="12182039"/>
+  <nd ref="6869530281"/>
+  <nd ref="5703604545"/>
+  <nd ref="12182040"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="9"/>
+ </way>
+ <way id="33544631" visible="true" version="33" changeset="118089034" timestamp="2022-03-04T11:21:06Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6168058533"/>
+  <nd ref="7828448247"/>
+  <nd ref="496063135"/>
+  <nd ref="29350285"/>
+  <nd ref="12182012"/>
+  <nd ref="12182016"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:name" v="Alabang Viaduct"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="layer" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="14.6"/>
+ </way>
+ <way id="33544635" visible="true" version="27" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="382908638"/>
+  <nd ref="253125400"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="change:lanes" v="||||no"/>
+  <tag k="destination:lanes" v="||||Filinvest"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="||||slight_right"/>
+  <tag k="width" v="18.25"/>
+ </way>
+ <way id="39584116" visible="true" version="27" changeset="161229344" timestamp="2025-01-11T07:55:26Z" user="DP24PH" uid="5752740">
+  <nd ref="474489393"/>
+  <nd ref="1078586460"/>
+  <nd ref="12182082"/>
+  <nd ref="6439927226"/>
+  <nd ref="6439927225"/>
+  <nd ref="12182087"/>
+  <nd ref="1021657032"/>
+  <nd ref="2138807723"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="39584126" visible="true" version="14" changeset="161229344" timestamp="2025-01-11T07:55:26Z" user="DP24PH" uid="5752740">
+  <nd ref="474489262"/>
+  <nd ref="474489393"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bridge:name" v="San Pedro Bridge"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="52979639" visible="true" version="33" changeset="180411395" timestamp="2026-03-25T14:53:29Z" user="That Wa'er" uid="23663294">
+  <nd ref="966639604"/>
+  <nd ref="13678909888"/>
+  <nd ref="5709836060"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="145891226" visible="true" version="9" changeset="184140028" timestamp="2026-06-15T14:10:14Z" user="NeilisEditing" uid="24187756">
+  <nd ref="521372914"/>
+  <nd ref="261663774"/>
+  <nd ref="13942985117"/>
+  <nd ref="2894909257"/>
+  <tag k="destination" v="Southwoods;Biñan"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="junction:ref" v="31"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed:advisory" v="40"/>
+  <tag k="oneway" v="yes"/>
+ </way>
+ <way id="188163091" visible="true" version="35" changeset="178370029" timestamp="2026-02-10T17:04:36Z" user="ianlopez1115" uid="44938">
+  <nd ref="6916433138"/>
+  <nd ref="7474757282"/>
+  <nd ref="5291609744"/>
+  <tag k="destination:lanes" v="Pasay;Baclaran|SLEX;Alabang|Manila|"/>
+  <tag k="destination:symbol:lanes" v="airport|airport||"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="note" v="1;AH26"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="1"/>
+  <tag k="sidewalk" v="separate"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="188163093" visible="true" version="25" changeset="164922600" timestamp="2025-04-14T06:31:08Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="301310216"/>
+  <nd ref="5286842787"/>
+  <nd ref="5286842790"/>
+  <nd ref="259656916"/>
+  <nd ref="259657220"/>
+  <nd ref="5291024644"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="Osmeña Highway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="turn:lanes" v="through|through|through"/>
+ </way>
+ <way id="203869589" visible="true" version="11" changeset="161229344" timestamp="2025-01-11T07:55:26Z" user="DP24PH" uid="5752740">
+  <nd ref="2138807723"/>
+  <nd ref="2138807721"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bridge:name" v="Carmona Railroad Underpass"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="221166094" visible="true" version="15" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="253125865"/>
+  <nd ref="12182035"/>
+  <nd ref="3919848964"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through|through|merge_to_left|merge_to_left"/>
+ </way>
+ <way id="230520300" visible="true" version="21" changeset="123290023" timestamp="2022-07-06T19:12:54Z" user="Pegasus21" uid="13510663">
+  <nd ref="313867128"/>
+  <nd ref="9870886388"/>
+  <nd ref="1238696382"/>
+  <nd ref="1915796941"/>
+  <nd ref="313867013"/>
+  <nd ref="316006645"/>
+  <nd ref="1238696437"/>
+  <nd ref="313867014"/>
+  <nd ref="313867015"/>
+  <nd ref="313867016"/>
+  <nd ref="1238696419"/>
+  <nd ref="313867017"/>
+  <nd ref="270280686"/>
+  <nd ref="9870920996"/>
+  <tag k="bus:lanes" v="no||"/>
+  <tag k="goods:lanes" v="no||"/>
+  <tag k="hgv:lanes" v="no|no|"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="279145238" visible="true" version="19" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3919253717"/>
+  <nd ref="5524087800"/>
+  <nd ref="1410727243"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="destination:lanes" v="|||San Pedro"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through|through;slight_right"/>
+ </way>
+ <way id="285857742" visible="true" version="18" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="9926290151"/>
+  <nd ref="267162211"/>
+  <nd ref="680994834"/>
+  <nd ref="261663917"/>
+  <nd ref="8176407263"/>
+  <nd ref="261606218"/>
+  <nd ref="680994859"/>
+  <nd ref="9612117019"/>
+  <nd ref="9926290007"/>
+  <nd ref="680994887"/>
+  <tag k="cycleway:right" v="lane"/>
+  <tag k="cycleway:right:lane" v="exclusive"/>
+  <tag k="cycleway:right:protection:left" v="solid_line"/>
+  <tag k="highway" v="tertiary"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="Ecocentrum Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="oneway:bicycle" v="yes"/>
+  <tag k="parking:both" v="no"/>
+  <tag k="parking:both:restriction" v="no_stopping"/>
+  <tag k="postal_code" v="4024"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="285857743" visible="true" version="8" changeset="162238587" timestamp="2025-02-07T10:07:52Z" user="jamesmicko" uid="21135986">
+  <nd ref="3397742401"/>
+  <nd ref="261663161"/>
+  <nd ref="3815332672"/>
+  <tag k="destination" v="Southwoods;Biñan"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="lanes" v="5"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="40"/>
+  <tag k="maxspeed:advisory" v="40"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:4"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="285857746" visible="true" version="7" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="267162272"/>
+  <nd ref="261663164"/>
+  <nd ref="261663165"/>
+  <nd ref="261663166"/>
+  <nd ref="261663167"/>
+  <nd ref="261660802"/>
+  <tag k="destination" v="Southwoods;Rosario"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="352584613" visible="true" version="16" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7828448246"/>
+  <nd ref="1078603659"/>
+  <nd ref="12182030"/>
+  <nd ref="5704188273"/>
+  <nd ref="253125865"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bus:lanes" v="no|yes|yes|yes"/>
+  <tag k="destination:lanes" v="Calamba|Carmona|San Pedro|Susana Heights"/>
+  <tag k="goods:lanes" v="no|yes|yes|yes"/>
+  <tag k="hgv:lanes" v="no|no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="358397791" visible="true" version="17" changeset="182456215" timestamp="2026-05-10T09:04:40Z" user="mueschel" uid="616774">
+  <nd ref="12182016"/>
+  <nd ref="3633211806"/>
+  <nd ref="12182021"/>
+  <nd ref="382908638"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:name" v="Alabang Viaduct"/>
+  <tag k="destination:lanes" v="||||Filinvest"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="layer" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="||||slight_right"/>
+  <tag k="width" v="18.25"/>
+ </way>
+ <way id="361600785" visible="true" version="15" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3660612248"/>
+  <nd ref="9451418122"/>
+  <nd ref="5710029491"/>
+  <nd ref="5710029489"/>
+  <nd ref="1708033310"/>
+  <nd ref="3660612298"/>
+  <nd ref="3660612294"/>
+  <nd ref="3224816462"/>
+  <nd ref="3660612284"/>
+  <nd ref="1150059960"/>
+  <nd ref="3660612266"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="change:lanes" v="yes|yes|yes|not_right|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="369321986" visible="true" version="16" changeset="182022629" timestamp="2026-04-30T08:46:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="910197023"/>
+  <nd ref="474491980"/>
+  <nd ref="8416009536"/>
+  <nd ref="8416009537"/>
+  <nd ref="474490663"/>
+  <nd ref="966641305"/>
+  <nd ref="13731349540"/>
+  <nd ref="6439927222"/>
+  <nd ref="9073250785"/>
+  <nd ref="474491452"/>
+  <nd ref="13678969842"/>
+  <nd ref="474489262"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="374119544" visible="true" version="17" changeset="171413885" timestamp="2025-09-03T15:40:14Z" user="Sky Harbor" uid="23214955">
+  <nd ref="3775223373"/>
+  <nd ref="5291609741"/>
+  <nd ref="5291609742"/>
+  <nd ref="259655618"/>
+  <tag k="description" v="Ayala Tunnel"/>
+  <tag k="designation" v="national_primary_road"/>
+  <tag k="foot" v="no"/>
+  <tag k="hazmat" v="no"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="right_of:2"/>
+  <tag k="ref" v="1"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="turn:lanes" v="merge_to_right|through|through"/>
+ </way>
+ <way id="374119551" visible="true" version="10" changeset="153431723" timestamp="2024-07-01T22:18:14Z" user="GbabethemapGod" uid="15314242">
+  <nd ref="6622649387"/>
+  <nd ref="6622952431"/>
+  <nd ref="3775223387"/>
+  <tag k="covered" v="yes"/>
+  <tag k="destination:ref" v="1"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="right_of:1"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+ </way>
+ <way id="374119552" visible="true" version="15" changeset="186195055" timestamp="2026-07-22T19:03:46Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3775223391"/>
+  <nd ref="6622649387"/>
+  <tag k="covered" v="yes"/>
+  <tag k="designation" v="national_primary_road"/>
+  <tag k="fine:foot" v="5,000 PHP"/>
+  <tag k="foot" v="no"/>
+  <tag k="hazmat" v="no"/>
+  <tag k="highway" v="primary"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="1"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="tunnel" v="building_passage"/>
+ </way>
+ <way id="374119553" visible="true" version="10" changeset="153431723" timestamp="2024-07-01T22:18:14Z" user="GbabethemapGod" uid="15314242">
+  <nd ref="3775223380"/>
+  <nd ref="3775223377"/>
+  <nd ref="3775223374"/>
+  <tag k="destination:ref" v="1"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="right_of:1"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="374119554" visible="true" version="8" changeset="153431723" timestamp="2024-07-01T22:18:14Z" user="GbabethemapGod" uid="15314242">
+  <nd ref="3775223387"/>
+  <nd ref="3775223384"/>
+  <tag k="destination:ref" v="1"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="right_of:1"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="374119556" visible="true" version="7" changeset="153431723" timestamp="2024-07-01T22:18:14Z" user="GbabethemapGod" uid="15314242">
+  <nd ref="3775223384"/>
+  <nd ref="3775223380"/>
+  <tag k="destination:ref" v="1"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="layer" v="-1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="yes"/>
+ </way>
+ <way id="374119559" visible="true" version="12" changeset="153431750" timestamp="2024-07-01T22:19:56Z" user="GbabethemapGod" uid="15314242">
+  <nd ref="3775223374"/>
+  <nd ref="3775223373"/>
+  <tag k="destination:ref" v="1"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="right_of:1"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="388751452" visible="true" version="13" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3660612266"/>
+  <nd ref="5524124946"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through|through|merge_to_left"/>
+  <tag k="width" v="18.25"/>
+ </way>
+ <way id="388751463" visible="true" version="15" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="410579888"/>
+  <nd ref="8426325045"/>
+  <nd ref="6834443526"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="change:lanes" v="|||not_right|not_left|"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="388752093" visible="true" version="8" changeset="182022629" timestamp="2026-04-30T08:46:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="521376966"/>
+  <nd ref="474493923"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="388752094" visible="true" version="13" changeset="182022629" timestamp="2026-04-30T08:46:40Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="474493923"/>
+  <nd ref="8416009533"/>
+  <nd ref="910197023"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="description" v="Expressway portion affected by the faultline"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through|through|merge_to_left"/>
+ </way>
+ <way id="388752095" visible="true" version="11" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3919242248"/>
+  <nd ref="910197027"/>
+  <nd ref="3919253717"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="388813061" visible="true" version="16" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5709836060"/>
+  <nd ref="7461984178"/>
+  <nd ref="3919848961"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="388813063" visible="true" version="15" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478">
+  <nd ref="3919848962"/>
+  <nd ref="13793647566"/>
+  <nd ref="12182043"/>
+  <nd ref="377644157"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="388813064" visible="true" version="7" changeset="122763330" timestamp="2022-06-23T14:38:11Z" user="tomincolorado" uid="10304315">
+  <nd ref="3919848964"/>
+  <nd ref="1078599663"/>
+  <nd ref="12182039"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="388813065" visible="true" version="15" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="12182040"/>
+  <nd ref="12293214100"/>
+  <nd ref="5703604652"/>
+  <nd ref="29273094"/>
+  <nd ref="5703604649"/>
+  <nd ref="12182041"/>
+  <nd ref="8772735722"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="14.6"/>
+ </way>
+ <way id="388813949" visible="true" version="7" changeset="161229344" timestamp="2025-01-11T07:55:26Z" user="DP24PH" uid="5752740">
+  <nd ref="2138807721"/>
+  <nd ref="3919858886"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="388813950" visible="true" version="8" changeset="161229344" timestamp="2025-01-11T07:55:26Z" user="DP24PH" uid="5752740">
+  <nd ref="3919858886"/>
+  <nd ref="966641215"/>
+  <nd ref="521372914"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="change:lanes" v="yes|yes|yes|yes|no"/>
+  <tag k="destination:lanes" v="||||Southwoods"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="||||slight_right"/>
+ </way>
+ <way id="420524719" visible="true" version="14" changeset="153208015" timestamp="2024-06-26T15:03:00Z" user="Pegasus21" uid="13510663">
+  <nd ref="244455883"/>
+  <nd ref="4204641095"/>
+  <nd ref="5729373409"/>
+  <nd ref="313867128"/>
+  <tag k="alt_name" v="South Superhighway"/>
+  <tag k="bus:lanes" v="no||"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="goods:lanes" v="no||"/>
+  <tag k="hgv:lanes" v="no|no|"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="628567773" visible="true" version="18" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="243903270"/>
+  <nd ref="7276887428"/>
+  <nd ref="3400237411"/>
+  <nd ref="2894947768"/>
+  <nd ref="7042640528"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="628567774" visible="true" version="23" changeset="187205758" timestamp="2026-08-10T00:48:42Z" user="Thunder_" uid="20663286">
+  <nd ref="244452853"/>
+  <nd ref="8435702502"/>
+  <nd ref="8632539392"/>
+  <nd ref="8462892724"/>
+  <nd ref="977206392"/>
+  <nd ref="1923268681"/>
+  <nd ref="8597960108"/>
+  <nd ref="5286842792"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="cycleway:lane" v="advisory"/>
+  <tag k="cycleway:right" v="lane"/>
+  <tag k="foot" v="yes"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="motorcycle:lanes" v="no||||designated"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="sidewalk" v="right"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="turn:lanes" v="through|through|merge_to_left;merge_to_right|through|slight_right"/>
+ </way>
+ <way id="642764213" visible="true" version="13" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="358813408"/>
+  <nd ref="382908846"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:1"/>
+  <tag k="ref" v="E2"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="7.3"/>
+ </way>
+ <way id="658719466" visible="true" version="16" changeset="126179125" timestamp="2022-09-14T12:10:20Z" user="relaemanila" uid="15297177">
+  <nd ref="382908846"/>
+  <nd ref="7276806308"/>
+  <nd ref="8757279426"/>
+  <nd ref="6168058533"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bridge:name" v="Alabang Viaduct"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.95"/>
+ </way>
+ <way id="658719470" visible="true" version="10" changeset="182456215" timestamp="2026-05-10T09:04:40Z" user="mueschel" uid="616774">
+  <nd ref="253125400"/>
+  <nd ref="7828448246"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="bus:lanes" v="no|yes|yes|yes"/>
+  <tag k="destination:lanes" v="Calamba|Carmona|San Pedro|Susana Heights"/>
+  <tag k="goods:lanes" v="no|yes|yes|yes"/>
+  <tag k="hgv:lanes" v="no|no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="661096647" visible="true" version="6" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3815332672"/>
+  <nd ref="9376531630"/>
+  <nd ref="7057436503"/>
+  <tag k="destination" v="Southwoods;Biñan"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="677190275" visible="true" version="17" changeset="164922600" timestamp="2025-04-14T06:31:08Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="32168164"/>
+  <nd ref="301310216"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="covered" v="yes"/>
+  <tag k="foot" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="4"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="Osmeña Highway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="turn:lanes" v="merge_to_right|through|through|through"/>
+ </way>
+ <way id="682344464" visible="true" version="19" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478">
+  <nd ref="5703604648"/>
+  <nd ref="12182042"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="change:lanes" v="no|no|no|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="682344465" visible="true" version="16" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6389983949"/>
+  <nd ref="5703604648"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bridge:name" v="Soldiers Hills Underpass"/>
+  <tag k="change:lanes" v="no|no|no|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="690613604" visible="true" version="10" changeset="164922600" timestamp="2025-04-14T06:31:08Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5291024644"/>
+  <nd ref="5286842791"/>
+  <nd ref="1411126027"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="covered" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="Osmeña Highway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="703018003" visible="true" version="13" changeset="154112589" timestamp="2024-07-18T17:51:25Z" user="(Inactive) Buddy-the-Elf" uid="9476874">
+  <nd ref="270280683"/>
+  <nd ref="358837605"/>
+  <nd ref="358836900"/>
+  <tag k="alt_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.95"/>
+ </way>
+ <way id="709591541" visible="true" version="15" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6669603569"/>
+  <nd ref="3400237410"/>
+  <nd ref="7045434320"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="709591542" visible="true" version="14" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6669603568"/>
+  <nd ref="964753481"/>
+  <nd ref="262432005"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="709591548" visible="true" version="11" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="2894947764"/>
+  <nd ref="1237869766"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="709591549" visible="true" version="12" changeset="182635785" timestamp="2026-05-14T08:31:21Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="358836900"/>
+  <nd ref="5729374166"/>
+  <nd ref="964753449"/>
+  <tag k="alt_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.95"/>
+ </way>
+ <way id="709834488" visible="true" version="8" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5357222721"/>
+  <nd ref="1075300811"/>
+  <nd ref="8688016943"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="40"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="709835433" visible="true" version="15" changeset="154113463" timestamp="2024-07-18T18:17:21Z" user="(Inactive) Buddy-the-Elf" uid="9476874">
+  <nd ref="7054581042"/>
+  <nd ref="244455883"/>
+  <tag k="alt_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|||"/>
+  <tag k="expressway" v="yes"/>
+  <tag k="hgv:lanes" v="no|no||"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60||"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="no"/>
+  <tag k="turn:lanes" v="through|through|through|slight_right"/>
+ </way>
+ <way id="729543298" visible="true" version="10" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6834443526"/>
+  <nd ref="3919242248"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="change:lanes" v="|||not_right|not_left|"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="729543302" visible="true" version="9" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5524124946"/>
+  <nd ref="410579888"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="14.6"/>
+ </way>
+ <way id="738588372" visible="true" version="15" changeset="176970947" timestamp="2026-01-08T06:43:37Z" user="x0zkA325L3hm" uid="22808437">
+  <nd ref="6503105517"/>
+  <nd ref="6916433131"/>
+  <tag k="covered" v="yes"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight:signed" v="no"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="tunnel" v="building_passage"/>
+ </way>
+ <way id="738588373" visible="true" version="15" changeset="171413885" timestamp="2025-09-03T15:40:14Z" user="Sky Harbor" uid="23214955">
+  <nd ref="259655618"/>
+  <nd ref="6916433138"/>
+  <tag k="destination:lanes" v="Pasay;Baclaran|SLEX;Alabang|Manila|"/>
+  <tag k="destination:symbol:lanes" v="airport|airport||"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="note" v="1;AH26"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="1"/>
+  <tag k="sidewalk" v="separate"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="738613274" visible="true" version="12" changeset="185378712" timestamp="2026-07-09T01:28:00Z" user="GrabPH_JAL" uid="24268398">
+  <nd ref="32167765"/>
+  <nd ref="5286836721"/>
+  <nd ref="5286836720"/>
+  <nd ref="3309552986"/>
+  <nd ref="32167768"/>
+  <nd ref="5286836722"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="destination:lanes" v="SLEX;Alabang|Manila"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="oneway" v="yes"/>
+ </way>
+ <way id="738613276" visible="true" version="13" changeset="185378712" timestamp="2026-07-09T01:28:00Z" user="GrabPH_JAL" uid="24268398">
+  <nd ref="6916433131"/>
+  <nd ref="6916433132"/>
+  <nd ref="32167765"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="738613277" visible="true" version="16" changeset="185378712" timestamp="2026-07-09T01:28:00Z" user="GrabPH_JAL" uid="24268398">
+  <nd ref="5286836718"/>
+  <nd ref="6503105517"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="destination" v="Alabang;Manila"/>
+  <tag k="destination:lanes" v="SLEX;Alabang|Manila"/>
+  <tag k="destination:ref" v="E2;145"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk_link"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="source:maxspeed" v="MMDA"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="turn:lanes" v="through|through"/>
+ </way>
+ <way id="738613278" visible="true" version="17" changeset="171413885" timestamp="2025-09-03T15:40:14Z" user="Sky Harbor" uid="23214955">
+  <nd ref="5291609744"/>
+  <nd ref="244452511"/>
+  <tag k="destination:lanes" v="Taft Avenue;Roxas Blvd.|SLEX;Alabang|SLEX;Manila|Pasong Tamo;Manila"/>
+  <tag k="foot" v="use_sidepath"/>
+  <tag k="hgv" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="int_ref:colour" v="blue"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="EDSA"/>
+  <tag k="name:es" v="Avenida Epifanio de los Santos"/>
+  <tag k="name:fil" v="Abenida Epifanio de los Santos"/>
+  <tag k="name:tl" v="Abenida Epifanio de los Santos"/>
+  <tag k="note" v="1;AH26"/>
+  <tag k="official_name" v="Epifanio de los Santos Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="1"/>
+  <tag k="sidewalk:right" v="separate"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="743181365" visible="true" version="12" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="262432005"/>
+  <nd ref="7045434336"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="change:lanes" v="|not_right|no"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through;slight_right"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="753169067" visible="true" version="8" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5286842792"/>
+  <nd ref="1411125995"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no||"/>
+  <tag k="goods:lanes" v="no||"/>
+  <tag k="hgv:lanes" v="no|no|"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:3"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="753169068" visible="true" version="9" changeset="164922600" timestamp="2025-04-14T06:31:08Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1411126027"/>
+  <nd ref="6672900918"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="covered" v="no"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="maxspeed:bus" v="50"/>
+  <tag k="maxspeed:hgv" v="50"/>
+  <tag k="name" v="Osmeña Highway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="753777590" visible="true" version="16" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7042640529"/>
+  <nd ref="3400180758"/>
+  <nd ref="2894947764"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="753777591" visible="true" version="11" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7042640528"/>
+  <nd ref="7042640529"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="754137096" visible="true" version="12" changeset="123021311" timestamp="2022-06-29T22:03:09Z" user="Pegasus21" uid="13510663">
+  <nd ref="7045434319"/>
+  <nd ref="6669603568"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="754137097" visible="true" version="11" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7045434320"/>
+  <nd ref="7045434319"/>
+  <tag k="access:lanes" v="yes|yes|no"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bridge" v="yes"/>
+  <tag k="bus:lanes" v="no|designated|no"/>
+  <tag k="hgv:lanes" v="no|designated|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="layer" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="754137104" visible="true" version="10" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7045434336"/>
+  <nd ref="358813408"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="change:lanes" v="|not_right|no"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="source:maxspeed" v="sign"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through;slight_right"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="755566870" visible="true" version="4" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7057436503"/>
+  <nd ref="267162272"/>
+  <tag k="destination" v="Southwoods;Biñan"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="757514229" visible="true" version="7" changeset="122483435" timestamp="2022-06-16T22:05:08Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7054581041"/>
+  <nd ref="7054581042"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|||"/>
+  <tag k="expressway" v="yes"/>
+  <tag k="hgv:lanes" v="no|no||"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="4"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60||"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="no"/>
+ </way>
+ <way id="757514230" visible="true" version="7" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1410727268"/>
+  <nd ref="6609504791"/>
+  <nd ref="7054581041"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|||||"/>
+  <tag k="foot" v="yes"/>
+  <tag k="goods:lanes" v="no|||||"/>
+  <tag k="hgv:lanes" v="no|no||||"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="motorcycle:lanes" v="no|||||designated"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="no"/>
+  <tag k="turn:lanes" v="||||slight_right|slight_right"/>
+ </way>
+ <way id="767767964" visible="true" version="8" changeset="118089034" timestamp="2022-03-04T11:21:31Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="5695091814"/>
+  <nd ref="5695091813"/>
+  <nd ref="1738028088"/>
+  <nd ref="1738028081"/>
+  <nd ref="3400180755"/>
+  <nd ref="243903263"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="change:lanes" v="yes|not_right|no"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="||slight_right"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="767767965" visible="true" version="11" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="7045459457"/>
+  <nd ref="358828773"/>
+  <nd ref="12285012373"/>
+  <nd ref="966666040"/>
+  <nd ref="1074451660"/>
+  <nd ref="12285012372"/>
+  <nd ref="12293502492"/>
+  <nd ref="358828774"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="change:lanes" v="yes|not_right|no"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through;slight_right"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="767767968" visible="true" version="9" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="964753449"/>
+  <nd ref="7045459455"/>
+  <nd ref="358830689"/>
+  <nd ref="5729374138"/>
+  <nd ref="3400180751"/>
+  <nd ref="1075300753"/>
+  <nd ref="3400180753"/>
+  <nd ref="7045459457"/>
+  <tag k="alt_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="check_date" v="2024-04-09"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="791538928" visible="true" version="9" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="261660802"/>
+  <nd ref="2894909234"/>
+  <nd ref="1078586457"/>
+  <tag k="highway" v="secondary"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="Enterprise Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="oneway:bicycle" v="yes"/>
+  <tag k="parking:both" v="no"/>
+  <tag k="parking:both:restriction" v="no_stopping"/>
+  <tag k="postal_code" v="4024"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="830307975" visible="true" version="4" changeset="118089034" timestamp="2022-03-04T11:21:37Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="358828774"/>
+  <nd ref="8757251596"/>
+  <nd ref="358828776"/>
+  <nd ref="8757251593"/>
+  <nd ref="1573792127"/>
+  <nd ref="358822365"/>
+  <nd ref="8340010268"/>
+  <nd ref="12182002"/>
+  <nd ref="966666042"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="bus:lanes" v="no|yes|yes"/>
+  <tag k="hgv:lanes" v="no|yes|yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="10.05"/>
+ </way>
+ <way id="844731941" visible="true" version="9" changeset="186575502" timestamp="2026-07-29T10:25:57Z" user="Thunder_" uid="20663286">
+  <nd ref="6672900918"/>
+  <nd ref="9926042814"/>
+  <nd ref="12041998699"/>
+  <nd ref="266788219"/>
+  <nd ref="6672984152"/>
+  <nd ref="12041998697"/>
+  <nd ref="9926770854"/>
+  <nd ref="244452853"/>
+  <tag k="alt_name" v="Pres. Sergio Osmeña Sr. Highway"/>
+  <tag k="cycleway:lane" v="advisory"/>
+  <tag k="cycleway:right" v="lane"/>
+  <tag k="expressway" v="yes"/>
+  <tag k="foot" v="yes"/>
+  <tag k="highway" v="trunk"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="sidewalk" v="right"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="878885152" visible="true" version="2" changeset="162238910" timestamp="2025-02-07T10:16:17Z" user="hiralee" uid="22470445">
+  <nd ref="2894909257"/>
+  <nd ref="3397742401"/>
+  <tag k="destination" v="Southwoods;Biñan"/>
+  <tag k="highway" v="motorway_link"/>
+  <tag k="lanes" v="5"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="40"/>
+  <tag k="maxspeed:advisory" v="40"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:4"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+ <way id="937759642" visible="true" version="2" changeset="118089034" timestamp="2022-03-04T11:21:37Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="8688016942"/>
+  <nd ref="5729374169"/>
+  <nd ref="270280683"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="40"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="937759643" visible="true" version="2" changeset="118089034" timestamp="2022-03-04T11:21:37Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="8688016943"/>
+  <nd ref="3461035950"/>
+  <nd ref="8688016942"/>
+  <tag k="covered" v="yes"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="40"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="947775855" visible="true" version="11" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="8772735722"/>
+  <nd ref="966639948"/>
+  <nd ref="6389983949"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="change:lanes" v="no|no|no|no"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="947775856" visible="true" version="9" changeset="182192608" timestamp="2026-05-04T08:26:48Z" user="HueMan1" uid="7895478">
+  <nd ref="12182042"/>
+  <nd ref="13793647569"/>
+  <nd ref="4049914044"/>
+  <nd ref="13793647570"/>
+  <nd ref="3919848962"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="947775858" visible="true" version="7" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="3919848961"/>
+  <nd ref="3660612248"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="surface:lanes" v="||||concrete|concrete"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="21.9"/>
+ </way>
+ <way id="947775860" visible="true" version="6" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="377644157"/>
+  <nd ref="4049914016"/>
+  <nd ref="4049913993"/>
+  <nd ref="4049913662"/>
+  <nd ref="966639604"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bicycle" v="no"/>
+  <tag k="check_date" v="2024-04-09"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="width" v="14.6"/>
+ </way>
+ <way id="1050179357" visible="true" version="12" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071900"/>
+  <nd ref="7474757257"/>
+  <nd ref="10216071903"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="smoothness" v="intermediate"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="width" v="4"/>
+ </way>
+ <way id="1050179359" visible="true" version="9" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071903"/>
+  <nd ref="3775223391"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="name" v="EDSA Busway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="smoothness" v="intermediate"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="width" v="4"/>
+ </way>
+ <way id="1076413112" visible="true" version="2" changeset="123290240" timestamp="2022-07-06T19:20:18Z" user="Pegasus21" uid="13510663">
+  <nd ref="9870920996"/>
+  <nd ref="5729312910"/>
+  <nd ref="554199711"/>
+  <nd ref="1238696421"/>
+  <nd ref="5357222721"/>
+  <tag k="bus:lanes" v="no||||"/>
+  <tag k="goods:lanes" v="no||||"/>
+  <tag k="hgv:lanes" v="no|no|||"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="5"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="80"/>
+  <tag k="maxspeed:bus" v="60"/>
+  <tag k="maxspeed:hgv" v="60"/>
+  <tag k="minspeed:lanes" v="80|60|||"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="nat_name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="President Sergio Osmeña Sr. Highway"/>
+  <tag k="old_name" v="South Superhighway"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="ref" v="E2"/>
+  <tag k="ref:colour" v="yellow"/>
+  <tag k="short_name" v="SLEX"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+ </way>
+ <way id="1083113031" visible="true" version="6" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="261663913"/>
+  <nd ref="267162208"/>
+  <nd ref="7396665617"/>
+  <nd ref="261663914"/>
+  <nd ref="267162209"/>
+  <nd ref="8175508897"/>
+  <nd ref="261663915"/>
+  <nd ref="9927827898"/>
+  <nd ref="261663916"/>
+  <nd ref="9926290151"/>
+  <tag k="cycleway:right" v="lane"/>
+  <tag k="cycleway:right:lane" v="exclusive"/>
+  <tag k="cycleway:right:protection:left" v="solid_line"/>
+  <tag k="highway" v="tertiary"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="Ecocentrum Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="oneway:bicycle" v="yes"/>
+  <tag k="parking:both" v="no"/>
+  <tag k="parking:both:restriction" v="no_stopping"/>
+  <tag k="postal_code" v="4024"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="1083307485" visible="true" version="4" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1078586457"/>
+  <nd ref="8175508903"/>
+  <nd ref="9376531634"/>
+  <nd ref="9376531633"/>
+  <nd ref="261663912"/>
+  <tag k="highway" v="secondary"/>
+  <tag k="lanes" v="3"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="Enterprise Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="oneway:bicycle" v="yes"/>
+  <tag k="parking:both" v="no"/>
+  <tag k="parking:both:restriction" v="no_stopping"/>
+  <tag k="postal_code" v="4024"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="turn:lanes" v="left|through|through"/>
+ </way>
+ <way id="1086465944" visible="true" version="5" changeset="164926275" timestamp="2025-04-14T08:11:57Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="261663912"/>
+  <nd ref="261663913"/>
+  <tag k="cycleway:right" v="lane"/>
+  <tag k="cycleway:right:lane" v="exclusive"/>
+  <tag k="cycleway:right:protection:left" v="solid_line"/>
+  <tag k="highway" v="tertiary"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="name" v="Ecocentrum Avenue"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="oneway:bicycle" v="yes"/>
+  <tag k="parking:both" v="no"/>
+  <tag k="parking:both:restriction" v="no_stopping"/>
+  <tag k="postal_code" v="4024"/>
+  <tag k="surface" v="concrete"/>
+ </way>
+ <way id="1117016716" visible="true" version="11" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071898"/>
+  <nd ref="10216071901"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="3"/>
+ </way>
+ <way id="1117016728" visible="true" version="10" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071891"/>
+  <nd ref="10216071897"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="6"/>
+ </way>
+ <way id="1117016731" visible="true" version="10" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="9872642767"/>
+  <nd ref="10216071891"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="6"/>
+ </way>
+ <way id="1117016732" visible="true" version="10" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="6624577864"/>
+  <nd ref="9872642767"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="2"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="6"/>
+ </way>
+ <way id="1117016735" visible="true" version="13" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071897"/>
+  <nd ref="10216071898"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="3"/>
+ </way>
+ <way id="1117016737" visible="true" version="11" changeset="173155890" timestamp="2025-10-11T21:04:58Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="10216071901"/>
+  <nd ref="10216071900"/>
+  <tag k="access" v="no"/>
+  <tag k="highway" v="service"/>
+  <tag k="indoor" v="yes"/>
+  <tag k="lanes" v="1"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxheight" v="5"/>
+  <tag k="maxspeed" v="20"/>
+  <tag k="motor_vehicle" v="no"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="smoothness" v="intermediate"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="width" v="3"/>
+ </way>
+ <way id="1189089261" visible="true" version="1" changeset="138407395" timestamp="2023-07-12T06:43:26Z" user="DP24PH" uid="5752740">
+  <nd ref="9926289935"/>
+  <nd ref="9336024045"/>
+  <nd ref="9336024043"/>
+  <tag k="covered" v="yes"/>
+  <tag k="footway" v="sidewalk"/>
+  <tag k="highway" v="footway"/>
+  <tag k="public_transport" v="platform"/>
+  <tag k="smoothness" v="good"/>
+  <tag k="source" v="Schadow1 Expeditions;DP24 Research"/>
+  <tag k="surface" v="concrete"/>
+  <tag k="survey:date" v="2023-07-10"/>
+  <tag k="tactile_paving" v="no"/>
+  <tag k="tunnel" v="building_passage"/>
+  <tag k="wheelchair" v="yes"/>
+ </way>
+ <way id="1238876186" visible="true" version="5" changeset="182021568" timestamp="2026-04-30T08:15:35Z" user="TagaSanPedroAko" uid="2541613">
+  <nd ref="1410727243"/>
+  <nd ref="521376966"/>
+  <tag k="alt_name" v="Alabang-Calamba-Santo Tomas Expressway"/>
+  <tag k="bridge" v="viaduct"/>
+  <tag k="destination:lanes" v="||||San Pedro"/>
+  <tag k="highway" v="motorway"/>
+  <tag k="int_ref" v="AH26"/>
+  <tag k="lanes" v="6"/>
+  <tag k="layer" v="1"/>
+  <tag k="maxheight" v="4.8"/>
+  <tag k="maxspeed" v="100"/>
+  <tag k="maxspeed:bus" v="80"/>
+  <tag k="maxspeed:hgv" v="80"/>
+  <tag k="minspeed" v="60"/>
+  <tag k="name" v="South Luzon Expressway"/>
+  <tag k="official_name" v="Dr. Jose P. Rizal Highway"/>
+  <tag k="official_name:etymology" v="José Rizal"/>
+  <tag k="official_name:etymology:wikidata" v="Q1500"/>
+  <tag k="oneway" v="yes"/>
+  <tag k="placement" v="middle_of:2"/>
+  <tag k="ref" v="E2"/>
+  <tag k="surface" v="asphalt"/>
+  <tag k="toll" v="yes"/>
+  <tag k="turn:lanes" v="through|through|through|through|slight_right"/>
+ </way>
+ <relation id="12273898" visible="true" version="32" changeset="188356962" timestamp="2026-09-01T10:44:59Z" user="TagaSanPedroAko" uid="2541613">
+  <member type="node" ref="13260869031" role="platform_entry_only"/>
+  <member type="node" ref="7780008802" role="stop_exit_only"/>
+  <member type="way" ref="1189089261" role="platform_exit_only"/>
+  <member type="way" ref="1117016732" role=""/>
+  <member type="way" ref="1117016731" role=""/>
+  <member type="way" ref="1117016728" role=""/>
+  <member type="way" ref="1117016735" role=""/>
+  <member type="way" ref="1117016716" role=""/>
+  <member type="way" ref="1117016737" role=""/>
+  <member type="way" ref="1050179357" role=""/>
+  <member type="way" ref="1050179359" role=""/>
+  <member type="way" ref="374119552" role=""/>
+  <member type="way" ref="374119551" role=""/>
+  <member type="way" ref="374119554" role=""/>
+  <member type="way" ref="374119556" role=""/>
+  <member type="way" ref="374119553" role=""/>
+  <member type="way" ref="374119559" role=""/>
+  <member type="way" ref="374119544" role=""/>
+  <member type="way" ref="738588373" role=""/>
+  <member type="way" ref="188163091" role=""/>
+  <member type="way" ref="738613278" role=""/>
+  <member type="way" ref="23952556" role=""/>
+  <member type="way" ref="738613277" role=""/>
+  <member type="way" ref="738588372" role=""/>
+  <member type="way" ref="738613276" role=""/>
+  <member type="way" ref="738613274" role=""/>
+  <member type="way" ref="27443153" role=""/>
+  <member type="way" ref="4914876" role=""/>
+  <member type="way" ref="677190275" role=""/>
+  <member type="way" ref="188163093" role=""/>
+  <member type="way" ref="690613604" role=""/>
+  <member type="way" ref="753169068" role=""/>
+  <member type="way" ref="844731941" role=""/>
+  <member type="way" ref="628567774" role=""/>
+  <member type="way" ref="753169067" role=""/>
+  <member type="way" ref="23952736" role=""/>
+  <member type="way" ref="757514230" role=""/>
+  <member type="way" ref="757514229" role=""/>
+  <member type="way" ref="709835433" role=""/>
+  <member type="way" ref="420524719" role=""/>
+  <member type="way" ref="230520300" role=""/>
+  <member type="way" ref="1076413112" role=""/>
+  <member type="way" ref="709834488" role=""/>
+  <member type="way" ref="937759643" role=""/>
+  <member type="way" ref="937759642" role=""/>
+  <member type="way" ref="703018003" role=""/>
+  <member type="way" ref="709591549" role=""/>
+  <member type="way" ref="767767968" role=""/>
+  <member type="way" ref="767767965" role=""/>
+  <member type="way" ref="830307975" role=""/>
+  <member type="way" ref="27949215" role=""/>
+  <member type="way" ref="767767964" role=""/>
+  <member type="way" ref="22737273" role=""/>
+  <member type="way" ref="628567773" role=""/>
+  <member type="way" ref="753777591" role=""/>
+  <member type="way" ref="753777590" role=""/>
+  <member type="way" ref="709591548" role=""/>
+  <member type="way" ref="4350919" role=""/>
+  <member type="way" ref="709591541" role=""/>
+  <member type="way" ref="754137097" role=""/>
+  <member type="way" ref="754137096" role=""/>
+  <member type="way" ref="709591542" role=""/>
+  <member type="way" ref="743181365" role=""/>
+  <member type="way" ref="754137104" role=""/>
+  <member type="way" ref="642764213" role=""/>
+  <member type="way" ref="658719466" role=""/>
+  <member type="way" ref="33544631" role=""/>
+  <member type="way" ref="358397791" role=""/>
+  <member type="way" ref="33544635" role=""/>
+  <member type="way" ref="658719470" role=""/>
+  <member type="way" ref="352584613" role=""/>
+  <member type="way" ref="221166094" role=""/>
+  <member type="way" ref="388813064" role=""/>
+  <member type="way" ref="28535211" role=""/>
+  <member type="way" ref="388813065" role=""/>
+  <member type="way" ref="947775855" role=""/>
+  <member type="way" ref="682344465" role=""/>
+  <member type="way" ref="682344464" role=""/>
+  <member type="way" ref="947775856" role=""/>
+  <member type="way" ref="388813063" role=""/>
+  <member type="way" ref="947775860" role=""/>
+  <member type="way" ref="52979639" role=""/>
+  <member type="way" ref="388813061" role=""/>
+  <member type="way" ref="947775858" role=""/>
+  <member type="way" ref="361600785" role=""/>
+  <member type="way" ref="388751452" role=""/>
+  <member type="way" ref="729543302" role=""/>
+  <member type="way" ref="388751463" role=""/>
+  <member type="way" ref="729543298" role=""/>
+  <member type="way" ref="388752095" role=""/>
+  <member type="way" ref="279145238" role=""/>
+  <member type="way" ref="1238876186" role=""/>
+  <member type="way" ref="388752093" role=""/>
+  <member type="way" ref="388752094" role=""/>
+  <member type="way" ref="369321986" role=""/>
+  <member type="way" ref="39584126" role=""/>
+  <member type="way" ref="39584116" role=""/>
+  <member type="way" ref="203869589" role=""/>
+  <member type="way" ref="388813949" role=""/>
+  <member type="way" ref="388813950" role=""/>
+  <member type="way" ref="145891226" role=""/>
+  <member type="way" ref="878885152" role=""/>
+  <member type="way" ref="285857743" role=""/>
+  <member type="way" ref="661096647" role=""/>
+  <member type="way" ref="755566870" role=""/>
+  <member type="way" ref="285857746" role=""/>
+  <member type="way" ref="791538928" role=""/>
+  <member type="way" ref="1083307485" role=""/>
+  <member type="way" ref="1086465944" role=""/>
+  <member type="way" ref="1083113031" role=""/>
+  <member type="way" ref="285857742" role=""/>
+  <tag k="charge" v="15 PHP/4 km + 2.65 PHP/km"/>
+  <tag k="duration" v="26"/>
+  <tag k="fee" v="yes"/>
+  <tag k="from" v="Ayala Center"/>
+  <tag k="interval" v="20"/>
+  <tag k="interval:conditional" v="40 @ (21:00-24:06)"/>
+  <tag k="name" v="Route 59: Ayala–Southwoods"/>
+  <tag k="network" v="LTFRB National Capital Region"/>
+  <tag k="network:short" v="LTFRB NCR"/>
+  <tag k="network:wikidata" v="Q6483998"/>
+  <tag k="opening_hours" v="Mo-Su 04:00-22:00"/>
+  <tag k="public_transport:version" v="2"/>
+  <tag k="ref" v="59"/>
+  <tag k="route" v="bus"/>
+  <tag k="to" v="Southwoods"/>
+  <tag k="type" v="route"/>
+  <tag k="wheelchair" v="limited"/>
+ </relation>
+</osm>

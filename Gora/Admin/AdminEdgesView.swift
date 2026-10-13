@@ -184,7 +184,7 @@ private struct EdgeListView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.ember)
                             Text("Some segments are one-way and others two-way. A two-way segment inside a one-way route lets the app route riders backwards along it.")
                                 .font(.caption)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -206,7 +206,7 @@ private struct EdgeListView: View {
                 }
             }
             if let error = vm.bulkUpdateError {
-                Section { Text(error).font(.caption).foregroundStyle(.red) }
+                Section { Text(error).font(.caption).foregroundStyle(Color.vermilion) }
             }
             Section {
                 ForEach(currentEdges) { edge in
@@ -265,8 +265,8 @@ private struct EdgeRow: View {
                     Text(dir.capitalized)
                         .font(.caption2)
                         .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(.blue.opacity(0.12))
-                        .foregroundStyle(.blue)
+                        .background(Color.onyx.opacity(0.12))
+                        .foregroundStyle(Color.onyx)
                         .clipShape(Capsule())
                 }
             }
@@ -277,8 +277,8 @@ private struct EdgeRow: View {
                 Text(edge.bidirectional ? "Two-way" : "One-way")
                     .font(.caption2.bold())
                     .padding(.horizontal, 6).padding(.vertical, 2)
-                    .background(edge.bidirectional ? Color.orange.opacity(0.14) : Color.green.opacity(0.14))
-                    .foregroundStyle(edge.bidirectional ? .orange : .green)
+                    .background(edge.bidirectional ? Color.ember.opacity(0.14) : Color.jade.opacity(0.14))
+                    .foregroundStyle(edge.bidirectional ? Color.ember : Color.jade)
                     .clipShape(Capsule())
                 Text("\(edge.polylineCoordinates.count) waypoints")
                     .font(.caption).foregroundStyle(.secondary)
@@ -341,7 +341,7 @@ private struct EditEdgePolylineView: View {
                     MapPolyline(coordinates: waypoints.map {
                         CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lng)
                     })
-                    .stroke(.blue.opacity(0.7), lineWidth: 3)
+                    .stroke(Color.onyx.opacity(0.7), lineWidth: 3)
                 }
                 ForEach(Array(waypoints.enumerated()), id: \.offset) { i, wp in
                     let coord2D = CLLocationCoordinate2D(latitude: wp.lat, longitude: wp.lng)
@@ -349,13 +349,13 @@ private struct EditEdgePolylineView: View {
                     Annotation("", coordinate: coord2D) {
                         ZStack {
                             Circle()
-                                .fill(isSelected ? .orange : .blue)
+                                .fill(isSelected ? Color.onyx : Color.slate)
                                 .frame(width: isSelected ? 30 : 22, height: isSelected ? 30 : 22)
                                 .overlay(Circle().stroke(.white, lineWidth: 2))
                                 .shadow(color: .black.opacity(0.3), radius: 3)
                             Text("\(i + 1)")
                                 .font(.caption2.bold())
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.canvas)
                         }
                         .onTapGesture {
                             selectedIndex = i
@@ -379,12 +379,12 @@ private struct EditEdgePolylineView: View {
             // Crosshair
             VStack(spacing: 0) {
                 Circle()
-                    .fill(.red)
+                    .fill(Color.vermilion)
                     .frame(width: 10, height: 10)
                     .overlay(Circle().stroke(.white, lineWidth: 2))
                     .shadow(color: .black.opacity(0.4), radius: 3)
                 Rectangle()
-                    .fill(.red)
+                    .fill(Color.vermilion)
                     .frame(width: 1.5, height: 8)
             }
 
@@ -529,7 +529,7 @@ private struct EditEdgePolylineView: View {
                                 flyToSelected()
                             } label: {
                                 Image(systemName: "trash")
-                                    .foregroundStyle(.red)
+                                    .foregroundStyle(Color.vermilion)
                             }
                             .buttonStyle(.bordered)
                             .disabled(waypoints.count <= 2)
@@ -539,7 +539,7 @@ private struct EditEdgePolylineView: View {
                     if let error = errorMessage {
                         Text(error)
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.vermilion)
                     }
 
                     // Cancel / Save

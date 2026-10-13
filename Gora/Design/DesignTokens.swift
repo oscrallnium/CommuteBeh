@@ -8,35 +8,52 @@
 import SwiftUI
 
 // MARK: - Design Tokens
-// Founding token set, specified in .claude/audits/home-admin-ui-audit.md
-// ("New Design Tokens Needed"). UI code should consume these tokens, not literals.
+// UI code consumes these tokens, not literals. See Design.md.
 
 enum DesignTokens {
 
     // MARK: Type scale — Dynamic Type text styles only, never fixed point sizes
     enum TypeScale {
-        /// Total trip time on the result card — the decision number.
-        static let metric: Font = .title2.bold().monospacedDigit()
-        /// Fare / distance beside the trip time.
-        static let metricSecondary: Font = .headline.monospacedDigit()
-        /// Leg instructions, card headers.
-        static let cardTitle: Font = .headline
+        /// Largest figure on a card, such as the trip duration.
+        static let display: Font = .largeTitle.bold()
+        /// Stat value, such as a fare or an arrival time.
+        static let statValue: Font = .title2.bold()
+        /// Arrival time on the commute card.
+        static let eta: Font = .title2.weight(.semibold)
+        /// Unit beside a display figure.
+        static let instruction: Font = .title3.weight(.semibold)
+        /// Title of a compact card.
+        static let instructionCompact: Font = .headline
+        /// Label of a control, and the route time bubble text.
+        static let controlLabel: Font = .callout.weight(.semibold)
+        /// Row title and chip title.
+        static let rowTitle: Font = .subheadline.weight(.semibold)
+        /// Title of the current row.
+        static let rowTitleCurrent: Font = .subheadline.bold()
+        /// Subtitle and stat label.
+        static let subtitle: Font = .footnote
+        /// Badge and chip text.
+        static let subtitleEmphasis: Font = .footnote.weight(.semibold)
         /// Field text, suggestion names.
         static let body: Font = .subheadline
         /// Timestamps, line labels, stop counts.
         static let meta: Font = .caption
-        /// Any lat/lng display (shared with Admin).
-        static let coord: Font = .caption.monospacedDigit()
     }
 
     // MARK: Spacing scale
     enum Space {
-        static let s1: CGFloat = 4
-        static let s2: CGFloat = 8
-        static let s3: CGFloat = 12
-        static let s4: CGFloat = 16
-        static let s6: CGFloat = 24
-        static let s8: CGFloat = 32
+        static let xxs: CGFloat = 3
+        static let xs: CGFloat = 6
+        static let s: CGFloat = 8
+        /// Vertical padding of a leg row.
+        static let legRow: CGFloat = 9
+        static let sm: CGFloat = 10
+        static let m: CGFloat = 12
+        static let ml: CGFloat = 14
+        /// Screen gutter.
+        static let l: CGFloat = 16
+        static let xl: CGFloat = 18
+        static let xxl: CGFloat = 22
     }
 
     // MARK: Corner radius
@@ -45,41 +62,25 @@ enum DesignTokens {
         static let card: CGFloat = 16
         /// Controls: fields, suggestion list.
         static let control: CGFloat = 12
+        /// Badges and leg chips.
+        static let badge: CGFloat = 7
+        /// Grabber bar.
+        static let indicator: CGFloat = 3
+        /// Floating route choice sheet.
+        static let routeSheet: CGFloat = 34
+        /// Floating Commute Mode card. A rounded rectangle, not a capsule.
+        static let commuteSheet: CGFloat = 30
         // Pills are capsules — no numeric token.
     }
 
     // MARK: Semantic colors
     enum Colors {
-        /// Interactive elements, prominent buttons (#127BED — the de-facto brand blue).
-        static let accent = Color(red: 0x12 / 255.0, green: 0x7B / 255.0, blue: 0xED / 255.0)
-        /// Route found, origin dot, save success.
-        static let success = Color(.systemGreen)
-        /// Destination pin, errors.
-        static let destructive = Color(.systemRed)
-        /// Delays/incidents, pending states.
-        static let warning = Color(.systemOrange)
+        /// Primary action: the one thing to tap on a surface. A Tangerine fill takes
+        /// Licorice text, never white, because white on Tangerine is about 2.4:1.
+        static let action = Color.tangerine
 
-        // MARK: Results surface
-        // The results panel and its cards are a deliberately light-only surface
-        // (paper fill + hard ink outline), so these are fixed values rather than
-        // semantic system colors — `Color.primary` would invert the outline to
-        // white on the still-white card in dark mode.
-
-        /// Hard outline on paper-filled cards and pills.
-        static let ink = Color(red: 0.09, green: 0.09, blue: 0.10)
-        /// Card fill on the results surface.
-        static let paper = Color(red: 0.996, green: 0.988, blue: 0.973)
-        /// Panel background behind the result cards.
-        static let cream = Color(red: 0.96, green: 0.94, blue: 0.90)
-        /// Primary action — the one thing to tap on a surface. Filled capsules only
-        /// ("USE THIS ROUTE"); at 3.3:1 on `paper` it clears AA for large bold text
-        /// but not for small text, so it must not be used below 14 pt bold.
-        static let action = Color(red: 0.91, green: 0.38, blue: 0.16)
-
-        /// "FASTEST" label badge.
-        static let fastest = Color(red: 0.22, green: 0.45, blue: 0.87)
-        /// "CHEAPEST" label badge.
-        static let cheapest = Color(red: 0.13, green: 0.42, blue: 0.44)
+        /// Halo around the position puck: `Color.tangerine` at 22 %.
+        static let positionHalo = Color.tangerine.opacity(0.22)
     }
 
     // MARK: Motion patterns
@@ -92,6 +93,8 @@ enum DesignTokens {
         /// `Animation` does not expose its duration and the heading loop must gate itself for
         /// exactly this long. See `ContentView.isCameraTransitioning`.
         static let cameraFitDuration: TimeInterval = 0.5
+        /// motion.cameraPoseDuration — length of a 2D/3D switch or a follow re-attach, in seconds.
+        static let cameraPoseDuration: TimeInterval = 0.7
         /// motion.cameraFit — map camera glide to a route's bounds.
         static let cameraFit: Animation = .easeInOut(duration: cameraFitDuration)
         /// motion.headingTickInterval — cadence of the 3D camera's own heading-smoothing
@@ -105,33 +108,20 @@ enum DesignTokens {
         /// Linear, not eased: a curve that decelerates before the next tick lands falls
         /// behind, which is what read as lag before this was a fixed-rate loop.
         static let headingFollow: Animation = .linear(duration: headingTickInterval)
-        /// motion.locationFollowMinDuration — shortest glide a GPS-driven camera move is
-        /// allowed, even when two fixes land almost back to back. Below this a linear
-        /// glide reads as a flicker rather than motion.
-        static let locationFollowMinDuration: TimeInterval = 0.3
-        /// motion.locationFollowMaxDuration — longest glide a GPS-driven camera move is
-        /// allowed, when fixes are sparse. Past this a slow crawl reads as lag rather
-        /// than travel, so the camera instead arrives promptly and waits.
-        static let locationFollowMaxDuration: TimeInterval = 1.5
-        /// motion.locationFollow — one GPS fix's camera write, paced to the time since the
-        /// previous fix (clamped to the bounds above) rather than a fixed duration, so
-        /// consecutive glides hand off the way `headingFollow` hands off between compass
-        /// ticks instead of decelerating to a stop and waiting on `cameraFit`'s curve.
-        static func locationFollow(elapsedSinceLastFix: TimeInterval) -> Animation {
-            .linear(duration: min(max(elapsedSinceLastFix, locationFollowMinDuration), locationFollowMaxDuration))
-        }
-        /// motion.locationCorrection — a train leg's async track-snap landing after the
-        /// camera already moved on the raw fix. Short and linear: this corrects the last
-        /// glide's endpoint, it is not a new one, so it must not read as its own move.
-        static let locationCorrection: Animation = .linear(duration: 0.15)
+        /// motion.routeEmphasis — length of the map line change when the selected route switches.
+        static let routeEmphasis: Animation = .easeOut(duration: 0.3)
+        /// motion.discloseDuration — length of one disclosure expand/collapse, in seconds.
+        static let discloseDuration: TimeInterval = 0.2
         /// motion.disclose — disclosure expand/collapse.
-        static let disclose: Animation = .easeInOut(duration: 0.2)
+        static let disclose: Animation = .easeInOut(duration: discloseDuration)
         /// motion.morph — result card ⇄ full route details.
         /// Deliberately longer and softer than `disclose`: the whole panel changes
         /// shape while the duration/fare pair flies across it, and the eye needs
         /// time to follow that. A stiffer spring settles inside ~200 ms, which
         /// reads as a cut rather than a transition.
         static let morph: Animation = .spring(response: 0.55, dampingFraction: 0.86)
+        /// motion.controlMorph — the map control circles merging into one and splitting again.
+        static let controlMorph: Animation = .spring()
         // The passenger dot's motion between GPS fixes is deliberately not a token here.
         // It is `UserAnnotation`, which MapKit animates with the same puck animator Maps
         // uses — the pacing is Apple's, and there is nothing for us to specify.
@@ -159,23 +149,32 @@ extension View {
     }
 }
 
+// MARK: - Hex color
+extension Color {
+    /// Parses `#RRGGBB`. Returns nil for any other format.
+    init?(hex: String) {
+        guard hex.hasPrefix("#"), hex.count == 7, let value = UInt32(hex.dropFirst(), radix: 16) else { return nil }
+        self.init(red: Double((value >> 16) & 0xFF) / 255,
+                  green: Double((value >> 8) & 0xFF) / 255,
+                  blue: Double(value & 0xFF) / 255)
+    }
+}
+
 // MARK: - TransportMode styling
-// Consolidates the three private modeColor(_:)/modeIcon(_:) copies that had
-// drifted apart in ContentView / RouteResultCard / RouteLegRow.
 extension TransportMode {
 
     var color: Color {
         switch self {
-        case .train:    return .blue
-        case .bus:      return .orange
-        case .jeepney:  return .green
-        case .tricycle: return .purple
-        case .walk:     return Color(.systemGray)
+        case .train:    return .orchid
+        case .bus:      return .cobalt
+        case .jeepney:  return .amethyst
+        case .tricycle: return .chartreuse
+        case .walk:     return .mist
         }
     }
 
-    /// Jeepney deliberately shares bus.fill — car.fill read as a private car;
-    /// jeepney green vs. bus orange keeps the two distinguishable.
+    /// Jeepney shares bus.fill because car.fill reads as a private car.
+    /// Jeepney amethyst and bus cobalt keep the two distinguishable.
     var icon: String {
         switch self {
         case .train:    return "tram.fill"
@@ -185,15 +184,37 @@ extension TransportMode {
         case .walk:     return "figure.walk"
         }
     }
+}
 
-    var lineWidth: CGFloat {
-        switch self {
-        case .train:    return 5
-        case .bus:      return 4
-        case .jeepney:  return 4
-        case .tricycle: return 3
-        case .walk:     return 2
-        }
+// MARK: - Route line geometry
+/// Map route line dimensions, in points.
+enum RouteLine {
+    /// Solid core width of a leg.
+    static let coreWidth: CGFloat = 6
+    /// Core width of the leg the passenger rides now.
+    static let currentWidth: CGFloat = 7
+    /// Casing width on each side of a core.
+    static let casing: CGFloat = 2
+    /// Walking dot diameter.
+    static let walkDot: CGFloat = 5
+    /// Distance between walking dot centers.
+    static let walkPitch: CGFloat = 9
+
+    /// Walking dots at the default scale.
+    static let walk = walkStyle()
+    /// Thin solid stroke of a station access connector.
+    static let connectorStyle = StrokeStyle(lineWidth: 1.5, lineCap: .round)
+
+    /// Round dots in `walkDot` size on `walkPitch`, scaled by `scale`. The dash is near zero
+    /// so each round cap draws a full circle.
+    static func walkStyle(scale: Double = 1) -> StrokeStyle {
+        StrokeStyle(lineWidth: walkDot * scale, lineCap: .round, lineJoin: .round,
+                    dash: [0.01, walkPitch * scale - 0.01])
+    }
+
+    /// Solid round-capped stroke of `width`.
+    static func solidStyle(width: CGFloat) -> StrokeStyle {
+        StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
     }
 }
 
@@ -206,13 +227,13 @@ extension StationAccessPoint {
     /// Entrances point in, exits point out, shared doors show both.
     var symbol: String { kind.symbol }
 
-    /// Direction is the field most likely to be set wrong, so it drives the colour:
-    /// undirected doors are neutral, northbound and southbound are told apart at a glance.
+    /// Direction drives the marker lightness. Northbound is darkest, southbound is mid grey,
+    /// undirected is light grey. Fixed values keep the white symbol readable in both appearances.
     var directionTint: Color {
         switch direction {
-        case "northbound": return DesignTokens.Colors.fastest
-        case "southbound": return DesignTokens.Colors.cheapest
-        default:           return DesignTokens.Colors.action
+        case "northbound": return Color.licorice
+        case "southbound": return Color(white: 0.38)
+        default:           return Color(white: 0.52)
         }
     }
 }

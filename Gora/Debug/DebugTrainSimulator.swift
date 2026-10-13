@@ -10,12 +10,8 @@ import CoreLocation
 import Foundation
 
 /// Drives a simulated ride along a fixed route (MRT North Avenue → Guadalupe) so
-/// Commute Mode's live-tracking features — track snapping, camera follow, the
-/// ahead-only polyline trim — can be exercised without riding an actual train.
-///
-/// Feeds `RouteStore.userLocation` directly, the same property CoreLocation writes
-/// to, so every downstream consumer sees an identical shape of update. Real GPS is
-/// not read while a run is active — see `RouteStore.isLocationSimulated`.
+/// Commute Mode's live-tracking features can be exercised without riding an actual
+/// train. See `Debug.md`.
 @MainActor
 @Observable
 final class DebugTrainSimulator {
@@ -27,32 +23,41 @@ final class DebugTrainSimulator {
     static let destinationStationID: StationID = "MRT_GUADALUPE"
 
     /// Simulated ground speed — MRT-3's approximate running speed between stations.
-    /// Dwell time at intermediate stops is not modelled, so a full run finishes
-    /// faster than a real ride does.
     static let speedKmh: Double = 60
     private static let speedMetersPerSecond: Double = speedKmh / 3.6
     private static let tickInterval: TimeInterval = 1.0
+    /// Seconds the train waits at each intermediate station.
+    static let dwellSeconds: TimeInterval = 10
 
-    private(set) var isRunning = false
+    /// True while a run is being prepared. Blocks a second start.
+    private(set) var isStarting = false
+    /// True from the moment the run owns the passenger position until `stop` runs.
+    private(set) var isActive = false
+    var isBusy: Bool { isStarting || isActive }
     /// Set on a failed resolve/route/geometry step, cleared at the start of the next run.
     private(set) var lastError: String?
 
     private var route: [CLLocationCoordinate2D] = []
     private var cumulativeMeters: [CLLocationDistance] = []
+    private var dwellMeters: [CLLocationDistance] = []
+    private var nextDwellIndex = 0
+    private var dwellRemaining: TimeInterval = 0
     private var distanceTraveled: CLLocationDistance = 0
     private var tickTask: Task<Void, Never>?
 
     /// Resolves both stations, calculates the route, and hands the chosen option back
-    /// via `onRouteReady` — the caller starts Commute Mode with it exactly as if a
-    /// route card had been tapped. Movement begins only after that call returns.
-    func start(routeStore: RouteStore, onRouteReady: (RouteOption) -> Void) async {
-        guard !isRunning else { return }
+    /// via `onRouteReady`. The caller starts Commute Mode with it and can await camera
+    /// setup. The passenger already sits at the origin when `onRouteReady` runs.
+    func start(routeStore: RouteStore, onRouteReady: (RouteOption) async -> Void) async {
+        guard !isBusy else { return }
+        isStarting = true
+        defer { isStarting = false }
         lastError = nil
 
         guard let origin = routeStore.allStations.first(where: { $0.id == Self.originStationID }),
               let destination = routeStore.allStations.first(where: { $0.id == Self.destinationStationID })
         else {
-            lastError = "Could not find North Ave / Guadalupe in the loaded graph."
+            fail("Could not find North Ave / Guadalupe in the loaded graph.")
             return
         }
 
@@ -65,72 +70,97 @@ final class DebugTrainSimulator {
             attempts += 1
         }
         guard routeStore.isEngineReady else {
-            lastError = "Transit engine never became ready."
+            fail("Transit engine never became ready.")
             return
         }
 
         await routeStore.calculateRoute()
-        guard let option = routeStore.routeOptions.first else {
-            lastError = routeStore.errorMessage ?? "No route returned for North Ave → Guadalupe."
+        guard let option = routeStore.routeOptions.first(where: { $0.result.legs.first?.fromStation.id == origin.id })
+        else {
+            fail(routeStore.errorMessage ?? "No route from North Ave to Guadalupe.")
             return
         }
 
         let flattened = Self.flattenedPolyline(option.result)
         guard flattened.count >= 2 else {
-            lastError = "Route has no drawable geometry."
+            fail("Route has no drawable geometry.")
             return
         }
         route = flattened
         cumulativeMeters = Self.cumulativeDistances(flattened)
+        dwellMeters = Self.dwellDistances(option.result, route: flattened, cumulativeMeters: cumulativeMeters)
+        nextDwellIndex = 0
+        dwellRemaining = 0
         distanceTraveled = 0
 
-        routeStore.isLocationSimulated = true
-        onRouteReady(option)
+        isActive = true
+        routeStore.beginSimulatedLocation(at: Coordinates(lat: flattened[0].latitude, lng: flattened[0].longitude))
+        await onRouteReady(option)
+        guard isActive else { return }
         beginTicking(routeStore: routeStore)
     }
 
-    /// Stops the run and hands GPS back to CoreLocation. Does not end Commute Mode —
-    /// the caller does that the same way it would for a real ride.
+    /// Ends the run and hands the passenger position back to real GPS. Does not end
+    /// Commute Mode — `ContentView.endCommute()` calls this.
     func stop(routeStore: RouteStore) {
-        isRunning = false
+        isActive = false
         tickTask?.cancel()
         tickTask = nil
-        routeStore.isLocationSimulated = false
+        route = []
+        cumulativeMeters = []
+        dwellMeters = []
+        routeStore.endSimulatedLocation()
+    }
+
+    private func fail(_ message: String) {
+        lastError = message
+        print("[DebugSim] \(message)")
     }
 
     private func beginTicking(routeStore: RouteStore) {
-        isRunning = true
+        var isFirstTick = true
         tickTask = Task { [weak self, weak routeStore] in
-            while let self, let routeStore, self.isRunning, !Task.isCancelled {
-                self.advance(routeStore: routeStore)
+            while let self, let routeStore, self.isActive, !Task.isCancelled {
+                self.advance(routeStore: routeStore, movesForward: !isFirstTick)
+                isFirstTick = false
                 try? await Task.sleep(for: .seconds(Self.tickInterval))
             }
         }
     }
 
-    private func advance(routeStore: RouteStore) {
+    private func advance(routeStore: RouteStore, movesForward: Bool) {
         let total = cumulativeMeters.last ?? 0
-        distanceTraveled = min(total, distanceTraveled + Self.speedMetersPerSecond * Self.tickInterval)
+        var speed = Self.speedMetersPerSecond
+        if dwellRemaining > 0 {
+            dwellRemaining -= Self.tickInterval
+            speed = 0
+        } else if movesForward {
+            let next = min(total, distanceTraveled + Self.speedMetersPerSecond * Self.tickInterval)
+            if nextDwellIndex < dwellMeters.count, next >= dwellMeters[nextDwellIndex] {
+                distanceTraveled = dwellMeters[nextDwellIndex]
+                nextDwellIndex += 1
+                dwellRemaining = Self.dwellSeconds
+                speed = 0
+            } else {
+                distanceTraveled = next
+            }
+        }
+        let arrived = distanceTraveled >= total
+        if arrived { speed = 0 }
 
         guard let coordinate = Self.coordinate(at: distanceTraveled, route: route, cumulativeMeters: cumulativeMeters)
         else { return }
-
-        routeStore.userLocation = Coordinates(lat: coordinate.latitude, lng: coordinate.longitude)
-        routeStore.userSpeed = Self.speedMetersPerSecond
-        routeStore.userCourse = Self.bearing(at: distanceTraveled, route: route, cumulativeMeters: cumulativeMeters)
-
-        if distanceTraveled >= total {
-            isRunning = false
-            tickTask?.cancel()
-        }
+        routeStore.applySimulatedFix(
+            Coordinates(lat: coordinate.latitude, lng: coordinate.longitude),
+            speed: speed,
+            course: Self.bearing(at: distanceTraveled, route: route, cumulativeMeters: cumulativeMeters)
+        )
+        if arrived { tickTask?.cancel() }
     }
 
     // MARK: Geometry
     //
-    // Mirrors `CommuteProgressEngine.LegGeometry` and `TrackSnapper.LineGeometry`'s
-    // "flatten, accumulate distance, interpolate" shape — a fourth copy of that
-    // pattern reads better here than threading a debug-only concern through either
-    // of those actor-isolated types.
+    // "Flatten, accumulate distance, interpolate" — see `Debug.md`.
 
     /// Every leg's polyline concatenated in order, dropping each subsequent leg's
     /// first point — it duplicates the previous leg's last point, the shared station.
@@ -143,6 +173,26 @@ final class DebugTrainSimulator {
             points.append(contentsOf: index == 0 ? legPoints : Array(legPoints.dropFirst()))
         }
         return points
+    }
+
+    /// Route distance of each intermediate station, in travel order. A station maps to the
+    /// nearest route point at or after the previous one.
+    private static func dwellDistances(
+        _ result: RouteResult, route: [CLLocationCoordinate2D], cumulativeMeters: [CLLocationDistance]
+    ) -> [CLLocationDistance] {
+        var distances: [CLLocationDistance] = []
+        var searchFrom = 0
+        for station in result.legs.flatMap({ Array($0.stops.dropFirst().dropLast()) }) {
+            let target = CLLocation(latitude: station.coordinates.lat, longitude: station.coordinates.lng)
+            let candidates = route.indices.dropFirst(searchFrom)
+            guard let nearest = candidates.min(by: {
+                CLLocation(latitude: route[$0].latitude, longitude: route[$0].longitude).distance(from: target)
+                    < CLLocation(latitude: route[$1].latitude, longitude: route[$1].longitude).distance(from: target)
+            }) else { continue }
+            searchFrom = nearest
+            distances.append(cumulativeMeters[nearest])
+        }
+        return distances
     }
 
     private static func cumulativeDistances(_ coords: [CLLocationCoordinate2D]) -> [CLLocationDistance] {

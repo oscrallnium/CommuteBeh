@@ -146,6 +146,7 @@ enum APIEndpoint {
             if let sn  = update.shortName { station["short_name"] = sn  }
             if let ot  = update.openTime  { station["open_time"]  = ot  }
             if let ct  = update.closeTime { station["close_time"] = ct  }
+            if let boarding = update.boarding { station["boarding"] = boarding.rawValue }
             if let points = update.accessPoints {
                 // snake_case to match the controller's permit list. Sent whole — see
                 // StationUpdate.accessPoints; an empty array clears the station's doors.

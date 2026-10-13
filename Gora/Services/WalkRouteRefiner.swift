@@ -279,7 +279,10 @@ extension RouteStore {
 
 // MARK: - Immutable leg/result rewrites
 
-private extension RouteLeg {
+// `copy(...)` and `shiftingArrival(...)` are shared with `CommuteRerouter.swift`, which
+// patches a walk leg mid-ride the same way this file patches one after a search — kept
+// internal rather than private so both files call the one implementation.
+extension RouteLeg {
 
     /// Same leg, ETA moved by the drift accumulated from earlier re-measured walks.
     func shiftingArrival(byMinutes minutes: Double) -> RouteLeg {
@@ -290,7 +293,7 @@ private extension RouteLeg {
     /// Drops a two-point polyline — by definition a chord between the leg's endpoints, not a
     /// path. Legs with real geometry (three points or more, i.e. something a router or a
     /// recorder produced) are left alone.
-    func withoutStraightLine() -> RouteLeg {
+    fileprivate func withoutStraightLine() -> RouteLeg {
         guard polylineCoordinates.count <= 2 else { return self }
         return copy(polylineCoordinates: [])
     }
@@ -300,7 +303,7 @@ private extension RouteLeg {
     /// `rawSteps` is deliberately left as the engine produced it: it carries the synthetic
     /// access edge that A* actually traversed, and downstream consumers (per-segment ETA
     /// calls, AR navigation) read it as the record of the search, not of this refinement.
-    func replacingWalk(
+    fileprivate func replacingWalk(
         minutes: Double,
         distanceKm: Double,
         polyline: [Coordinates],
@@ -336,7 +339,7 @@ private extension RouteLeg {
     /// it alone costs a few metres of honest gap between the pin and the path — MapKit has
     /// no data for the walk from inside a mall to its gate — and buys a line that actually
     /// follows the road.
-    func pinningStationEnds(of polyline: [Coordinates],
+    fileprivate func pinningStationEnds(of polyline: [Coordinates],
                            to endpoints: (from: Coordinates, to: Coordinates)) -> [Coordinates] {
         guard polyline.count >= 2 else { return polylineCoordinates }
         var pinned = polyline
@@ -352,6 +355,7 @@ private extension RouteLeg {
         estimatedArrival: Date? = nil
     ) -> RouteLeg {
         RouteLeg(
+            id: id,
             fromStation: fromStation,
             toStation: toStation,
             mode: mode,
@@ -369,7 +373,7 @@ private extension RouteLeg {
     }
 }
 
-private extension RouteResult {
+extension RouteResult {
     /// Totals are re-derived from the rewritten legs; transfers and modes are unchanged
     /// because refinement only ever touches walk legs, which count for neither.
     func replacingLegs(_ legs: [RouteLeg]) -> RouteResult {

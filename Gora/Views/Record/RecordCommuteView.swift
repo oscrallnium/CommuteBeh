@@ -394,12 +394,12 @@ struct RecordCommuteView: View {
                 UserAnnotation()
                 if vm.rawWaypoints.count >= 2 {
                     MapPolyline(coordinates: vm.rawWaypoints)
-                        .stroke(.blue.opacity(0.75), lineWidth: 4)
+                        .stroke(Color.onyx.opacity(0.75), lineWidth: 4)
                 }
                 if let first = vm.rawWaypoints.first {
                     Annotation("", coordinate: first, anchor: .center) {
                         ZStack {
-                            Circle().fill(.green).frame(width: 14, height: 14)
+                            Circle().fill(Color.jade).frame(width: 14, height: 14)
                             Circle().stroke(.white, lineWidth: 2).frame(width: 14, height: 14)
                         }
                     }
@@ -434,8 +434,8 @@ struct RecordCommuteView: View {
         VStack(spacing: 10) {
             if let err = vm.locationError {
                 HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                    Text(err).font(.caption).foregroundStyle(.red)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
+                    Text(err).font(.caption).foregroundStyle(Color.vermilion)
                 }
                 .padding(.horizontal, 16).padding(.vertical, 10)
                 .background(.regularMaterial).clipShape(Capsule())
@@ -443,7 +443,7 @@ struct RecordCommuteView: View {
 
             if vm.state == .recording {
                 HStack(spacing: 8) {
-                    Circle().fill(.red).frame(width: 9, height: 9)
+                    Circle().fill(Color.vermilion).frame(width: 9, height: 9)
                     Text("\(vm.rawWaypoints.count) points recorded")
                         .font(.subheadline.bold())
                 }
@@ -476,14 +476,14 @@ struct RecordCommuteView: View {
         VStack(spacing: 10) {
             if vm.authStatus == .denied || vm.authStatus == .restricted {
                 Text("Location access is required. Enable it in Settings → Privacy → Location.")
-                    .font(.caption).foregroundStyle(.orange)
+                    .font(.caption).foregroundStyle(Color.ember)
                     .multilineTextAlignment(.center)
             }
             Button {
                 vm.startRecording()
             } label: {
                 HStack(spacing: 8) {
-                    Image(systemName: "record.circle.fill").foregroundStyle(.red)
+                    Image(systemName: "record.circle.fill").foregroundStyle(Color.vermilion)
                     Text("Record Commute")
                 }
                 .font(.headline)
@@ -599,13 +599,13 @@ private struct RecordedProcessingView: View {
             Spacer()
             Image(systemName: "road.lanes")
                 .font(.system(size: 56))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.ember)
             VStack(spacing: 10) {
                 Text("Snapping route to roads")
                     .font(.title3.bold())
                 ProgressView(value: vm.processProgress, total: 1.0)
                     .progressViewStyle(.linear)
-                    .tint(.blue)
+                    .tint(Color.ember)
                     .frame(width: 220)
                 Text("\(Int(vm.processProgress * 100))%")
                     .font(.caption)
@@ -657,7 +657,7 @@ private struct RecordedDefiningStopsView: View {
                             ForEach(vm.markedStopIndices.sorted(), id: \.self) { idx in
                                 HStack(spacing: 10) {
                                     Image(systemName: "mappin.circle.fill")
-                                        .foregroundStyle(.orange)
+                                        .foregroundStyle(Color.ember)
                                     TextField("Stop name", text: Binding(
                                         get: { vm.stopNames[idx] ?? "Stop \(idx + 1)" },
                                         set: { vm.stopNames[idx] = $0 }
@@ -789,13 +789,13 @@ private struct RecordedMetadataView: View {
                             .frame(maxWidth: .infinity)
                     }
                 }
-                .listRowBackground(vm.canSave ? Color.blue : Color.gray)
-                .foregroundStyle(.white)
+                .listRowBackground(vm.canSave ? Color.tangerine : Color.faint)
+                .foregroundStyle(Color.licorice)
                 .disabled(!vm.canSave || vm.isSaving)
             }
 
             if let err = vm.errorMessage {
-                Section { Text(err).foregroundStyle(.red).font(.caption) }
+                Section { Text(err).foregroundStyle(Color.vermilion).font(.caption) }
             }
         }
     }
@@ -812,7 +812,7 @@ private struct RecordedOutputView: View {
             Spacer()
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 72))
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.jade)
             VStack(spacing: 8) {
                 Text("Route Saved!")
                     .font(.title2.bold())

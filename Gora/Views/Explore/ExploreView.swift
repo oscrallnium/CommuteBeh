@@ -398,7 +398,7 @@ final class ExploreViewModel {
 
         return groups
             .map { line, value -> RouteLayer in
-                let color = Self.color(for: line)
+                let color = Self.color(for: line, mode: value.mode, in: graph)
                 let baseSize = Self.dotSize(for: value.mode)
 
                 // polylineCoordinates already starts with the from-station coord
@@ -425,7 +425,7 @@ final class ExploreViewModel {
 
                 return RouteLayer(
                     id: line, mode: value.mode,
-                    displayName: Self.displayName(for: line),
+                    displayName: Self.displayName(for: line, in: graph),
                     color: color, lineWidth: Self.lineWidth(for: value.mode),
                     polylines: polylines, stations: stations
                 )
@@ -435,30 +435,18 @@ final class ExploreViewModel {
 
     // MARK: - Static Helpers
 
-    static func color(for line: String) -> Color {
-        switch line {
-        case "MRT-3":                 return Color(red: 0.07, green: 0.47, blue: 0.93)
-        case "LRT-1":                 return Color(red: 0.10, green: 0.70, blue: 0.20)
-        case "LRT-2":                 return Color(red: 0.55, green: 0.10, blue: 0.90)
-        case "EDSA_BUS":              return Color(red: 0.96, green: 0.50, blue: 0.09)
-        case "COMMONWEALTH_BUS":      return Color(red: 0.65, green: 0.30, blue: 0.05)
-        case "JEEPNEY_QUIAPO_CUBAO":  return Color(red: 0.90, green: 0.10, blue: 0.10)
-        case "JEEPNEY_QUIAPO":        return Color(red: 0.88, green: 0.15, blue: 0.52)
-        case "JEEPNEY_NORTH":         return Color(red: 0.00, green: 0.60, blue: 0.65)
-        case "JEEPNEY_MAKATI":        return Color(red: 0.00, green: 0.72, blue: 0.80)
-        case "EJEEPNEY_BGC":          return Color(red: 0.28, green: 0.18, blue: 0.88)
-        case "TRICYCLE_MANILA":        return Color(red: 0.00, green: 0.68, blue: 0.48)
-        case "JEEPNEY_CARTIMAR_LRT":  return Color(red: 0.95, green: 0.35, blue: 0.10)
-        default:                       return .gray
-        }
+    static func color(for line: String, mode: String, in graph: TransitGraph) -> Color {
+        if let graphColor = graph.lineColor(for: line) { return graphColor }
+        return TransportMode(rawValue: mode)?.color ?? Color.slate
     }
 
-    static func displayName(for line: String) -> String {
+    static func displayName(for line: String, in graph: TransitGraph) -> String {
+        if let name = graph.lines[line]?.displayName { return name }
         switch line {
-        case "MRT-3":                 return "MRT-3"
-        case "LRT-1":                 return "LRT-1"
-        case "LRT-2":                 return "LRT-2"
-        case "EDSA_BUS":              return "EDSA Bus"
+        case "MRT-3", "MRT3":         return "MRT-3"
+        case "LRT-1", "LRT1":         return "LRT-1"
+        case "LRT-2", "LRT2":         return "LRT-2"
+        case "EDSA_BUS", "EDSA_CAROUSEL": return "EDSA Carousel"
         case "COMMONWEALTH_BUS":      return "Commonwealth Bus"
         case "JEEPNEY_QUIAPO_CUBAO":  return "Jeepney Quiapo–Cubao"
         case "JEEPNEY_QUIAPO":        return "Jeepney Quiapo"
@@ -552,7 +540,7 @@ struct ExploreView: View {
                                      total: Double(max(vm.fetchTotal, 1)))
                             .progressViewStyle(.linear)
                             .frame(width: 80)
-                            .tint(.blue)
+                            .tint(Color.ember)
                         Text("Plotting roads \(vm.fetchProgress)/\(vm.fetchTotal)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -566,14 +554,14 @@ struct ExploreView: View {
                 }
                 if let err = vm.errorMessage {
                     statusPill {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                        Text(err).font(.caption).foregroundStyle(.red)
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
+                        Text(err).font(.caption).foregroundStyle(Color.vermilion)
                     }
                 }
                 if let err = vm.deleteError {
                     statusPill {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                        Text(err).font(.caption).foregroundStyle(.red)
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
+                        Text(err).font(.caption).foregroundStyle(Color.vermilion)
                         Button {
                             vm.deleteError = nil
                         } label: {
@@ -607,7 +595,7 @@ struct ExploreView: View {
     private var routePanel: some View {
         VStack(spacing: 0) {
             Capsule()
-                .fill(Color.gray.opacity(0.4))
+                .fill(Color.faint)
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
                 .padding(.bottom, 2)
@@ -632,9 +620,9 @@ struct ExploreView: View {
                     Button { showCreateLoop = true } label: {
                         Image(systemName: "plus.circle")
                             .font(.subheadline.bold())
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.ember)
                             .frame(width: 30, height: 30)
-                            .background(Color.blue.opacity(0.10))
+                            .background(Color.haze)
                             .clipShape(Circle())
                     }
                     .padding(.trailing, 4)
@@ -648,7 +636,7 @@ struct ExploreView: View {
                         .font(.subheadline.bold())
                         .foregroundStyle(.secondary)
                         .frame(width: 30, height: 30)
-                        .background(Color.gray.opacity(0.12))
+                        .background(Color.haze)
                         .clipShape(Circle())
                 }
             }
@@ -666,7 +654,7 @@ struct ExploreView: View {
                             ForEach(group.layers) { layer in
                                 routeRow(layer)
                                     .listRowBackground(Color.clear)
-                                    .listRowSeparatorTint(Color.gray.opacity(0.25))
+                                    .listRowSeparatorTint(Color.smoke)
                                     .listRowInsets(EdgeInsets())
                                     // Deleting a route is admin-only on the backend, same
                                     // as creating one — don't offer a swipe that can only
@@ -743,9 +731,9 @@ struct ExploreView: View {
             Button { vm.toggle(layer.id) } label: {
                 Image(systemName: layer.isVisible ? "eye.fill" : "eye.slash")
                     .font(.subheadline)
-                    .foregroundStyle(layer.isVisible ? layer.color : Color.gray.opacity(0.4))
+                    .foregroundStyle(layer.isVisible ? layer.color : Color.faint)
                     .frame(width: 36, height: 36)
-                    .background(layer.isVisible ? layer.color.opacity(0.12) : Color.gray.opacity(0.08))
+                    .background(layer.isVisible ? layer.color.opacity(0.12) : Color.haze)
                     .clipShape(Circle())
                     .animation(.easeInOut(duration: 0.15), value: layer.isVisible)
             }

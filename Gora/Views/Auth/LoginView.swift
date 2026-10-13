@@ -24,7 +24,7 @@ struct LoginView: View {
             VStack(spacing: 8) {
                 Image(systemName: "tram.fill")
                     .font(.system(size: 52))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.ember)
                 Text("Gora")
                     .font(.largeTitle.bold())
                 Text("Metro Manila Transit Navigator")
@@ -59,7 +59,7 @@ struct LoginView: View {
             if let error = errorMessage {
                 Text(error)
                     .font(.caption)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.vermilion)
                     .multilineTextAlignment(.center)
             }
 

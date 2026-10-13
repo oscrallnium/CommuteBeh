@@ -15,8 +15,10 @@ import CoreLocation
 /// own rules — the point of the preview is to show what the server will actually
 /// write, so any divergence here would be a lie on screen:
 ///
-/// - The chain is ordered by the `<prefix>_STOP<n>` suffix, and the 1-based insertion
+/// - The chain is ordered by `StationChain.ordered`, and the 1-based insertion
 ///   slot is `refIndex + 2` for "after", `refIndex + 1` for "before".
+/// - The new ids follow the backend convention: `<chain>_S<n>` for the stop and
+///   `<from>__<to>` for each edge. No existing id is renamed.
 /// - A mid-chain insert splits the existing segment's polyline at the **vertex nearest
 ///   the new stop** (`split_point_index`), and both halves keep that shared vertex —
 ///   first half is `poly[0...i]`, second is `poly[i...]`.
@@ -86,26 +88,6 @@ enum StopInsertionPreview {
 
     // MARK: - Chain ordering
 
-    /// Chain position encoded in an auto-generated station id (`..._STOP7` → 7).
-    /// Nil for hand-authored ids (train stations), which the backend refuses to
-    /// insert into anyway.
-    static func stopNumber(_ id: String) -> Int? {
-        guard let range = id.range(of: #"_STOP(\d+)$"#, options: .regularExpression) else { return nil }
-        return Int(id[range].replacingOccurrences(of: "_STOP", with: ""))
-    }
-
-    /// Stations in travel order. Ids without a `_STOP<n>` suffix sort last, keeping
-    /// their relative order, so a mixed line still renders something sensible.
-    static func orderedChain(_ stations: [Station]) -> [Station] {
-        stations.enumerated()
-            .sorted { a, b in
-                let na = stopNumber(a.element.id) ?? .max
-                let nb = stopNumber(b.element.id) ?? .max
-                return na == nb ? a.offset < b.offset : na < nb
-            }
-            .map(\.element)
-    }
-
     /// The edge connecting two consecutive stops, with its polyline oriented `from → to`.
     /// Bidirectional lines store one edge per pair, so a reversed match is reversed here
     /// rather than treated as missing.
@@ -123,12 +105,43 @@ enum StopInsertionPreview {
         return nil
     }
 
+    /// A chain is a closed loop when an edge runs from its last stop to its first stop.
+    static func isClosedLoop(_ ordered: [Station], edges: [TransitEdge]) -> Bool {
+        guard ordered.count >= 2, let first = ordered.first, let last = ordered.last else { return false }
+        return edge(from: last.id, to: first.id, in: edges)?.edge.from == last.id
+    }
+
+    /// Where an insert lands: the 1-based slot `p` and the stops on each side. `previous` is
+    /// nil for a head insert and `next` is nil for a tail insert. A closed loop has neither,
+    /// because the slot before the first stop is the slot after the last, on the closing edge.
+    struct Slot {
+        let p: Int
+        let previous: Station?
+        let next: Station?
+    }
+
+    static func slot(
+        referenceStationID: StationID,
+        position: String,
+        ordered: [Station],
+        edges: [TransitEdge]
+    ) -> Slot? {
+        guard let refIndex = ordered.firstIndex(where: { $0.id == referenceStationID }) else { return nil }
+        let n = ordered.count
+        var p = position == "after" ? refIndex + 2 : refIndex + 1
+        guard isClosedLoop(ordered, edges: edges) else {
+            return Slot(p: p, previous: p > 1 ? ordered[p - 2] : nil, next: p <= n ? ordered[p - 1] : nil)
+        }
+        if p == 1 { p = n + 1 }
+        return Slot(p: p, previous: ordered[p - 2], next: p <= n ? ordered[p - 1] : ordered[0])
+    }
+
     // MARK: - Preview
 
     /// One polyline the insert will create, ready to draw and to list coordinate by
     /// coordinate.
     struct NewPolyline: Identifiable {
-        let id: String              // e.g. "JEEP_X_SEG3" — the edge id the server will write
+        let id: String              // e.g. "JEEP_X_S2__JEEP_X_S3" — the edge id the server will write
         let fromName: String
         let toName: String
         let coordinates: [Coordinates]
@@ -185,22 +198,24 @@ enum StopInsertionPreview {
         position: String,           // "before" | "after"
         stations: [Station],
         edges: [TransitEdge],
-        roadGeometry: [[Coordinates]] = []
+        roadGeometry: [[Coordinates]] = [],
+        lineStationIDs: [String],
+        lastStopNumber: Int?
     ) -> Result? {
-        let ordered = orderedChain(stations)
-        guard let refIndex = ordered.firstIndex(where: { $0.id == referenceStationID }),
-              let prefix = sequencePrefix(referenceStationID) else { return nil }
+        let ordered = StationChain.ordered(stations)
+        guard let slot = slot(referenceStationID: referenceStationID, position: position,
+                              ordered: ordered, edges: edges),
+              let prefix = StationChain.prefix(of: referenceStationID) else { return nil }
 
-        let n = ordered.count
-        let p = position == "after" ? refIndex + 2 : refIndex + 1
-        let newStationID = "\(prefix)_STOP\(p)"
+        let p = slot.p
+        let newStationID = StationChain.nextStopID(chain: prefix, lineStationIDs: lineStationIDs,
+                                                  lastStopNumber: lastStopNumber)
 
         // Mid-chain: the segment between the two stops the new one lands between gets
-        // split in two. Head (p == 1) and tail (p == n + 1) have no segment to split.
-        guard p > 1, p <= n else {
-            let neighbour = p == 1 ? ordered.first : ordered.last
-            guard let neighbour else { return nil }
-            let isHead = p == 1
+        // split in two. Head and tail inserts on an open chain have no segment to split.
+        guard let previous = slot.previous, let next = slot.next else {
+            let isHead = slot.previous == nil
+            guard let neighbour = isHead ? slot.next : slot.previous else { return nil }
             let newStop = Coordinates(lat: coordinate.latitude, lng: coordinate.longitude)
 
             // No existing segment to slice, so the road route is the only real geometry
@@ -228,7 +243,7 @@ enum StopInsertionPreview {
                 insertionSlot: p,
                 newStationID: newStationID,
                 newPolylines: [NewPolyline(
-                    id: isHead ? "\(prefix)_SEG1" : "\(prefix)_SEG\(n)",
+                    id: isHead ? "\(newStationID)__\(neighbour.id)" : "\(neighbour.id)__\(newStationID)",
                     fromName: isHead ? "New stop" : neighbour.name,
                     toName: isHead ? neighbour.name : "New stop",
                     coordinates: pinned,
@@ -240,14 +255,12 @@ enum StopInsertionPreview {
             )
         }
 
-        let previous = ordered[p - 2]
-        let next = ordered[p - 1]
         guard let match = edge(from: previous.id, to: next.id, in: edges) else { return nil }
         let poly = match.coordinates
-        // Splitting a segment that has no polyline of its own (e.g. a head/tail edge saved
-        // before this flow fetched geometry) can't slice anything — both halves need their
-        // own fetched road route, exactly like a head/tail insert.
-        guard !poly.isEmpty else {
+        // Splitting a segment that has no drawable polyline (fewer than two points) can't
+        // slice anything — both halves need their own fetched road route, exactly like a
+        // head/tail insert.
+        guard poly.count >= 2 else {
             let newStop = Coordinates(lat: coordinate.latitude, lng: coordinate.longitude)
             guard roadGeometry.count == 2,
                   roadGeometry[0].count >= 2, roadGeometry[1].count >= 2 else {
@@ -272,9 +285,9 @@ enum StopInsertionPreview {
                 insertionSlot: p,
                 newStationID: newStationID,
                 newPolylines: [
-                    NewPolyline(id: "\(prefix)_SEG\(p - 1)", fromName: previous.name,
+                    NewPolyline(id: "\(previous.id)__\(newStationID)", fromName: previous.name,
                                 toName: "New stop", coordinates: firstHalf, isFetched: true),
-                    NewPolyline(id: "\(prefix)_SEG\(p)", fromName: "New stop",
+                    NewPolyline(id: "\(newStationID)__\(next.id)", fromName: "New stop",
                                 toName: next.name, coordinates: secondHalf, isFetched: true)
                 ],
                 replacedEdge: (match.edge.id, poly),
@@ -296,14 +309,14 @@ enum StopInsertionPreview {
             newStationID: newStationID,
             newPolylines: [
                 NewPolyline(
-                    id: "\(prefix)_SEG\(p - 1)",
+                    id: "\(previous.id)__\(newStationID)",
                     fromName: previous.name,
                     toName: "New stop",
                     coordinates: firstHalf,
                     isFetched: false
                 ),
                 NewPolyline(
-                    id: "\(prefix)_SEG\(p)",
+                    id: "\(newStationID)__\(next.id)",
                     fromName: "New stop",
                     toName: next.name,
                     coordinates: secondHalf,
@@ -316,63 +329,6 @@ enum StopInsertionPreview {
                 ? String(format: "Stop sits %.0f m off this segment — the split point won't line up with the pin.", gap)
                 : nil
         )
-    }
-
-    // MARK: - Segment lookup
-
-    /// The consecutive stop pair whose polyline passes closest to `coordinate`, so a tap
-    /// on the map can pre-select the segment it lands on instead of previewing a split of
-    /// whatever pair the pickers happened to be left on. Returns the *earlier* stop of the
-    /// pair — the reference stop for a `position: "after"` insert.
-    static func nearestSegmentStart(
-        to coordinate: CLLocationCoordinate2D,
-        stations: [Station],
-        edges: [TransitEdge]
-    ) -> (station: Station, distanceMeters: CLLocationDistance)? {
-        nearestSegmentStarts(to: coordinate, stations: stations, edges: edges).first
-    }
-
-    /// Every segment ranked by how close its polyline passes to `coordinate`, nearest
-    /// first. The runner-up matters: on a route that doubles back, the outbound and
-    /// return segments run alongside each other, and picking the closer of two
-    /// near-identical distances is a coin toss the caller should decline to make.
-    static func nearestSegmentStarts(
-        to coordinate: CLLocationCoordinate2D,
-        stations: [Station],
-        edges: [TransitEdge]
-    ) -> [(station: Station, distanceMeters: CLLocationDistance)] {
-        let ordered = orderedChain(stations)
-        guard ordered.count >= 2 else { return [] }
-        let target = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-
-        return ordered.dropLast().enumerated().compactMap { i, station in
-            guard let match = edge(from: station.id, to: ordered[i + 1].id, in: edges) else { return nil }
-            let nearest = match.coordinates
-                .map { target.distance(from: CLLocation(latitude: $0.lat, longitude: $0.lng)) }
-                .min()
-            guard let nearest else { return nil }
-            return (station, nearest)
-        }
-        .sorted { $0.1 < $1.1 }
-    }
-
-    /// The segment an insert at `position` relative to `referenceStationID` would split,
-    /// oriented from → to. Depends only on the chain and the picker selection, not on
-    /// where the stop lands, so it can be resolved before a coordinate is chosen — which
-    /// is what lets a tap snap to the selected segment rather than to the whole line.
-    /// Nil for a head or tail insert, which splits nothing.
-    static func segmentToSplit(
-        referenceStationID: StationID,
-        position: String,
-        stations: [Station],
-        edges: [TransitEdge]
-    ) -> (id: String, coordinates: [Coordinates])? {
-        let ordered = orderedChain(stations)
-        guard let refIndex = ordered.firstIndex(where: { $0.id == referenceStationID }) else { return nil }
-        let p = position == "after" ? refIndex + 2 : refIndex + 1
-        guard p > 1, p <= ordered.count else { return nil }
-        guard let match = edge(from: ordered[p - 2].id, to: ordered[p - 1].id, in: edges) else { return nil }
-        return (match.edge.id, match.coordinates)
     }
 
     // MARK: - Helpers
@@ -392,11 +348,5 @@ enum StopInsertionPreview {
             }
         }
         return bestIndex
-    }
-
-    /// `"JEEP_QUIAPO_NB_STOP4"` → `"JEEP_QUIAPO_NB"`. Nil for hand-authored ids.
-    static func sequencePrefix(_ stationID: StationID) -> String? {
-        guard let range = stationID.range(of: #"_STOP\d+$"#, options: .regularExpression) else { return nil }
-        return String(stationID[..<range.lowerBound])
     }
 }

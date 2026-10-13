@@ -12,8 +12,8 @@ import MapKit
 
 struct ContentView: View {
     @State var routeStore = RouteStore()
-    @State private var originText = ""
-    @State private var destinationText = ""
+    @State var originText = ""
+    @State var destinationText = ""
     @State var mapPosition: MapCameraPosition = .region(Self.manilaRegion)
     /// Captured once the map appears — see `moveCamera`.
     @State var mapProxy: MapProxy?
@@ -25,6 +25,10 @@ struct ContentView: View {
     /// safe-area insets, which omit the tab bar this screen sits inside.
     @State var visibleTop: CGFloat = 0
     @State var visibleBottom: CGFloat = 0
+    /// Top edge of the commute sheet while commuting. 0 when unmeasured.
+    @State var commuteStripBottom: CGFloat = 0
+    /// The strip bottom the follow camera uses. Eases toward `commuteStripBottom`.
+    @State var stripBottomEase: StripBottomEase?
     /// Map-ready coordinates + bounding box for `vm.routeResult`. See `RouteGeometry`.
     @State var routeGeometry: RouteGeometry?
     /// Whether this tab is the one on screen. Gates the location dot — see `UserAnnotation`.
@@ -35,41 +39,78 @@ struct ContentView: View {
     /// True after the first GPS fix has been applied to the origin field automatically.
     /// Prevents subsequent fixes from overwriting an origin the user has since changed.
     @State private var hasAutoSetOrigin = false
+    /// The exact text `hasAutoSetOrigin` last wrote — "My Location" or the reverse-geocoded
+    /// address. Lets `scenePhase` tell "still what auto-fill wrote" apart from "the
+    /// passenger has since edited or replaced it" before deciding to refresh it.
+    @State private var autoSetOriginText: String?
+    /// Watched so returning from the background can re-open two seams a stale position
+    /// otherwise gets stuck behind. See `Commute.md`.
+    @Environment(\.scenePhase) private var scenePhase
+    /// The commute sheet stays down while the login cover is up.
+    @Environment(UserSession.self) var session
+    /// Set on `.background`, cleared on the next real `.active`. See `Commute.md`.
+    @State private var wasBackgrounded = false
+    /// Resolves the best available passenger position: real GPS when fresh, polyline-projected
+    /// when fixes stop (tunnel, signal loss). See `CommutePositionResolver`.
+    @State private var positionResolver = CommutePositionResolver()
+    /// Glides the passenger dot between snapped positions at 30 Hz, because `Annotation`
+    /// re-places its coordinate instantly rather than animating it. See `PuckGlideInterpolator`.
+    @State var puckInterpolator = PuckGlideInterpolator()
+    /// Draws a freshly computed route on progressively from origin to destination.
+    /// Started by `fitToRouteIfSuccessful` in `ContentView+Camera.swift`, hence internal
+    /// rather than private. See `RouteDrawAnimator`.
+    @State var routeDrawAnimator = RouteDrawAnimator()
+    /// Selection, sheet detail state, and per-option map data for the route-choice phase.
+    /// See `RouteChoiceState`.
+    @State var routeChoice = RouteChoiceState()
+    /// Decides when the passenger has genuinely left the current walk leg. See `Commute.md`.
+    @State private var rerouteMonitor = CommuteRerouteMonitor()
 
     // MARK: Commute Mode
     //
     // `commuteEngine` is non-nil exactly when `isCommuting` is true.
     @State var isCommuting = false
     @State var commuteEngine: CommuteProgressEngine?
-    @State private var commuteStartedAt: Date?
-    /// When the previous GPS fix landed, so the next one's camera glide can be paced to
-    /// the real gap between fixes instead of a fixed duration. `nil` before the first fix.
-    @State private var lastLocationFixAt: Date?
+    @State var commuteStartedAt: Date?
+    /// Set when the passenger reaches the destination. The commute card shows "Arrived" until Done.
+    @State var arrivedAt: Date?
     @State var commuteCameraMode: CommuteCameraMode = .twoD
     /// True while a 2D/3D camera transition loop is in flight.
     @State var isCameraTransitioning = false
+    /// True from the start of `startCommute` until its `.fit` correction should have
+    /// landed, so the follow loop's first ticks don't restart that glide underneath it.
+    @State private var isEnteringCommute = false
+    /// Identifies the entry window `startCommute` most recently opened, so a stale clear
+    /// from an earlier call can't end a newer one early.
+    @State private var commuteEntryToken = 0
+    /// The camera values last written for commuting, so `.followTick` can tell it already
+    /// reached this target and skip restarting an animation toward it. See `Commute.md`.
+    @State var lastCommuteCameraCenter: CLLocationCoordinate2D?
+    @State var lastCommuteCameraDistance: CLLocationDistance?
+    @State var lastCommuteCameraPitch: Double?
+    @State var lastCommuteCameraHeading: Double?
+    /// The route heading the 3D camera faces, low-passed once per follow tick. See `Commute.md`.
+    @State var smoothedRouteHeading: Double?
+    /// Ground metres that `RouteLine.walkPitch` points span at the puck. See `ContentView+WalkGrid.swift`.
+    @State var walkGridStep: CLLocationDistance?
+    @State var walkGridStepUpdatedAt: Date?
+    /// The puck position at the last heading tick. The heading holds while the puck stands still.
+    @State var lastHeadingSample: CLLocationCoordinate2D?
     /// Whether the camera stays locked to the passenger. While true the follow loop rewrites the
     /// camera every tick, which discards any pan, so a passenger turns this off to move the map.
-    @State private var isFollowingPassenger = true
+    @State var isFollowingPassenger = true
     #if DEBUG
     /// Drives a simulated MRT ride when triggered from the debug button — see
     /// `ContentView+DebugSimulate.swift`. Compiled out of release builds entirely.
     @State var debugTrainSimulator = DebugTrainSimulator()
+    /// Map centre before a debug run. Start and exit framing include it. See `Debug.md`.
+    @State var debugSimAnchor: CLLocationCoordinate2D?
+    /// True from a debug run's exit until its framing move lands. `recenterHome()` returns early.
+    @State var debugSimHoldsCamera = false
     #endif
-    /// Identifies the glide `beginCameraTransition()` most recently started. Its completion
-    /// callback compares its own copy against this before clearing `isCameraTransitioning`,
-    /// so a second toggle mid-glide can't have the first glide's late completion clear the
-    /// flag out from under the new one.
-    @State private var cameraTransitionToken = 0
-    /// Snapshot of `livePassengerCoordinate` taken when a camera transition begins, and
-    /// substituted for it while one is in flight — see `polylineTrimCoordinate`.
-    /// `isCameraTransitioning` only ever gated the camera *position* write; a GPS fix
-    /// landing mid-transition still moved the live route polyline's trim point, rebuilding
-    /// the Map's content underneath the still-running glide.
-    @State var frozenTrimCoordinate: CLLocationCoordinate2D?
-    /// Shared with `RouteOptionCard` and `CommuteModeView` so the selected card morphs into
-    /// the commute card. Both ends tag their shape `"commute-card"`.
-    @Namespace private var commuteNS
+    /// Identifies the transition `beginCameraTransition` most recently started. Changing it
+    /// stops any running transition. See `Commute.md`.
+    @State var cameraTransitionToken = 0
 
     /// Inputs that return the camera to its resting position.
     /// `hasUserLocation` is a Bool, not the coordinate, so only acquiring a fix re-centres
@@ -83,7 +124,7 @@ struct ContentView: View {
 
     static let manilaRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 14.5763, longitude: 121.0194),
-        span: MKCoordinateSpan(latitudeDelta: 0.18, longitudeDelta: 0.18)
+        span: MKCoordinateSpan(latitudeDelta: 0.025, longitudeDelta: 0.025)
     )
     /// Accuracy circle is hidden when `horizontalAccuracy` is at or below this value.
     /// At 20 m the circle is smaller than the puck on screen and carries no information.
@@ -113,43 +154,47 @@ struct ContentView: View {
         #if DEBUG
         let _ = logBodyReevaluationIfTransitioning()
         #endif
+        // Read here, not inside the map content: SwiftUI evaluates the `MapReader` closure
+        // outside the observation scope of `body`, so a read there never triggers a redraw.
+        let revealedFraction = routeDrawAnimator.revealedFraction
+        let choiceFrame = routeChoiceFrame(revealedFraction: revealedFraction)
         MapReader { proxy in
             Map(position: $mapPosition) {
-                if let result = routeStore.routeResult, let geo = geometry(for: result) {
+                if showsRouteChoice {
+                    routeChoiceMapContent(choiceFrame, legColor: routeStore.legColor, onSelect: selectRouteFromAnnotation)
+                } else if let result = routeStore.routeResult, let geo = geometry(for: result) {
                     // ── Polylines — one per RouteLeg ─────────────────────────────
-                    // In Commute Mode the line only ever shows what's left: nothing for
-                    // a leg already ridden, the live-trimmed leg for the one the
-                    // passenger is on, the full leg for everything still ahead. Outside
-                    // Commute Mode every leg draws in full, as the search preview always has.
+                    // In Commute Mode the line shows only what's left. See `Commute.md`.
                     ForEach(Array(result.legs.enumerated()), id: \.element.id) { index, leg in
                         // Precomputed, not mapped here: this closure re-runs on every
                         // body pass, and walk legs carry hundreds of MKDirections points.
                         let coords = geo.polylines[leg.id] ?? []
                         if isCommuting, let currentIndex = commuteEngine?.currentLegIndex, index < currentIndex {
-                            EmptyMapContent()
+                            completedLegPolylineContent(leg: leg, coords: coords)
                         } else if isCommuting, let currentIndex = commuteEngine?.currentLegIndex, index == currentIndex {
-                            currentLegPolylineContent(leg: leg, coords: coords, passenger: polylineTrimCoordinate)
+                            currentLegPolylineContent(
+                                leg: leg, coords: coords, passenger: displayedPuckCoordinate,
+                                geometry: geo, walkGridStep: walkGridStep, color: routeStore.legColor(leg))
                         } else {
-                            routePolylineContent(leg: leg, coords: coords)
+                            // Not commuting: draw the route on progressively rather than
+                            // dropping the whole polyline in at once.
+                            let revealed = isCommuting ? coords
+                                : geo.revealedCoordinates(leg: leg.id, fraction: revealedFraction)
+                            // This leg's own reveal may finish before the route's overall
+                            // fraction reaches 1 — each leg regains its cased look as soon
+                            // as its own coordinates stop growing, not only once every leg
+                            // in the route has.
+                            let isAnimating = !isCommuting && revealed.count < coords.count
+                            // The mask is only valid against the full, untrimmed polyline
+                            // it was measured from — never pass it while still animating.
+                            routePolylineContent(
+                                leg: leg, coords: revealed, isAnimating: isAnimating, color: routeStore.legColor(leg),
+                                sharedMask: isAnimating ? nil : geo.sharedWithNextMask(leg: leg.id))
                         }
                     }
-                    // ── Origin pin ───────────────────────────────────────────────
-                    // Drawn at the station's nearest access point, not its raw coordinate,
-                    // which is a routing position and can sit in the middle of the road.
-                    // `accessPoint` falls back to the centroid when no doors are recorded.
-                    if let first = result.legs.first {
-                        let point = first.fromStation.accessPoint(
-                            kind: .both, direction: nil, nearestTo: first.toStation.coordinates)
-                        Annotation("", coordinate: CLLocationCoordinate2D(
-                            latitude: point.lat, longitude: point.lng
-                        )) {
-                            ZStack {
-                                Circle().fill(.green).frame(width: 16, height: 16)
-                                Circle().stroke(.white, lineWidth: 2.5).frame(width: 16, height: 16)
-                            }
-                            .shadow(color: .black.opacity(0.3), radius: 2)
-                        }
-                    }
+                    // Station connectors draw once per station, not once per leg.
+                    let firstDrawnLeg = isCommuting ? min(commuteEngine?.currentLegIndex ?? 0, result.legs.count) : 0
+                    stationAccessConnectors(legs: result.legs[firstDrawnLeg...])
                     // ── Destination pin ──────────────────────────────────────────
                     if let last = result.legs.last {
                         let destLabel = last.line == "ACCESS_WALK" ? "" : last.toStation.shortName
@@ -157,54 +202,61 @@ struct ContentView: View {
                             kind: .both, direction: nil, nearestTo: last.fromStation.coordinates)
                         Annotation(destLabel, coordinate: CLLocationCoordinate2D(
                             latitude: point.lat, longitude: point.lng
-                        )) {
-                            Image(systemName: "mappin.circle.fill")
-                                .font(.title)
-                                .foregroundStyle(.red)
-                                .shadow(color: .black.opacity(0.4), radius: 2)
+                        ), anchor: .bottom) {
+                            DestinationPin()
+                                .shadow(color: .black.opacity(0.3), radius: 2)
                         }
                     }
-                    // ── Transfer dots — boarding station of every non-access leg ──
+                    // ── Transfer dots — start of every leg whose mode differs from the previous leg ──
                     // (user dot is added outside this branch — it shows with or without a route)
-                    ForEach(result.legs.dropFirst().filter { $0.line != "ACCESS_WALK" }) { leg in
+                    ForEach(result.modeChangeLegs) { leg in
                         let point = leg.fromStation.accessPoint(
                             kind: .both, direction: nil, nearestTo: leg.toStation.coordinates)
                         Annotation("", coordinate: CLLocationCoordinate2D(
                             latitude: point.lat, longitude: point.lng
                         )) {
-                            Circle()
-                                .fill(.white)
-                                .frame(width: 10, height: 10)
-                                .overlay(Circle().stroke(leg.mode.color, lineWidth: 2))
-                                .shadow(color: .black.opacity(0.2), radius: 1)
+                            TransferNode()
                         }
                     }
                 }
                 // ── GPS accuracy circle ──────────────────────────────────────────
-                // Radius equals `horizontalAccuracy` in metres — the same semantics
-                // as the Maps app blue circle. Drawn below the puck so the dot stays
-                // on top. `displayedAccuracyRadius` is an animated copy updated with
-                // easeInOut in the `.onChange` below, so the circle resizes smoothly.
-                if isOnScreen, let userCoord = routeStore.userLocation,
+                // Radius equals `horizontalAccuracy`, same as the Maps app. Hidden
+                // while commuting — see `Commute.md`.
+                if isOnScreen, !isCommuting, let userCoord = routeStore.userLocation,
                    let radius = displayedAccuracyRadius {
                     MapCircle(
                         center: CLLocationCoordinate2D(latitude: userCoord.lat, longitude: userCoord.lng),
                         radius: radius
                     )
-                    .foregroundStyle(.blue.opacity(0.12))
-                    .stroke(.blue.opacity(0.30), lineWidth: 1)
+                    .foregroundStyle(Color.tangerine.opacity(0.12))
+                    .stroke(Color.tangerine.opacity(0.30), lineWidth: 1)
                 }
                 // ── The passenger ───────────────────────────────────────────────
-                // `UserAnnotation`, not `Annotation`, whose coordinate does not animate and
-                // makes the dot jump between fixes. Gating on `isOnScreen` removes it from
-                // the content, which is the only way to stop MapKit's location feed.
+                // MapKit's own dot outside commute; a route-snapped `Annotation` during
+                // commute. See `Commute.md`.
                 if isOnScreen {
+                    let snappedPuck = isCommuting && commuteEngine?.snappedLocation != nil
+                        ? displayedPuckCoordinate : nil
+                    // One `UserAnnotation` at a fixed tree position, hidden by opacity. Two
+                    // swapped instances share MapKit's single user-location view, which can
+                    // keep the visible content after a second commute and draw two pucks.
                     UserAnnotation { userLocation in
                         PassengerPuck(speed: userLocation.location?.speed)
+                            .opacity(snappedPuck == nil ? 1 : 0)
+                    }
+                    if let snappedPuck {
+                        // Drawn at the interpolator's 30 Hz glide position, the same
+                        // coordinate the polyline trims at — see `PuckGlideInterpolator`.
+                        Annotation("", coordinate: snappedPuck) {
+                            PassengerPuck(speed: routeStore.userSpeed)
+                        }
+                        .annotationTitles(.hidden)
                     }
                 }
             }
             .ignoresSafeArea()
+            // Hides establishment names and icons. Road and place names still show.
+            .mapStyle(.standard(pointsOfInterest: .excludingAll))
             // Long-press on the map: the first press sets origin, later presses set destination.
             // Attach it above the `.safeAreaInset` calls. Below them the hit region covers both
             // panels and stops the route-detail leg list from scrolling.
@@ -220,244 +272,299 @@ struct ContentView: View {
                         }
                     }
             )
-            #if DEBUG
-            .overlay(alignment: .topTrailing) { debugSimulateButton }
-            #endif
-            .safeAreaInset(edge: .top, spacing: 0) {
-                // Dropped entirely in Commute Mode — the map reads as full-bleed with
-                // just the bottom card, matching the reference UI.
-                if !isCommuting {
-                    CommuteSearchPanel(
-                        routeStore: routeStore,
-                        originText: $originText,
-                        destinationText: $destinationText,
-                        focusedField: $focusedField,
-                        namespace: searchNS,
-                        showSearchProgress: showSearchProgress,
-                        onReset: resetAll,
-                        onSearch: search,
-                        onSwap: swapOriginDestination,
-                        onClearOrigin: clearOrigin,
-                        onClearDestination: clearDestination,
-                        onSelectOrigin: selectOrigin,
-                        onSelectDestination: selectDestination
-                    )
-                    .padding(CommuteSearchPanel.panelPadding)
-                        // The measurement is published from the card/pill itself, not from
-                        // here — see `measuresVisibleTop`. Reading the padded panel's own
-                        // frame would fold the suggestion list into it.
-                        .onPreferenceChange(VisibleTopKey.self) { visibleTop = $0 }
-                }
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if isCommuting, let commuteEngine, let result = routeStore.routeResult {
-                    CommuteModeView(
-                        result: result,
-                        engine: commuteEngine,
-                        destinationText: destinationText,
-                        morphNS: commuteNS,
-                        onEndCommute: endCommute
-                    )
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                    // Anchored to the card's own top edge, not the map's — `alignmentGuide`
-                    // swaps which edge of *this* overlay lines up with the card's top, so
-                    // the row sits entirely above the card instead of over its first rows.
-                    // That keeps it in place whether the card is compact or expanded.
-                    .overlay(alignment: .top) {
-                        HStack(alignment: .bottom, spacing: 8) {
-                            if let leg = currentCommuteLeg(for: commuteEngine) {
-                                CommuteSpeedReadout(
-                                    speedMetersPerSecond: routeStore.userSpeed,
-                                    metersRemaining: commuteEngine.metersRemainingOnCurrentLeg,
-                                    nextStopName: leg.toStation.shortName
-                                )
-                            }
-                            Spacer(minLength: 8)
-                            CommuteMapControls(cameraMode: $commuteCameraMode,
-                                               isFollowing: $isFollowingPassenger)
-                        }
-                        // Matches `CommuteModeView`'s own internal padding, so this row's
-                        // leading and trailing edges line up with the card's text below it
-                        // instead of the card's outer edge, 18pt further out.
-                        .padding(.horizontal, 18)
-                        .padding(.bottom, 12)
-                        .alignmentGuide(.top) { $0[.bottom] }
-                    }
-                } else if !routeStore.routeOptions.isEmpty {
-                    RouteResultsPanel(
-                        options: routeStore.routeOptions,
-                        canStartCommute: canStartCommute,
-                        morphNS: commuteNS,
-                        onSelect: { startCommute(with: $0) },
-                        onPreview: { routeStore.previewRoute($0) }
-                    )
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                    .background(
-                        GeometryReader { geo in
-                            Color.clear.preference(key: VisibleBottomKey.self,
-                                                   value: geo.frame(in: .global).minY)
-                        }
-                    )
-                    .onPreferenceChange(VisibleBottomKey.self) { visibleBottom = $0 }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
-            .animation(DesignTokens.Motion.cardEnter, value: routeStore.routeOptions.isEmpty)
-            // Auto-set origin: when the first GPS fix arrives and origin is still empty,
-            // fill it with the user's position so they can search immediately without
-            // typing. `hasAutoSetOrigin` prevents subsequent fixes from overwriting an
-            // origin the user has since edited or cleared manually.
-            .onChange(of: routeStore.userLocation, initial: true) { _, newValue in
-                guard !hasAutoSetOrigin,
-                      let newValue,
-                      routeStore.originID.isEmpty,
-                      !isCommuting else { return }
-                hasAutoSetOrigin = true
-                routeStore.setOriginCoordinate(newValue)
-                routeStore.confirmedOriginLabel = "My Location"
-                originText = "My Location"
-            }
-            // Accuracy circle — only shown when the fix is notably imprecise. Below the
-            // threshold the circle is smaller than the puck and adds no information, which
-            // matches Maps' own behaviour (circle absent with a good outdoor fix).
-            .onChange(of: routeStore.userHorizontalAccuracy) { _, newValue in
-                let visible = (newValue ?? 0) > Self.accuracyCircleThresholdMeters ? newValue : nil
-                withAnimation(DesignTokens.Motion.accuracyChange) {
-                    displayedAccuracyRadius = visible
-                }
-            }
-            // Live leg progress, active only during Commute Mode. Progress tracking (leg
-            // index, ETA, snapped position) always stays live; only the camera re-centre
-            // that follows it is gated on `isFollowingPassenger` — a passenger who has
-            // panned away to look ahead should not have every fix drag the map back,
-            // paced to the time since the previous fix so consecutive glides hand off
-            // instead of decelerating to a stop between fixes — see `CameraFollowTrigger.location`.
-            .onChange(of: routeStore.userLocation) { _, newValue in
-                guard isCommuting, let newValue else { return }
-                let now = Date()
-                let elapsed = lastLocationFixAt.map { now.timeIntervalSince($0) }
-                    ?? DesignTokens.Motion.locationFollowMinDuration
-                lastLocationFixAt = now
-                commuteEngine?.update(location: newValue, now: now)
+            .simultaneousGesture(
+                SpatialTapGesture(coordinateSpace: .local)
+                    .onEnded { handleRouteTap(at: $0.location, proxy: proxy) }
+            )
+            .onMapCameraChange(frequency: .onEnd) { context in
+                cameraSettled(distance: context.camera.distance)
+                recordObservedCamera(context.camera)
                 #if DEBUG
-                print("[CameraDebug] userLocation fix following=\(isFollowingPassenger) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+                if !isCommuting, !debugTrainSimulator.isBusy { debugSimAnchor = context.region.center }
                 #endif
-                // A transition glide (mode switch, re-attach, or commute start) owns the
-                // camera until it lands — the same rule the heading loop follows — so a
-                // fix landing mid-glide doesn't cut it off with a competing animation.
-                guard isFollowingPassenger, !isCameraTransitioning else { return }
-                updateCommuteCamera(.location(elapsedSinceLastFix: elapsed))
             }
-            // A train leg's track-snap resolves asynchronously (`TrackSnapper` is an
-            // actor), so it can land after the fix above already moved the camera on the
-            // raw or previous position. This corrects that glide's endpoint once the true
-            // snap is in. Gated to train legs — every other mode's snap is synchronous
-            // within `update(location:)`, so the change above already reflects it and
-            // firing here too would just re-animate to the same spot.
-            .onChange(of: commuteEngine?.snappedLocation) { _, _ in
-                #if DEBUG
-                print("[CameraDebug] snappedLocation changed transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
-                #endif
-                guard isCommuting, isFollowingPassenger, !isCameraTransitioning,
-                      let engine = commuteEngine, let leg = currentCommuteLeg(for: engine),
-                      leg.mode == .train
-                else { return }
-                updateCommuteCamera(.locationCorrection)
-            }
-            // Elapsed time keeps moving even between sparse GPS fixes — standing on a
-            // platform shouldn't freeze "how late am I" until the next one arrives.
-            .task(id: isCommuting) {
-                guard isCommuting else { return }
-                while !Task.isCancelled {
-                    commuteEngine?.recomputeOnTimeStatus(now: .now)
-                    try? await Task.sleep(for: .seconds(30))
-                }
-            }
-            // Skipped while free-panning: a mode switch is not a request to snap back to
-            // the passenger, and the passenger's own `beginCameraTransition()` call in
-            // `startCommute` and the re-attach handler below cover every case where a
-            // camera move on mode-switch actually is wanted.
-            .onChange(of: commuteCameraMode) { oldValue, newValue in
-                #if DEBUG
-                print("[CameraDebug] commuteCameraMode \(oldValue) -> \(newValue) following=\(isFollowingPassenger) t=\(Date().timeIntervalSince1970)")
-                #endif
-                guard isFollowingPassenger else { return }
-                beginCameraTransition(fromPitch: oldValue.pitch, fromDistance: oldValue.distance)
-            }
-            .onChange(of: commuteEngine?.currentLegIndex) { _, _ in
-                #if DEBUG
-                print("[CameraDebug] currentLegIndex changed transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
-                #endif
-                guard isFollowingPassenger, !isCameraTransitioning else { return }
-                updateCommuteCamera(.fit)
-            }
-            // Re-attaching glides back to the passenger and holds the follow loop off until the
-            // glide lands. Detaching writes nothing, so the map stays where the passenger left it.
-            .onChange(of: isFollowingPassenger) { _, following in
-                #if DEBUG
-                print("[CameraDebug] isFollowingPassenger -> \(following) t=\(Date().timeIntervalSince1970)")
-                #endif
-                guard following else { return }
-                beginCameraTransition()
-            }
-            // Rebuild the cached geometry whenever the route itself changes — identity is
-            // the leg list, since RouteLeg.id is a fresh UUID per computed route.
-            .onChange(of: routeStore.routeResult?.legs.map(\.id), initial: true) { _, _ in
-                routeGeometry = routeStore.routeResult.flatMap(RouteGeometry.init)
-            }
-            // Live position for as long as the map is on screen — for the resting camera
-            // and the search fields. The dot is MapKit's own (see `UserAnnotation` above)
-            // and does not come from here.
-            .onAppear {
-                routeStore.startTrackingUserLocation()
-                isOnScreen = true
-                mapProxy = proxy
-            }
-            // The tab bar makes this fire on every tab switch, which is exactly when both
-            // location feeds should stop.
-            .onDisappear {
-                routeStore.stopTrackingUserLocation()
-                isOnScreen = false
-            }
-            // Rests the camera on the passenger whenever no route is on screen. Keyed on the
-            // strip as well as the fix, so the first centring waits for the panels to be measured.
-            .task(id: HomeTrigger(hasUserLocation: routeStore.userLocation != nil,
-                                  visibleTop: visibleTop,
-                                  visibleBottom: visibleBottom,
-                                  hasRoute: routeStore.routeResult != nil)) {
-                // The `isLoading` guard is required: `calculateRoute()` clears `routeResult`
-                // when a search starts, which makes this task eligible mid-search. Without it,
-                // this races `fitToRouteIfSuccessful` and MapKit drops one camera animation.
-                guard routeStore.routeResult == nil, !routeStore.isLoading else { return }
-                try? await Task.sleep(for: .milliseconds(80))
-                guard !Task.isCancelled else { return }
-                recenterHome()
-            }
-            .task(id: routeStore.isLoading) {
-                if routeStore.isLoading {
-                    try? await Task.sleep(for: DesignTokens.Motion.progressGraceDelay)
-                    if routeStore.isLoading { showSearchProgress = true }
-                } else if showSearchProgress {
-                    try? await Task.sleep(for: DesignTokens.Motion.progressMinVisible)
-                    showSearchProgress = false
-                }
-            }
-            #if DEBUG
-            // Launch-argument-gated; see DebugRouteSeed. No-op without `-seedRoute`.
-            .task {
-                guard DebugRouteSeed.isEnabled else { return }
-                let seeded = await DebugRouteSeed.apply(to: routeStore)
-                // Assigned after confirming on the view model, so the fields' onChange
-                // reads these as a programmatic echo rather than a user edit.
-                if let origin = seeded.origin { originText = origin }
-                if let destination = seeded.destination { destinationText = destination }
-                await DebugRouteSeed.searchIfRequested(on: routeStore)
-                await fitToRouteIfSuccessful()
-            }
-            #endif
+            .onAppear { mapProxy = proxy }
         }
+        #if DEBUG
+        .overlay(alignment: .topTrailing) { debugSimulateButton }
+        #endif
+        .safeAreaInset(edge: .top, spacing: 0) {
+            // Dropped entirely in Commute Mode — the map reads as full-bleed with
+            // just the bottom card, matching the reference UI.
+            if !isCommuting {
+                CommuteSearchPanel(
+                    routeStore: routeStore,
+                    originText: $originText,
+                    destinationText: $destinationText,
+                    focusedField: $focusedField,
+                    namespace: searchNS,
+                    showSearchProgress: showSearchProgress,
+                    onReset: resetAll,
+                    onSearch: search,
+                    onSwap: swapOriginDestination,
+                    onClearOrigin: clearOrigin,
+                    onClearDestination: clearDestination,
+                    onSelectOrigin: selectOrigin,
+                    onSelectDestination: selectDestination
+                )
+                .padding(CommuteSearchPanel.panelPadding)
+                    // The measurement is published from the card/pill itself, not from
+                    // here — see `measuresVisibleTop`. Reading the padded panel's own
+                    // frame would fold the suggestion list into it.
+                    .onPreferenceChange(VisibleTopKey.self) { newValue in
+                        #if DEBUG
+                        print("[CameraDebug] visibleTop \(visibleTop) -> \(newValue) t=\(Date().timeIntervalSince1970)")
+                        #endif
+                        visibleTop = newValue; placeRouteBubble()
+                    }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !routeStore.routeOptions.isEmpty {
+                RouteChoiceSheet(
+                    options: routeStore.routeOptions,
+                    selectedID: $routeChoice.selectedID,
+                    isDetailExpanded: $routeChoice.isDetailExpanded,
+                    canStartCommute: canStartCommute,
+                    onUse: { startCommute(with: $0) }, legColor: routeStore.legColor
+                )
+                .padding(.horizontal)
+                .padding(.bottom)
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(key: VisibleBottomKey.self,
+                                               value: geo.frame(in: .global).minY)
+                    }
+                )
+                .onPreferenceChange(VisibleBottomKey.self) { newValue in
+                    #if DEBUG
+                    print("[CameraDebug] visibleBottom(routeResults) \(visibleBottom) -> \(newValue) t=\(Date().timeIntervalSince1970)")
+                    #endif
+                    visibleBottom = newValue; placeRouteBubble()
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(DesignTokens.Motion.cardEnter, value: routeStore.routeOptions.isEmpty)
+        .commuteSheet(
+            isActive: isCommuting && session.isLoggedIn,
+            cameraMode: $commuteCameraMode,
+            isFollowing: $isFollowingPassenger,
+            onRouteOverview: showRouteOverview,
+            onSheetTopChange: followSheetTop,
+            card: commuteCard
+        )
+        .toolbarVisibility(isCommuting ? .hidden : .visible, for: .tabBar)
+        .savedPlaceDragHost()
+        // Auto-set origin: fills the empty origin field on the first GPS fix. See
+        // `Commute.md`.
+        .onChange(of: routeStore.userLocation, initial: true) { _, newValue in
+            guard !hasAutoSetOrigin,
+                  let newValue,
+                  routeStore.originID.isEmpty,
+                  !isCommuting else { return }
+            hasAutoSetOrigin = true
+            routeStore.setOriginCoordinate(newValue)
+            routeStore.confirmedOriginLabel = "My Location"
+            originText = "My Location"
+            autoSetOriginText = "My Location"
+            // Recentres on this fix — see `Commute.md` for when this actually matters.
+            recenterHome()
+            Task {
+                let loc = CLLocation(latitude: newValue.lat, longitude: newValue.lng)
+                guard let request = MKReverseGeocodingRequest(location: loc) else { return }
+                let items = await withCheckedContinuation { (cont: CheckedContinuation<[MKMapItem], Never>) in
+                    request.getMapItems { items, _ in cont.resume(returning: items ?? []) }
+                }
+                guard let item = items.first,
+                      routeStore.originID == RouteRequest.virtualOriginID else { return }
+                let address = item.address?.shortAddress ?? item.address?.fullAddress
+                guard let address else { return }
+                routeStore.confirmedOriginLabel = address
+                originText = address
+                autoSetOriginText = address
+            }
+        }
+        // The one seam that notices the app came back from the background at all —
+        // see `autoSetOriginText`'s and `wasBackgrounded`'s doc comments.
+        .onChange(of: scenePhase) { _, new in
+            if new == .background {
+                wasBackgrounded = true
+                saveCommute()
+                return
+            }
+            guard new == .active, wasBackgrounded, !isCommuting else { return }
+            wasBackgrounded = false
+            if hasAutoSetOrigin, originText == autoSetOriginText {
+                hasAutoSetOrigin = false
+            }
+        }
+        // Accuracy circle — only shown when the fix is notably imprecise. Below the
+        // threshold the circle is smaller than the puck and adds no information, which
+        // matches Maps' own behaviour (circle absent with a good outdoor fix).
+        .onChange(of: routeStore.userHorizontalAccuracy) { _, newValue in
+            let visible = (newValue ?? 0) > Self.accuracyCircleThresholdMeters ? newValue : nil
+            withAnimation(DesignTokens.Motion.accuracyChange) {
+                displayedAccuracyRadius = visible
+            }
+        }
+        // Live leg progress, active only during Commute Mode. See `Commute.md`.
+        .onChange(of: routeStore.userLocation) { _, newValue in
+            guard isCommuting, let newValue else { return }
+            let now = Date()
+            positionResolver.recordFix(newValue, speed: routeStore.userSpeed, at: now)
+            noteLiveActivityFix(at: now)
+            commuteEngine?.update(location: newValue, now: now)
+            #if DEBUG
+            print("[CameraDebug] userLocation fix following=\(isFollowingPassenger) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+            #endif
+            evaluateReroute(at: newValue, now: now)
+        }
+        // Every new snap target starts the puck's own glide toward it. See `Commute.md`.
+        .onChange(of: commuteEngine?.snappedLocation) { _, newValue in
+            #if DEBUG
+            print("[CameraDebug] snappedLocation changed transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+            #endif
+            guard isCommuting, let newValue else { return }
+            puckInterpolator.move(to: newValue)
+        }
+        // Elapsed time keeps moving even between sparse GPS fixes — standing on a
+        // platform shouldn't freeze "how late am I" until the next one arrives.
+        .task(id: isCommuting) {
+            guard isCommuting else { return }
+            while !Task.isCancelled {
+                commuteEngine?.recomputeOnTimeStatus(now: .now)
+                try? await Task.sleep(for: .seconds(30))
+            }
+        }
+        // Dead-reckoning tick: runs at 1 Hz while commuting. See `Commute.md`.
+        .task(id: isCommuting) {
+            guard isCommuting else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled, isCommuting else { return }
+                let now = Date.now
+                tickLiveActivity(now: now)
+                guard isCommuting else { return }
+                positionResolver.tick(context: commuteEngine?.currentLegProjectionContext, now: now)
+                guard positionResolver.isDeadReckoned,
+                      let projected = positionResolver.resolvedCoordinate else { continue }
+                let isTrainLeg = commuteEngine.flatMap { currentCommuteLeg(for: $0) }?.mode == .train
+                if isTrainLeg {
+                    // Only advance the track-snapped dot when the passenger was moving
+                    // before signal loss — a stationary passenger's last confirmed
+                    // position must hold, not creep forward at the line's schedule speed.
+                    guard positionResolver.isProjectingForward else { continue }
+                    commuteEngine?.deadReckonTrainLeg(now: now)
+                } else {
+                    commuteEngine?.update(location: projected, now: now)
+                }
+            }
+        }
+        // Continuous camera follow, ticking at the puck's own 30 Hz cadence instead
+        // of writing a new camera position once per GPS fix. See `Commute.md`.
+        .task(id: isCommuting) {
+            guard isCommuting else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(DesignTokens.Motion.headingTickInterval))
+                guard !Task.isCancelled, isCommuting else { return }
+                advanceSmoothedRouteHeading()
+                refreshWalkGridStepIfStale(now: .now)
+                guard isFollowingPassenger, !isCameraTransitioning, !isEnteringCommute else { continue }
+                updateCommuteCamera(.followTick)
+            }
+        }
+        // While free-panning the switch changes the camera in place and keeps its centre.
+        .onChange(of: commuteCameraMode) { oldValue, newValue in
+            #if DEBUG
+            print("[CameraDebug] commuteCameraMode \(oldValue) -> \(newValue) following=\(isFollowingPassenger) t=\(Date().timeIntervalSince1970)")
+            #endif
+            refreshWalkGridStep(now: .now)
+            beginCameraTransition(isFollowingPassenger ? .followPassenger : .keepCenter)
+        }
+        .onChange(of: commuteEngine?.currentLegIndex) { _, _ in
+            saveCommute()
+            #if DEBUG
+            print("[CameraDebug] currentLegIndex changed transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+            #endif
+            guard isFollowingPassenger, !isCameraTransitioning else { return }
+            updateCommuteCamera(.fit)
+        }
+        // Re-attaching glides back to the passenger and holds the follow loop off until the
+        // glide lands. Detaching writes nothing and stops any running transition.
+        .onChange(of: isFollowingPassenger) { _, following in
+            #if DEBUG
+            print("[CameraDebug] isFollowingPassenger -> \(following) t=\(Date().timeIntervalSince1970)")
+            #endif
+            guard following else {
+                cancelCameraTransition()
+                return
+            }
+            beginCameraTransition(.followPassenger)
+        }
+        // Rebuild the cached geometry whenever the route itself changes — identity is
+        // the leg list, since RouteLeg.id is a fresh UUID per computed route.
+        .onChange(of: routeStore.routeResult?.legs.map(\.id), initial: true) { _, _ in
+            routeGeometry = routeStore.routeResult.flatMap(RouteGeometry.init)
+        }
+        // Route choice: per-option map data, the active route, and the camera refit
+        // after the sheet changes height. See `ContentView+RouteChoice.swift`.
+        .onChange(of: routeChoiceKey, initial: true) { _, _ in syncRouteChoice() }
+        .onChange(of: routeChoice.selectedID) { _, _ in previewSelectedRoute(); placeRouteBubble() }
+        .onChange(of: routeChoice.isDetailExpanded) { _, _ in
+            Task { await refitForDetailToggle() }
+        }
+        // Live position for as long as the map is on screen — for the resting camera
+        // and the search fields. The dot is MapKit's own (see `UserAnnotation` above)
+        // and does not come from here.
+        .onAppear {
+            routeStore.startTrackingUserLocation()
+            isOnScreen = true
+        }
+        // The tab bar makes this fire on every tab switch, which is exactly when both
+        // location feeds should stop.
+        .onDisappear {
+            if !isCommuting { routeStore.stopTrackingUserLocation() }
+            isOnScreen = false
+        }
+        // Rests the camera on the passenger whenever no route is on screen. Keyed on the
+        // strip as well as the fix, so the first centring waits for the panels to be measured.
+        .task(id: HomeTrigger(hasUserLocation: routeStore.userLocation != nil,
+                              visibleTop: visibleTop,
+                              visibleBottom: visibleBottom,
+                              hasRoute: routeStore.routeResult != nil)) {
+            // The `isLoading` guard is required: `calculateRoute()` clears `routeResult`
+            // when a search starts, which makes this task eligible mid-search. Without it,
+            // this races `fitToRouteIfSuccessful` and MapKit drops one camera animation.
+            guard routeStore.routeResult == nil, !routeStore.isLoading else { return }
+            try? await Task.sleep(for: .milliseconds(80))
+            guard !Task.isCancelled else { return }
+            recenterHome()
+        }
+        .task { await restoreCommuteIfNeeded() }
+        .task(id: routeStore.isLoading) {
+            if routeStore.isLoading {
+                try? await Task.sleep(for: DesignTokens.Motion.progressGraceDelay)
+                if routeStore.isLoading { showSearchProgress = true }
+            } else if showSearchProgress {
+                try? await Task.sleep(for: DesignTokens.Motion.progressMinVisible)
+                showSearchProgress = false
+            }
+        }
+        #if DEBUG
+        // Launch-argument-gated; see DebugRouteSeed. No-op without `-seedRoute`.
+        .task {
+            guard DebugRouteSeed.isEnabled else { return }
+            let seeded = await DebugRouteSeed.apply(to: routeStore)
+            // Assigned after confirming on the view model, so the fields' onChange
+            // reads these as a programmatic echo rather than a user edit.
+            if let origin = seeded.origin { originText = origin }
+            if let destination = seeded.destination { destinationText = destination }
+            routeDrawAnimator.prepareForNewRoute()
+            await DebugRouteSeed.searchIfRequested(on: routeStore)
+            await fitToRouteIfSuccessful()
+        }
+        #endif
     }
 
 
@@ -468,6 +575,7 @@ struct ContentView: View {
     /// leaves the camera where the passenger left it.
     private func search() {
         focusedField = nil
+        routeDrawAnimator.prepareForNewRoute()
         Task {
             await routeStore.calculateRoute()
             await fitToRouteIfSuccessful()
@@ -544,26 +652,60 @@ struct ContentView: View {
 
     // MARK: Commute Mode
 
-    /// Commits to `option` and enters Commute Mode.
-    /// Keeps the card morph, the route selection, and the camera change in one
-    /// `withAnimation` transaction so they land in the same visual beat.
-    ///
-    /// Internal rather than private: `ContentView+DebugSimulate` calls this too, to
-    /// enter Commute Mode the same way a route-card tap does.
-    func startCommute(with option: RouteOption) {
-        let startedAt = Date()
+    /// Enters Commute Mode for `option` as of `startedAt`. Shared by `startCommute` and the
+    /// launch restore in `ContentView+CommutePersistence.swift`. See `Commute.md`.
+    func enterCommuteMode(with option: RouteOption, startedAt: Date) {
+        #if DEBUG
+        print("[CameraDebug] startCommute BEGIN mapPositionWasRegion=\(mapPosition.region != nil) visibleTop=\(visibleTop) visibleBottom=\(visibleBottom) userLocation=\(String(describing: routeStore.userLocation)) commuteCameraMode=\(commuteCameraMode) t=\(startedAt.timeIntervalSince1970)")
+        #endif
+        // Holds the follow loop off until the `.fit` correction below has had time to
+        // land, so it can't restart that glide mid-flight. See `Commute.md`.
+        isEnteringCommute = true
+        commuteEntryToken += 1
+        let entryToken = commuteEntryToken
+        lastCommuteCameraCenter = nil
+        lastCommuteCameraDistance = nil
+        lastCommuteCameraPitch = nil
+        lastCommuteCameraHeading = nil
+        smoothedRouteHeading = nil
+        lastHeadingSample = nil
+        stripBottomEase = nil
+        commuteStripBottom = 0
         withAnimation(DesignTokens.Motion.morph) {
             routeStore.selectRoute(option)
             commuteStartedAt = startedAt
             commuteEngine = CommuteProgressEngine(result: option.result, startedAt: startedAt)
             isCommuting = true
         }
-        // The gap before this commute's first fix isn't a real inter-fix interval —
-        // starts the pacing fresh instead of glide-timing off however long selection took.
-        lastLocationFixAt = nil
         // A new commute always starts attached, whatever the last one ended on.
         isFollowingPassenger = true
-        beginCameraTransition()
+        // No top panel during Commute Mode — clears whatever the search pill last
+        // measured, so `visibleStrip` doesn't reserve space for a panel that's gone.
+        visibleTop = 0
+        positionResolver.reset()
+        puckInterpolator.reset()
+        rerouteMonitor.reset()
+        // Seeds the engine with wherever the passenger already is, instead of waiting
+        // for the next GPS fix. See `Commute.md`.
+        if let userLocation = routeStore.userLocation {
+            positionResolver.recordFix(userLocation, speed: routeStore.userSpeed, at: startedAt)
+            commuteEngine?.update(location: userLocation, now: startedAt)
+        }
+        // Glides from wherever the camera already sat to the ride's starting pose.
+        // See `Commute.md`.
+        #if DEBUG
+        if !routeStore.isLocationSimulated { updateCommuteCamera(.start) }
+        #else
+        updateCommuteCamera(.start)
+        #endif
+        Task {
+            try? await Task.sleep(for: .seconds(DesignTokens.Motion.cameraFitDuration))
+            guard commuteEntryToken == entryToken else { return }
+            isEnteringCommute = false
+        }
+        #if DEBUG
+        print("[CameraDebug] startCommute END t=\(Date().timeIntervalSince1970)")
+        #endif
     }
 
     #if DEBUG
@@ -577,96 +719,52 @@ struct ContentView: View {
     }
     #endif
 
-    /// Moves the camera to the current mode's pose — pitch, distance, and centre.
-    /// Bearing tracking is entirely off for the duration: heading is held at whatever
-    /// `displayedHeadingDegrees` already holds (see the `newValue == .twoD` branch in
-    /// `onChange(of: commuteCameraMode)`, which keeps it pinned to 0 for as long as 2D is
-    /// active, since the heading-tracking task below doesn't run then). The heading-
-    /// tracking task resumes on its own the moment this glide lands, and corrects the
-    /// camera to the live bearing from there.
-    ///
-    /// `fromPitch`/`fromDistance` are the pose this glide starts from. Pass the old
-    /// mode's values from `onChange(of: commuteCameraMode)`; every other caller leaves
-    /// them `nil`, which resolves to `commuteCameraMode`'s own (already-current) values
-    /// — there is then nothing to interpolate, and this collapses to a single write.
-    ///
-    /// MapKit's camera animator does not blend a distance change and a pitch change
-    /// cleanly within one `withAnimation` transaction — asked for together, it visibly
-    /// resolves one before picking up the other. Rather than hand it a single 0.5 s
-    /// jump, this ticks its own interpolation loop at the same 30 Hz cadence
-    /// `advanceDisplayedHeading()` uses for bearing, writing an eased blend of distance
-    /// and pitch together every ~33 ms. Each tick's delta is small enough that MapKit
-    /// animates it cleanly, so the two properties move as one continuous descent-and-tilt
-    /// instead of MapKit's own two-stage attempt at the same combined change.
-    ///
-    /// Call this instead of `updateCommuteCamera()` whenever pitch or distance changes,
-    /// because the loop writes the whole camera and would otherwise cut the glide short.
-    private func beginCameraTransition(fromPitch: Double? = nil, fromDistance: CLLocationDistance? = nil) {
-        isCameraTransitioning = true
-        frozenTrimCoordinate = livePassengerCoordinate
-        cameraTransitionToken += 1
-        let token = cameraTransitionToken
-
-        let startPitch = fromPitch ?? commuteCameraMode.pitch
-        let startDistance = fromDistance ?? commuteCameraMode.distance
-        let targetPitch = commuteCameraMode.pitch
-        let targetDistance = commuteCameraMode.distance
-
-        #if DEBUG
-        print("[CameraDebug] transition START token=\(token) mode=\(commuteCameraMode) t=\(Date().timeIntervalSince1970)")
-        #endif
-
-        Task {
-            let startedAt = Date()
-            let duration = DesignTokens.Motion.cameraFitDuration
-            while true {
-                guard cameraTransitionToken == token else {
-                    #if DEBUG
-                    print("[CameraDebug] transition token=\(token) SKIPPED — superseded by token=\(cameraTransitionToken)")
-                    #endif
-                    return
-                }
-                let fraction = duration > 0 ? min(1, Date().timeIntervalSince(startedAt) / duration) : 1
-                let eased = Self.easeInOut(fraction)
-                updateCommuteCamera(
-                    .poseTransition,
-                    distanceOverride: startDistance + eased * (targetDistance - startDistance),
-                    pitchOverride: startPitch + eased * (targetPitch - startPitch)
-                )
-                if fraction >= 1 { break }
-                try? await Task.sleep(for: .seconds(DesignTokens.Motion.headingTickInterval))
-            }
-            #if DEBUG
-            print("[CameraDebug] transition END token=\(token) t=\(Date().timeIntervalSince1970)")
-            #endif
-            isCameraTransitioning = false
-        }
-    }
-
-    /// Smoothstep: eases a 0...1 progress fraction in and out, the same shape
-    /// `.easeInOut` gives a `withAnimation` curve, for the transition loop above to
-    /// apply by hand to distance and pitch every tick instead of per-frame.
-    private static func easeInOut(_ fraction: Double) -> Double {
-        let clamped = min(1, max(0, fraction))
-        return clamped * clamped * (3 - 2 * clamped)
-    }
-
     /// Leaves Commute Mode and returns to the blank search state.
     /// Does not morph back into a route-option card, because `selectRoute` already emptied
     /// `routeOptions`. Internal rather than private — see `startCommute`.
-    func endCommute() {
+    func endCommute(reason: CommuteEndReason) {
+        logCommuteEnd(reason)
+        #if DEBUG
+        endDebugSimulationIfActive()
+        #endif
+        ActiveCommuteStore.clear()
         withAnimation(DesignTokens.Motion.morph) {
             isCommuting = false
             commuteEngine = nil
             commuteStartedAt = nil
+            arrivedAt = nil
         }
+        endLiveActivity()
+        positionResolver.reset()
+        puckInterpolator.reset()
+        rerouteMonitor.reset()
+        commuteCameraMode = .twoD
         resetAll()
     }
 
-    func currentCommuteLeg(for engine: CommuteProgressEngine) -> RouteLeg? {
-        guard let result = routeStore.routeResult, result.legs.indices.contains(engine.currentLegIndex)
-        else { return nil }
-        return result.legs[engine.currentLegIndex]
+    /// Feeds the latest fix to `rerouteMonitor` and starts `CommuteRerouter` if it fires.
+    /// Only a walk leg is eligible; the monitor itself no-ops otherwise. The cooldown arms
+    /// only once the reroute actually lands — a failed attempt (offline, rate-limited)
+    /// retries on the very next sustained deviation instead. See `Commute.md`.
+    private func evaluateReroute(at location: Coordinates, now: Date) {
+        guard let engine = commuteEngine, let leg = currentCommuteLeg(for: engine) else { return }
+        let shouldReroute = rerouteMonitor.evaluate(
+            isWalkingLeg: leg.mode == .walk,
+            offRouteMeters: engine.currentLegOffRouteMeters,
+            routeAheadBearing: engine.currentLegAheadBearing,
+            speed: routeStore.userSpeed,
+            course: routeStore.userCourse,
+            now: now
+        )
+        guard shouldReroute else { return }
+        let legIndex = engine.currentLegIndex
+        Task {
+            let succeeded = await routeStore.rerouteCurrentWalkLeg(from: location, legIndex: legIndex, engine: engine)
+            if succeeded {
+                saveCommute()
+                rerouteMonitor.armCooldown(now: Date())
+            }
+        }
     }
 
     private func swapOriginDestination() {

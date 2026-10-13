@@ -113,7 +113,7 @@ On the traced route above, Leg 1 (jeepney, 14 stitched points over ~8.4 km) has 
 
 ### Root cause
 
-Broken at five points (first three independently confirmed in code here and in the Rails repo; matches `BACKEND_AUDIT.md` §3.2):
+Broken at five points (first three independently confirmed in code here and in the Rails repo):
 
 1. **Server silently no-ops.** iOS sends `{"station": {"latitude": …, "longitude": …}}` (`APIEndpoint.swift:120-121`); the controller permits only `:lat, :lng` (`commutebeh-rails/app/controllers/api/v1/admin/stations_controller.rb`, `station_params`). `@station.update({})` succeeds updating nothing → HTTP 200 with the **unchanged** station.
 2. **Client can't decode the response.** `AdminService` decodes `APIResponse<APIStation>` where `APIStation` expects `stationId/latitude/longitude/lineIds/isTerminal` (`APIModels.swift:29-37`), but the server returns `as_api_json` — `id, short_name, line, type, coordinates:{lat,lng}, …` (`station.rb`). With `.convertFromSnakeCase` (`APIClient.swift:8`) the keys still don't match → decode throws → `EditStationMapView.confirm()` shows "Save failed" (`AdminRoutesView.swift:255-267`). Net UX: *the admin is told the save failed; the server said 200-but-changed-nothing.*
@@ -130,7 +130,6 @@ Broken at five points (first three independently confirmed in code here and in t
 - No local persistence / stale reload: `AdminRoutesView.swift:33-50` (in-memory only), `:83` (`onAppear { vm.load() }` re-reads local JSON).
 - Dead OTA: `APIModels.swift:63-66` (`version: String`) vs live `GET /api/v1/graph/version → {"version":1,…}`; `graph_service.rb:205-213` + bump call sites `:129/:160` only.
 - No polyline regeneration: `stations_controller.rb#update` touches only the station row; contrast with the invariant check in Issue 1 (all edges embed station coords at polyline ends).
-- Corroborated by `BACKEND_AUDIT.md` §3.2/§3.3 (2026-07-02).
 
 ### Proposed fix
 

@@ -65,6 +65,8 @@ struct StationUpdate {
     /// `nil` omits the key and leaves the server's doors untouched, so renaming a station
     /// or nudging its centroid does not have to resend them. An explicit `[]` clears them.
     var accessPoints: [StationAccessPoint]?
+    /// `nil` omits the key and leaves the server's value untouched.
+    var boarding: Station.Boarding?
 }
 
 // MARK: - Transit

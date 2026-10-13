@@ -789,10 +789,10 @@ final class LoopMapDelegate: NSObject, MKMapViewDelegate {
         if let poly = overlay as? MKPolyline {
             let r = MKPolylineRenderer(polyline: poly)
             if poly.title == "simplified" {
-                r.strokeColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 0.9)
+                r.strokeColor = UIColor(Color.onyx).withAlphaComponent(0.9)
                 r.lineWidth = 4
             } else {
-                r.strokeColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 0.5)
+                r.strokeColor = UIColor(Color.onyx).withAlphaComponent(0.5)
                 r.lineWidth = 3
                 r.lineDashPattern = [6, 4]
             }
@@ -812,13 +812,13 @@ final class LoopMapDelegate: NSObject, MKMapViewDelegate {
 
         let size: CGFloat = isStop ? 18 : 10
         let color: UIColor = isStop
-            ? UIColor(red: 0.95, green: 0.35, blue: 0.10, alpha: 1)
-            : UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 0.85)
+            ? UIColor(Color.onyx)
+            : UIColor(Color.slate).withAlphaComponent(0.85)
 
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
         let img = renderer.image { ctx in
             color.setFill()
-            UIColor.white.setStroke()
+            UIColor(Color.canvas).setStroke()
             let rect = CGRect(x: 1, y: 1, width: size-2, height: size-2)
             let path = UIBezierPath(ovalIn: rect)
             path.fill()
@@ -1063,12 +1063,12 @@ private struct DirectionPickerPhaseView: View {
             Spacer()
             Image(systemName: "arrow.triangle.branch")
                 .font(.system(size: 56))
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.ember)
             VStack(spacing: 8) {
                 Text("Does this route run in a specific direction?")
                     .font(.title3.bold())
                     .multilineTextAlignment(.center)
-                Text("Optional — pick Northbound or Southbound if the route follows a different path each way (e.g. one-way streets). Otherwise just record a single path or loop.")
+                Text("Optional — pick Northbound or Southbound if the route follows a different path each way (e.g. one-way streets). Otherwise just draw a single path or loop.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -1115,12 +1115,12 @@ private struct OfferSecondPassView: View {
             Spacer()
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.jade)
             VStack(spacing: 8) {
-                Text("\(vm.currentPassDirection?.capitalized ?? "") Recorded")
+                Text("\(vm.currentPassDirection?.capitalized ?? "") Drawn")
                     .font(.title3.bold())
                 if let remaining = vm.remainingDirection {
-                    Text("Would you like to also record \(remaining.capitalized) for this route? Optional — you can add it later by creating another route with the same Line ID.")
+                    Text("Would you like to also draw \(remaining.capitalized) for this route? Optional — you can add it later by creating another route with the same Line ID.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -1131,7 +1131,7 @@ private struct OfferSecondPassView: View {
                 Button {
                     vm.startSecondPass()
                 } label: {
-                    Label("Record \(vm.remainingDirection?.capitalized ?? "")", systemImage: "record.circle")
+                    Label("Draw \(vm.remainingDirection?.capitalized ?? "")", systemImage: "hand.tap.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -1174,8 +1174,8 @@ private struct RecordingPhaseView: View {
             VStack(spacing: 12) {
                 if let err = vm.roadFetchError {
                     HStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                        Text(err).font(.caption).foregroundStyle(.orange)
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.ember)
+                        Text(err).font(.caption).foregroundStyle(Color.ember)
                         Button {
                             vm.roadFetchError = nil
                         } label: {
@@ -1194,7 +1194,7 @@ private struct RecordingPhaseView: View {
                         ProgressView().scaleEffect(0.8)
                     } else {
                         Image(systemName: vm.isLoopClosed ? "checkmark.circle.fill" : "circle.dotted")
-                            .foregroundStyle(vm.isLoopClosed ? .green : .secondary)
+                            .foregroundStyle(vm.isLoopClosed ? Color.jade : Color.secondary)
                     }
                     Text(statusText)
                         .font(.subheadline)
@@ -1237,7 +1237,7 @@ private struct RecordingPhaseView: View {
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.bordered)
-                            .tint(.orange)
+                            .tint(Color.ember)
                             .disabled(vm.rawWaypoints.count < 3 || vm.isFetchingRoute)
                         }
 
@@ -1297,8 +1297,8 @@ private struct ReviewingPhaseView: View {
                                     Text(direction.capitalized)
                                         .font(.caption2)
                                         .padding(.horizontal, 6).padding(.vertical, 2)
-                                        .background(.blue.opacity(0.12))
-                                        .foregroundStyle(.blue)
+                                        .background(Color.ember.opacity(0.12))
+                                        .foregroundStyle(Color.ember)
                                         .clipShape(Capsule())
                                 }
                             }
@@ -1372,7 +1372,7 @@ private struct DefiningStopsPhaseView: View {
                     VStack(spacing: 6) {
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.ember)
                             Text("This route passes the same road twice. Mark stops in travel order, and check the list below matches the order the vehicle serves them.")
                                 .font(.caption)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -1395,7 +1395,7 @@ private struct DefiningStopsPhaseView: View {
                 if let error = vm.stopPlacementError {
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "exclamationmark.circle.fill")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.vermilion)
                         Text(error)
                             .font(.caption)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1422,7 +1422,7 @@ private struct DefiningStopsPhaseView: View {
                     if let direction = vm.currentPassDirection {
                         Text("· \(direction.capitalized)")
                             .font(.caption.bold())
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.ember)
                     }
                 }
                 .foregroundStyle(.secondary)
@@ -1440,7 +1440,7 @@ private struct DefiningStopsPhaseView: View {
                             ForEach(vm.orderedPlacedStops) { stop in
                                 HStack(spacing: 10) {
                                     Image(systemName: "mappin.circle.fill")
-                                        .foregroundStyle(.orange)
+                                        .foregroundStyle(Color.ember)
                                     TextField("Stop name", text: Binding(
                                         get: { stop.name },
                                         set: { vm.renameStop(id: stop.id, to: $0) }
@@ -1516,7 +1516,7 @@ private struct MetadataPhaseView: View {
                 if let status = vm.lineIdStatus {
                     Text(status.message)
                         .font(.caption)
-                        .foregroundStyle(status.isBlocking ? .red : .blue)
+                        .foregroundStyle(status.isBlocking ? Color.vermilion : Color.slate)
                 }
             }
 
@@ -1626,12 +1626,12 @@ private struct MetadataPhaseView: View {
                         }
                     } else {
                         Label("Save & Add Route", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.licorice)
                             .frame(maxWidth: .infinity)
                     }
                 }
-                .listRowBackground(vm.canSave ? Color.blue : Color.gray)
-                .foregroundStyle(.white)
+                .listRowBackground(vm.canSave ? Color.tangerine : Color.faint)
+                .foregroundStyle(Color.licorice)
                 .disabled(!vm.canSave || vm.isSaving)
                 .confirmationDialog(
                     "Add to Existing Route?",
@@ -1649,7 +1649,7 @@ private struct MetadataPhaseView: View {
 
             if let err = vm.errorMessage {
                 Section {
-                    Text(err).foregroundStyle(.red).font(.caption)
+                    Text(err).foregroundStyle(Color.vermilion).font(.caption)
                 }
             }
         }
@@ -1668,7 +1668,7 @@ private struct OutputPhaseView: View {
 
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 72))
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.jade)
 
             VStack(spacing: 8) {
                 Text("Route Added!")

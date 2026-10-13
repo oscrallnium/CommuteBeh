@@ -428,7 +428,7 @@ private struct PolylineLinePickerView: View {
                                 vm.startRecording()
                             } label: {
                                 HStack {
-                                    Image(systemName: "tram.fill").foregroundStyle(.blue)
+                                    Image(systemName: "tram.fill").foregroundStyle(Color.ember)
                                     Text(line)
                                     Spacer()
                                     Image(systemName: "chevron.right").foregroundStyle(.tertiary)
@@ -442,7 +442,7 @@ private struct PolylineLinePickerView: View {
                         Section {
                             Text("Location access is required. Enable \"Always\" in Settings → Privacy → Location so recording keeps working while the app is backgrounded.")
                                 .font(.caption)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.ember)
                         }
                     }
                 }
@@ -473,7 +473,7 @@ private struct PolylineRecordingMapView: View {
                 UserAnnotation()
                 if currentSegmentPoints.count >= 2 {
                     MapPolyline(coordinates: currentSegmentPoints)
-                        .stroke(.blue.opacity(0.75), lineWidth: 4)
+                        .stroke(Color.onyx.opacity(0.75), lineWidth: 4)
                 }
             }
             .ignoresSafeArea()
@@ -506,14 +506,14 @@ private struct PolylineRecordingMapView: View {
         VStack(spacing: 10) {
             if let err = vm.locationError {
                 pill {
-                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
-                    Text(err).font(.caption).foregroundStyle(.red)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
+                    Text(err).font(.caption).foregroundStyle(Color.vermilion)
                 }
             }
             if let warning = vm.warningMessage {
                 pill {
-                    Image(systemName: "exclamationmark.circle").foregroundStyle(.orange)
-                    Text(warning).font(.caption).foregroundStyle(.orange)
+                    Image(systemName: "exclamationmark.circle").foregroundStyle(Color.ember)
+                    Text(warning).font(.caption).foregroundStyle(Color.ember)
                     Button {
                         vm.warningMessage = nil
                     } label: {
@@ -523,7 +523,7 @@ private struct PolylineRecordingMapView: View {
             }
 
             pill {
-                Circle().fill(.red).frame(width: 9, height: 9)
+                Circle().fill(Color.vermilion).frame(width: 9, height: 9)
                 Text(vm.currentStationName.map { "At \($0)" } ?? "Riding…")
                     .font(.subheadline.bold())
                 Text("· \(vm.stagedSegments.count) segment\(vm.stagedSegments.count == 1 ? "" : "s")")
@@ -607,7 +607,7 @@ private struct PolylineReviewListView: View {
                 }
             }
             if let error = vm.saveError {
-                Section { Text(error).font(.caption).foregroundStyle(.red) }
+                Section { Text(error).font(.caption).foregroundStyle(Color.vermilion) }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -646,8 +646,8 @@ private struct SegmentReviewRow: View {
                             Text(dir.capitalized)
                                 .font(.caption2)
                                 .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(.blue.opacity(0.12))
-                                .foregroundStyle(.blue)
+                                .background(Color.ember.opacity(0.12))
+                                .foregroundStyle(Color.ember)
                                 .clipShape(Capsule())
                         }
                     }
@@ -658,7 +658,7 @@ private struct SegmentReviewRow: View {
                 Button(action: onToggle) {
                     Image(systemName: segment.isAccepted ? "checkmark.circle.fill" : "circle")
                         .font(.title2)
-                        .foregroundStyle(segment.isAccepted ? .green : .secondary)
+                        .foregroundStyle(segment.isAccepted ? Color.jade : Color.secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -669,11 +669,11 @@ private struct SegmentReviewRow: View {
 
             HStack(spacing: 4) {
                 Image(systemName: segment.distanceLooksOff ? "exclamationmark.triangle.fill" : "checkmark.seal")
-                    .foregroundStyle(segment.distanceLooksOff ? .orange : .secondary)
+                    .foregroundStyle(segment.distanceLooksOff ? Color.ember : .secondary)
                 Text(String(format: "%.2f km recorded (was %.2f km)",
                             segment.recomputedDistanceKm, segment.existingDistanceKm))
                     .font(.caption)
-                    .foregroundStyle(segment.distanceLooksOff ? .orange : .secondary)
+                    .foregroundStyle(segment.distanceLooksOff ? Color.ember : .secondary)
             }
         }
         .padding(.vertical, 4)
@@ -691,11 +691,11 @@ private struct SegmentPreviewMapView: View {
         Map(initialPosition: .region(region), interactionModes: []) {
             if existing.count >= 2 {
                 MapPolyline(coordinates: existing.map(\.coordinate2D))
-                    .stroke(.red.opacity(0.7), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
+                    .stroke(Color.vermilion.opacity(0.7), style: StrokeStyle(lineWidth: 3, dash: [6, 4]))
             }
             if recorded.count >= 2 {
                 MapPolyline(coordinates: recorded.map(\.coordinate2D))
-                    .stroke(.blue, lineWidth: 3)
+                    .stroke(Color.onyx, lineWidth: 3)
             }
         }
         .allowsHitTesting(false)
@@ -736,7 +736,7 @@ private struct PolylineSaveOutputView: View {
             Spacer()
             Image(systemName: vm.saveError == nil ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                 .font(.system(size: 72))
-                .foregroundStyle(vm.saveError == nil ? .green : .orange)
+                .foregroundStyle(vm.saveError == nil ? Color.jade : Color.ember)
             VStack(spacing: 8) {
                 Text(vm.saveError == nil ? "Polylines Updated!" : "Partially Saved")
                     .font(.title2.bold())
@@ -746,7 +746,7 @@ private struct PolylineSaveOutputView: View {
                 if let error = vm.saveError {
                     Text(error)
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Color.vermilion)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 }
