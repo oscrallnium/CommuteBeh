@@ -117,3 +117,29 @@ time. **`ActiveCommuteStore`** saves, loads, and clears it as one JSON file in A
 Support. `isRestorable(at:)` is true until the planned trip time plus one hour after the start
 time. `RouteLeg` leaves out its transient `id` when it encodes.
 
+## ArrivalAlerts.swift
+
+**`ArrivalAlerts`** is a `@MainActor` singleton (`ArrivalAlerts.shared`). `tickLiveActivity` feeds it the
+engine once per second. `beginLiveActivity` and `endLiveActivity` call `reset()`. Each alert fires at most
+once per commute and checks its `SettingsKey` value when it fires. The file also adds
+`CommuteProgressEngine.metersRemainingToDestination`: the metres left on the current leg plus the planned
+length of every later leg.
+
+| Alert | Fires when | Setting |
+|---|---|---|
+| Near Destination | `metersRemainingToDestination` drops to `nearDestinationMeters` (200) or less, after it was above 200 | `vibrateNearDestination` |
+| One Stop Before Exit | The current leg is a train leg and `metersRemainingOnCurrentLeg` is at or below the polyline distance from the leg's second-to-last stop to its exit station. Once per train leg. A leg with fewer than three stops never fires. | `vibrateStopBeforeExit` |
+
+**Delivery.** When `UIApplication.applicationState` is `.active`, the alert plays two
+`UINotificationFeedbackGenerator` `.warning` pulses 0.4 s apart. In any other state, it posts an
+immediate local notification with `sound = .default`, which makes the phone vibrate. The notification uses a
+fixed identifier per alert and the `.active` interruption level, because the project has no Time Sensitive
+entitlement. Without notification permission, only the foreground haptic plays. Background GPS keeps the
+app running, so the tick continues on the Lock Screen.
+
+## applyRetiming
+
+`CommuteProgressEngine.applyRetiming(_:)` adopts a route whose leg minutes changed and whose geometry did
+not. It replaces `result` and rebuilds `plannedElapsedAtLegStart`. It does not reset snap progress, train
+progress, or leg geometries. `applyReroute(_:)` resets them. `ContentView` calls `applyRetiming` from the
+traffic refresh loop every 5 minutes.

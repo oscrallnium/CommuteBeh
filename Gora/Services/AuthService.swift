@@ -48,7 +48,7 @@ final class AuthService {
     }
 
     func deleteAccount() async throws {
-        _ = try? await client.request(.deleteAccount, responseType: EmptyResponse.self)
+        _ = try await client.request(.deleteAccount, responseType: EmptyResponse.self)
         Keychain.delete()
     }
 }

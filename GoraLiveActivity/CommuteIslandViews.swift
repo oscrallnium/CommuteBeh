@@ -101,7 +101,7 @@ struct IslandExpandedBody: View {
                 .foregroundStyle(LiveActivityPalette.islandText)
                 .lineLimit(1)
             SegmentedRouteBar(segments: attributes.segments, progress: state.progress,
-                              isStale: isStale, style: .island)
+                              legIndex: state.legIndex, isStale: isStale, style: .island)
             CommuteStatusLine(state: state, isStale: isStale, style: .island, showsSummary: false)
         }
         .padding(.horizontal, 6)

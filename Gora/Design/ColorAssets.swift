@@ -12,5 +12,4 @@ extension Color {
     // Secondary Color
     static let charcoal = Color("Charcoal Espresso")
 
-
 }

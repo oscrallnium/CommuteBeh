@@ -53,11 +53,7 @@ struct CommuteModeView: View {
         )
     }
 
-    /// Metres left on the current leg plus the planned length of every later leg.
-    private var remainingMeters: CLLocationDistance {
-        let ahead = result.legs.dropFirst(engine.currentLegIndex + 1).reduce(0) { $0 + $1.distanceKm * 1000 }
-        return engine.metersRemainingOnCurrentLeg + ahead
-    }
+    private var remainingMeters: CLLocationDistance { engine.metersRemainingToDestination }
 
     private var speedText: String? {
         guard let speed = routeStore.userSpeed, speed >= 0 else { return nil }

@@ -213,7 +213,7 @@ final class CreateLoopViewModel {
     }
 
     var existingLineMatch: ExistingLineInfo? {
-        guard !lineID.isEmpty, case .success(let graph) = GraphLoader.load() else { return nil }
+        guard !lineID.isEmpty, let graph = GraphStore.shared.cachedGraph else { return nil }
         let stations = graph.stations.filter { $0.line == lineID }
         guard let mode = stations.first?.type else { return nil }
         let directions = Set(graph.edges.filter { $0.line == lineID }.compactMap(\.direction))
@@ -591,12 +591,12 @@ final class CreateLoopViewModel {
         // distance by more than 2x even for a completely correct road route. Rejecting those
         // silently discarded a valid MapKit polyline in favor of a straight-line fallback —
         // exactly the "always a straight line" symptom this was rewritten to fix. Matches the
-        // sibling implementations (`ExploreView.roadPolyline`, `RecordCommuteView.roadSegment`),
-        // neither of which applies this filter.
+        // sibling implementation (`ExploreView.roadPolyline`),
+        // which does not apply this filter.
         request.requestsAlternateRoutes = true
 
         // Race MKDirections against a 10-second timeout so a single hanging request never
-        // stalls the recording flow (same pattern as `RecordCommuteView.roadSegment` /
+        // stalls the recording flow (same pattern as
         // `ExploreView.roadPolyline`).
         let outcome: Result<[CLLocationCoordinate2D], Error> = await withTaskGroup(
             of: Result<[CLLocationCoordinate2D], Error>.self
@@ -782,7 +782,6 @@ final class CreateLoopViewModel {
 
 final class LoopMapDelegate: NSObject, MKMapViewDelegate {
     var onMapTap: ((CLLocationCoordinate2D) -> Void)?
-    var onAnnotationTap: ((Int) -> Void)?
     var onStopTap: ((UUID) -> Void)?
 
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -835,25 +834,10 @@ final class LoopMapDelegate: NSObject, MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         guard let point = view.annotation as? MKPointAnnotation, let subtitle = point.subtitle else { return }
         mapView.deselectAnnotation(view.annotation, animated: false)
-        // `.flexible` mode annotations carry a PlacedStop UUID; `.indexed` mode annotations
-        // carry a plain array-index integer — try both, since one delegate serves either.
-        if let id = UUID(uuidString: subtitle) {
-            onStopTap?(id)
-        } else if let idx = Int(subtitle) {
-            onAnnotationTap?(idx)
-        }
+        // Stop annotations carry a PlacedStop UUID as the subtitle.
+        guard let id = UUID(uuidString: subtitle) else { return }
+        onStopTap?(id)
     }
-}
-
-/// Two ways `definingStops` lets the rider mark stops:
-/// - `.flexible` (Loop Creator / Add Route) — tap anywhere along the drawn path; the tap
-///   snaps to the nearest point on the full-resolution road polyline, so a stop isn't
-///   forced onto one of the sparse RDP-simplified shape points.
-/// - `.indexed` (RecordCommuteView's separate recorded-route flow) — legacy behavior:
-///   every simplified waypoint is shown as a tappable dot, toggled marked/unmarked.
-enum StopAnnotationMode {
-    case indexed
-    case flexible
 }
 
 struct TappableMapView: UIViewRepresentable {
@@ -861,12 +845,9 @@ struct TappableMapView: UIViewRepresentable {
     let rawWaypoints: [CLLocationCoordinate2D]
     let roadPolylineCoords: [CLLocationCoordinate2D]   // road-snapped path for recording phase
     let simplifiedWaypoints: [CLLocationCoordinate2D]
-    var markedStopIndices: Set<Int> = []
     var placedStops: [CreateLoopViewModel.PlacedStop] = []
-    var stopAnnotationMode: StopAnnotationMode = .indexed
     let isLoopClosed: Bool
     var onMapTap: ((CLLocationCoordinate2D) -> Void)?
-    var onAnnotationTap: ((Int) -> Void)?
     var onStopTap: ((UUID) -> Void)?
 
     func makeCoordinator() -> LoopMapDelegate { LoopMapDelegate() }
@@ -882,7 +863,6 @@ struct TappableMapView: UIViewRepresentable {
         tap.cancelsTouchesInView = false
         map.addGestureRecognizer(tap)
         context.coordinator.onMapTap = { coord in onMapTap?(coord) }
-        context.coordinator.onAnnotationTap = { idx in onAnnotationTap?(idx) }
         context.coordinator.onStopTap = { id in onStopTap?(id) }
 
         let region = MKCoordinateRegion(
@@ -895,16 +875,12 @@ struct TappableMapView: UIViewRepresentable {
 
     func updateUIView(_ map: MKMapView, context: Context) {
         context.coordinator.onMapTap        = { coord in onMapTap?(coord) }
-        context.coordinator.onAnnotationTap = { idx in onAnnotationTap?(idx) }
         context.coordinator.onStopTap       = { id in onStopTap?(id) }
 
-        // Tap places a waypoint in recording. In definingStops, `.flexible` mode also
-        // places a new stop anywhere along the path; `.indexed` mode disables the general
-        // tap and relies solely on tapping one of the pre-drawn candidate dots.
+        // Tap places a waypoint in recording and a new stop anywhere along the path in definingStops.
         let taps = map.gestureRecognizers?.compactMap { $0 as? UITapGestureRecognizer } ?? []
         taps.forEach {
-            $0.isEnabled = phase == .recording
-                || (phase == .definingStops && stopAnnotationMode == .flexible)
+            $0.isEnabled = phase == .recording || phase == .definingStops
         }
 
         map.removeOverlays(map.overlays)
@@ -917,10 +893,7 @@ struct TappableMapView: UIViewRepresentable {
             drawSimplified(map)
         case .definingStops:
             drawRoadPolyline(map)
-            switch stopAnnotationMode {
-            case .flexible: addStopAnnotations(map)
-            case .indexed:  addWaypointAnnotations(map)
-            }
+            addStopAnnotations(map)
         default:
             break
         }
@@ -975,19 +948,6 @@ struct TappableMapView: UIViewRepresentable {
         }
     }
 
-    // Legacy `.indexed` mode (RecordCommuteView): every simplified waypoint is a
-    // tappable candidate dot, shown bigger/orange once marked as a stop.
-    private func addWaypointAnnotations(_ map: MKMapView) {
-        let pts = simplifiedWaypoints.isEmpty ? roadPolylineCoords : simplifiedWaypoints
-        for (i, coord) in pts.enumerated() {
-            let ann = MKPointAnnotation()
-            ann.coordinate = coord
-            ann.subtitle = "\(i)"
-            ann.title = markedStopIndices.contains(i) ? "● Stop \(i)" : "○ \(i)"
-            map.addAnnotation(ann)
-        }
-    }
-
     private func addWaypointDots(_ map: MKMapView, points: [CLLocationCoordinate2D], title: String?) {
         for (i, coord) in points.enumerated() {
             let ann = MKPointAnnotation()
@@ -1030,6 +990,7 @@ struct CreateLoopView: View {
             }
             .navigationTitle(phaseTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .task { _ = await GraphStore.shared.graph() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     if vm.phase != .output {
@@ -1358,7 +1319,6 @@ private struct DefiningStopsPhaseView: View {
                 roadPolylineCoords: vm.roadPolylineCoords,
                 simplifiedWaypoints: vm.simplifiedWaypoints,
                 placedStops: vm.placedStops,
-                stopAnnotationMode: .flexible,
                 isLoopClosed: vm.isLoopClosed,
                 onMapTap: { coord in vm.addStop(at: coord) },
                 onStopTap: { id in vm.removeStop(id: id) }
@@ -1522,8 +1482,8 @@ private struct MetadataPhaseView: View {
 
             Section("Transport") {
                 Picker("Mode", selection: $vm.selectedMode) {
-                    ForEach([TransportMode.jeepney, .bus, .tricycle, .train], id: \.self) { m in
-                        Text(m.rawValue.capitalized).tag(m)
+                    ForEach([TransportMode.jeepney, .uvExpress, .bus, .tricycle, .train], id: \.self) { m in
+                        Text(m.displayName).tag(m)
                     }
                 }
                 Toggle("Air Conditioned", isOn: $vm.isAirConditioned)

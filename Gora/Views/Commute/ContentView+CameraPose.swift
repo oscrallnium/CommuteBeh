@@ -153,7 +153,8 @@ extension ContentView {
             let duration = DesignTokens.Motion.cameraPoseDuration
             while cameraTransitionToken == token, isCommuting {
                 if kind == .followPassenger, !isFollowingPassenger { break }
-                let fraction = min(1, Date().timeIntervalSince(startedAt) / duration)
+                let fraction = puckInterpolator.isSuspended
+                    ? 1 : min(1, Date().timeIntervalSince(startedAt) / duration)
                 if var goal = targetPose(commuteCameraMode) {
                     if kind == .keepCenter { goal.center = start.center }
                     writeCamera(Self.pose(from: start, to: goal, progress: Self.smoothstep(fraction)),

@@ -38,6 +38,7 @@ final class CommuteViewModel {
   ```
 - Never create ViewModels with `@StateObject` or `.environmentObject`.
 - Views are pure structs — no business logic, no direct data access.
+- Keep `body` a short outline of named sections. Follow `CLAUDE.md`, section "Break up nested view bodies", for how to extract a section.
 
 ## Engine / Services
 

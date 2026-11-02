@@ -104,7 +104,43 @@ If you don't want to split a large value type into smaller ones — typically be
 
 ## View-local state with @State
 
-- Always mark `@State` properties as `private`. If you encounter a `@State` variable that already has an access control specified, recommend changing it to `private`, but don't change it (to avoid breaking the build), unless you are instructed to do that.
+Always mark `@State` properties as `private`. If you encounter a `@State` variable that already has an access control specified, recommend changing it to `private`, but don't change it (to avoid breaking the build), unless you are instructed to do that.
+
+### `private` is required for lazy initialization of @State
+
+When a `@State` property holds an initial value built from an expression, the `@State` macro only defers that expression's evaluation when the property's getter is `private` (or `fileprivate`). With a private getter, the initializer expression runs once, the first time the view value is initialized, and never again; on every later initialization of the same view value, the existing instance is reused. Without a private getter, the macro falls back to eager evaluation: the initializer expression runs on *every* initialization of the view value.
+
+For reference types, this matters for performance: it avoids heap-allocating an object on every initialization only to discard it.
+
+This lazy initialization is available starting in iOS 17, macOS 14, and aligned releases (the same releases that introduced `@Observable`).
+
+```swift
+// AVOID: internal access on a @State class property. The macro can't
+// defer the initializer, so `StickerStore()` runs on every
+// initialization of StickerStoreView, even though only the first
+// instance is ever used.
+struct StickerStoreView: View {
+    @State var store = StickerStore()
+
+    var body: some View {
+        StickerGrid(store: store)
+    }
+}
+```
+
+```swift
+// PREFER: private access on the @State class property. The macro
+// defers the initializer into a closure; `StickerStore()` runs once,
+// the first time StickerStoreView is initialized, and every later
+// initialization reuses the existing instance.
+struct StickerStoreView: View {
+    @State private var store = StickerStore()
+
+    var body: some View {
+        StickerGrid(store: store)
+    }
+}
+```
 
 ## Model objects with @Observable
 
@@ -720,6 +756,51 @@ struct ScoreboardView: View {
         }
     }
 }
+```
+
+You don't need to use a subscript for no-argument projections.
+
+```swift
+@Observable
+final class PlayerModel {
+  /// 0 means paused; any positive value is the playback speed.
+  var rate: Double = 0
+}
+
+// ❌ BAD: A subscript with a marker enum dresses up an argument-less projection.
+// There are no arguments for the projection to depend on, so this is just a
+// computed property with extra ceremony.
+
+/// Marker selecting the play/pause projection on `PlayerModel`.
+private enum PlaybackProjection {
+  case isPlaying
+}
+
+extension PlayerModel {
+  /// Projects whether playback is active. Setting it to `false` pauses by
+  /// zeroing the rate, and `true` resumes at normal speed.
+  fileprivate subscript(playback _: PlaybackProjection) -> Bool {
+    get { rate > 0 }
+    set { rate = newValue ? 1 : 0 }
+  }
+}
+
+@Bindable var model = model
+Toggle("Play", isOn: $model[playback: .isPlaying])
+
+// ✅ GOOD: Just use a boolean property, no need for a subscript.
+
+extension PlayerModel {
+  /// Projects whether playback is active. Setting it to `false` pauses by
+  /// zeroing the rate, and `true` resumes at normal speed.
+  fileprivate var isPlaying: Bool {
+    get { rate > 0 }
+    set { rate = newValue ? 1 : 0 }
+  }
+}
+
+@Bindable var model = model
+Toggle("Play", isOn: $model.isPlaying)
 ```
 
 # `@Entry` macro

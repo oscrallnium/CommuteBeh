@@ -10,18 +10,31 @@ import Foundation
 final class APIClient {
     static let shared = APIClient()
     private let session = URLSession.shared
-    private let decoder: JSONDecoder = {
+    private let decoder = APIClient.makeDecoder()
+
+    private init() {}
+
+    /// The decoder every API response uses. Callers that decode off the main actor build their own.
+    nonisolated static func makeDecoder() -> JSONDecoder {
         let d = JSONDecoder()
         d.keyDecodingStrategy = .convertFromSnakeCase
         return d
-    }()
-
-    private init() {}
+    }
 
     func request<T: Decodable>(
         _ endpoint: APIEndpoint,
         responseType: T.Type
     ) async throws -> T {
+        let data = try await requestData(endpoint)
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingFailed(error)
+        }
+    }
+
+    /// Sends the request and returns the body of a 2xx response. Decoding is the caller's job.
+    func requestData(_ endpoint: APIEndpoint) async throws -> Data {
         var urlRequest = try endpoint.urlRequest()
         if let token = Keychain.load() {
             urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -35,11 +48,7 @@ final class APIClient {
 
         switch http.statusCode {
         case 200...299:
-            do {
-                return try decoder.decode(T.self, from: data)
-            } catch {
-                throw APIError.decodingFailed(error)
-            }
+            return data
         case 401:
             NotificationCenter.default.post(name: .sessionExpired, object: nil)
             throw APIError.unauthorized

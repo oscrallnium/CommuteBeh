@@ -19,15 +19,18 @@ extension ContentView {
     /// Starts the Live Activity and keeps GPS running in the background for the commute.
     func beginLiveActivity(startedAt: Date) {
         routeStore.setBackgroundLocationUpdates(true)
-        guard let engine = commuteEngine else { return }
+        ArrivalAlerts.shared.reset()
+        guard SettingsKey.isLiveActivitiesEnabled, let engine = commuteEngine else { return }
         CommuteLiveActivityController.shared.start(
             result: engine.result, engine: engine, destinationName: destinationText,
-            now: startedAt, lineName: routeStore.lineDisplayName)
+            now: startedAt, lineName: routeStore.lineDisplayName,
+            legColor: routeStore.legColor)
     }
 
     /// Removes the Live Activity and stops background GPS. Runs on every end of Commute Mode.
     func endLiveActivity() {
         routeStore.setBackgroundLocationUpdates(false)
+        ArrivalAlerts.shared.reset()
         CommuteLiveActivityController.shared.end()
     }
 
@@ -38,6 +41,7 @@ extension ContentView {
     /// Pushes progress to the Live Activity. Shows the arrived card when the passenger reaches the end.
     func tickLiveActivity(now: Date) {
         guard isCommuting, arrivedAt == nil, let engine = commuteEngine else { return }
+        ArrivalAlerts.shared.update(engine: engine, destinationName: destinationText)
         let isOnLastLeg = engine.currentLegIndex == engine.result.legs.count - 1
         if isOnLastLeg, engine.metersRemainingOnCurrentLeg <= Self.arrivalRadiusMeters {
             CommuteLiveActivityController.shared.endArrived(now: now)

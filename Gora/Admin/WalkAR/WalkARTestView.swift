@@ -20,7 +20,8 @@ struct WalkARTestView: View {
             Map {
                 UserAnnotation()
                 if let destination = picker.destination {
-                    Marker("Destination", coordinate: destination.clCoordinate).tint(DesignTokens.Colors.action)
+                    Marker("Destination", coordinate: destination.clCoordinate)
+                        .tint(DesignTokens.Colors.action)
                 }
                 if let route = picker.route {
                     MapPolyline(coordinates: route.polyline.map(\.clCoordinate))

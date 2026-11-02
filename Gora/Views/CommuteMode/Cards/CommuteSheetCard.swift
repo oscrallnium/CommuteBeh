@@ -66,7 +66,7 @@ struct CommuteSheetCard: View {
         .frame(height: cardHeight, alignment: .top)
         .overlay(alignment: .top) { grabber }
         .clipShape(.rect(cornerRadius: DesignTokens.Radius.commuteSheet))
-        .glassEffect(.clear, in: .rect(cornerRadius: DesignTokens.Radius.commuteSheet))
+        .goraGlass(DesignTokens.Materials.cardGlass, in: .rect(cornerRadius: DesignTokens.Radius.commuteSheet))
         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
             let progress = (height - CommuteSheetHeight.collapsed)
                 / (CommuteSheetHeight.midpoint - CommuteSheetHeight.collapsed)
@@ -98,23 +98,23 @@ struct CommuteSheetCard: View {
         HStack(spacing: DesignTokens.Space.m) {
             VStack(alignment: .leading, spacing: titleSpacing) {
                 Text(model.destination)
-                    .font(DesignTokens.TypeScale.instructionCompact)
+                    .font(DesignTokens.TypeScale.instruction)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Text(model.subtitle)
-                    .font(DesignTokens.TypeScale.body.monospacedDigit())
+                    .font(DesignTokens.TypeScale.bodyLarge.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: 0) {
                 Text(model.arrivalTime)
-                    .font(DesignTokens.TypeScale.eta.monospacedDigit())
+                    .font(DesignTokens.TypeScale.etaLarge.monospacedDigit())
                     .tracking(-0.22)
                     .foregroundStyle(.primary)
                 Text("arrive")
-                    .font(DesignTokens.TypeScale.subtitle)
+                    .font(DesignTokens.TypeScale.body)
                     .foregroundStyle(.secondary)
             }
         }
@@ -146,11 +146,11 @@ struct CommuteSheetCard: View {
         HStack(spacing: DesignTokens.Space.m) {
             VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
                 Text(model.destination)
-                    .font(DesignTokens.TypeScale.instructionCompact)
+                    .font(DesignTokens.TypeScale.instruction)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 Text("Arrived")
-                    .font(DesignTokens.TypeScale.subtitleEmphasis)
+                    .font(DesignTokens.TypeScale.rowTitle)
                     .foregroundStyle(Color.jade)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -184,7 +184,9 @@ struct CommuteSheetCard: View {
     /// Moves the card height with the finger, clamped between the two states. On release the
     /// card snaps to the nearer state, or follows the drag direction past `flickThreshold`.
     private var resizeDrag: some Gesture {
-        DragGesture(minimumDistance: 8)
+        // Global space: the header moves with the card height, so a local translation would
+        // shrink as the finger moves and make the card stutter.
+        DragGesture(minimumDistance: 8, coordinateSpace: .global)
             .onChanged { value in
                 let height = cardState.height - value.translation.height
                 dragHeight = min(CommuteSheetHeight.expanded, max(CommuteSheetHeight.collapsed, height))

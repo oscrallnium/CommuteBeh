@@ -16,7 +16,7 @@ import MapKit
 /// coverage in the Philippines, so a `.transit` request returns nothing useful and can hang
 /// until it times out. Those modes snap as `.automobile`, which follows the road network
 /// they actually drive on.
-enum DirectionsTransport {
+nonisolated enum DirectionsTransport {
 
     /// MapKit transport type for snapping an edge carrying `hint`.
     static func snapType(for hint: String?) -> MKDirectionsTransportType {

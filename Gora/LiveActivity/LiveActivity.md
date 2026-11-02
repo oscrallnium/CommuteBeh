@@ -10,7 +10,8 @@ The extension target references it by path in `project.pbxproj`. Mark every type
 because the app target uses `MainActor` as the default isolation and ActivityKit needs plain
 `Codable` types.
 
-- **Static values**: `segments` (one per leg, `weight` is the planned minutes), `boundaryLabels`
+- **Static values**: `segments` (one per leg; `weight` is the planned minutes; `colorLight` and
+  `colorDark` are the leg color from `RouteStore.legColor`, resolved in the app), `boundaryLabels`
   (station names under the bar), and `destinationName`.
 - **`ContentState`**: `phase`, `progress`, `eta`, `lastFixAt`, `actionText`, `legLabel`,
   `stopsLeft`, `nextLineName`, `legIndex`.

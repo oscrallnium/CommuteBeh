@@ -8,7 +8,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "8FF9AC16-DCB2-410B-A790-23FB16E7F9DF"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Gora/Admin/AdminRoutesView.swift"
@@ -16,15 +16,15 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "88"
             endingLineNumber = "88"
-            landmarkName = "loadSettings()"
-            landmarkType = "7">
+            landmarkName = "body"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "FEC235A2-DF4F-4D73-9422-63DAD7C53361"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Gora/Admin/AdminRoutesView.swift"
@@ -32,8 +32,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "84"
             endingLineNumber = "84"
-            landmarkName = "AdminRoutesViewModel"
-            landmarkType = "3">
+            landmarkName = "body"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -48,8 +48,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "95"
             endingLineNumber = "95"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            landmarkName = "setBidirectionalForLine(_:to:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -162,6 +162,50 @@
             endingLineNumber = "598"
             landmarkName = "fetchRoadRoute(from:to:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - ec604b9b36c16734"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
+                  moduleName = "Gora.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "601"
+                  endingLineNumber = "601">
+               </Location>
+               <Location
+                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - ba7a0131c1aa3109"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(2) await resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
+                  moduleName = "Gora.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "601"
+                  endingLineNumber = "601">
+               </Location>
+               <Location
+                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - 97bbec554c1e2b32"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(3) suspend resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
+                  moduleName = "Gora.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "601"
+                  endingLineNumber = "601">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -178,6 +222,38 @@
             endingLineNumber = "594"
             landmarkName = "fetchRoadRoute(from:to:)"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3367DA52-A939-4AFB-BA51-93EAF81461FC"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../Library/Developer/Xcode/DerivedData/Gora-bxyshykwabuifbedhuouikuqyzjp/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/NSData+zlib/Public/GoogleUtilities/GULNSData+zlib.h"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "1"
+            endingLineNumber = "1"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "20D7DAB5-B99F-4799-9AA4-B01B06E59670"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../Library/Developer/Xcode/DerivedData/Gora-bxyshykwabuifbedhuouikuqyzjp/SourcePackages/checkouts/GoogleUtilities/GoogleUtilities/NSData+zlib/Public/GoogleUtilities/GULNSData+zlib.h"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "7"
+            endingLineNumber = "7"
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

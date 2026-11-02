@@ -17,7 +17,7 @@ struct CommuteLockScreenView: View {
         VStack(alignment: .leading, spacing: 10) {
             headline
             SegmentedRouteBar(segments: attributes.segments, progress: state.progress,
-                              isStale: isStale, style: .lockScreen)
+                              legIndex: state.legIndex, isStale: isStale, style: .lockScreen)
                 .padding(.top, 2)
             stationLabels
             CommuteStatusLine(state: state, isStale: isStale, style: .lockScreen)

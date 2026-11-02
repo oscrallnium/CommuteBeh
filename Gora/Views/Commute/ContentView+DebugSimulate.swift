@@ -34,7 +34,7 @@ extension ContentView {
                 .padding(.leading, 15)
                 .padding(.trailing, 18)
                 .frame(height: 48)
-                .glassEffect(.regular.interactive(), in: .capsule)
+                .goraGlass(.regular.interactive(), in: .capsule)
             }
             .buttonStyle(.plain)
             .disabled(debugTrainSimulator.isStarting)

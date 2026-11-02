@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftUI
+import UIKit
 
 /// Builds the Live Activity data from a route and the progress engine. Pure functions, no ActivityKit calls.
 /// `lineName` maps a line key to its display name from the transit graph.
@@ -21,7 +23,8 @@ enum CommuteActivitySnapshot {
     private static let progressStep = 0.01
     private static let etaStepSeconds: TimeInterval = 60
 
-    static func attributes(result: RouteResult, destinationName: String) -> Attributes {
+    static func attributes(result: RouteResult, destinationName: String,
+                           legColor: (RouteLeg) -> Color) -> Attributes {
         let weights = result.legs.map { max($0.effectiveTravelMinutes, 0) }
         let total = weights.reduce(0, +)
         var labels: [Attributes.BoundaryLabel] = []
@@ -35,7 +38,11 @@ enum CommuteActivitySnapshot {
         }
         labels.append(.init(position: 1, text: destinationName))
         return Attributes(
-            segments: zip(result.legs, weights).map { .init(isWalk: isWalkLike($0), weight: $1) },
+            segments: zip(result.legs, weights).map { leg, weight in
+                let color = legColor(leg)
+                return .init(isWalk: isWalkLike(leg), weight: weight,
+                             colorLight: rgb(color, style: .light), colorDark: rgb(color, style: .dark))
+            },
             boundaryLabels: labels,
             destinationName: destinationName)
     }
@@ -80,6 +87,15 @@ enum CommuteActivitySnapshot {
         return abs(new.progress - last.progress) >= progressStep
             || abs(new.eta.timeIntervalSince(last.eta)) >= etaStepSeconds
             || gap >= maxUpdateGap
+    }
+
+    /// The 0xRRGGBB value of `color` when resolved in the given interface style.
+    private static func rgb(_ color: Color, style: UIUserInterfaceStyle) -> UInt32 {
+        let resolved = UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        resolved.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        func byte(_ value: CGFloat) -> UInt32 { UInt32((min(max(value, 0), 1) * 255).rounded()) }
+        return byte(red) << 16 | byte(green) << 8 | byte(blue)
     }
 
     private static func isWalkLike(_ leg: RouteLeg) -> Bool {

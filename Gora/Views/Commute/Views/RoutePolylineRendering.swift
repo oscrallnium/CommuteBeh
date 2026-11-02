@@ -277,23 +277,21 @@ private func flatRoutePolyline(
         .stroke(color ?? mode.color, style: routeCoreStyle(mode: mode, width: width))
 }
 
-/// Walking legs draw as dots and every other mode as a solid line of `width`.
+/// Walking legs draw as a solid line of `RouteLine.walkWidth` and every other mode as a solid line of `width`.
 private func routeCoreStyle(mode: TransportMode, width: CGFloat) -> StrokeStyle {
-    mode == .walk ? RouteLine.walk : RouteLine.solidStyle(width: width)
+    mode == .walk ? RouteLine.walkStyle : RouteLine.solidStyle(width: width)
 }
 
-/// Draws a canvas-colored casing beneath the core, in `color`, so the route stays legible over
-/// roads, water, and park fills. Walking legs have no casing.
+/// Draws a casing beneath the core, from `color.routeCasing`, so the route stays legible over
+/// roads, water, and park fills. A walking leg cases its thinner core.
 ///
 /// Only for a polyline whose coordinates are settled for this `body` evaluation and the ones
 /// immediately around it — see `flatRoutePolyline`'s doc comment for why an animating one
 /// must use that instead.
 @MapContentBuilder
 private func casedRoutePolyline(coordinates: [CLLocationCoordinate2D], mode: TransportMode, color: Color) -> some MapContent {
-    if mode != .walk {
-        MapPolyline(coordinates: coordinates)
-            .stroke(Color.canvas, style: RouteLine.solidStyle(width: RouteLine.coreWidth + 2 * RouteLine.casing))
-    }
+    MapPolyline(coordinates: coordinates)
+        .stroke(color.routeCasing, style: RouteLine.casingStyle(for: mode))
     flatRoutePolyline(coordinates: coordinates, mode: mode, color: color)
 }
 
@@ -348,7 +346,7 @@ private let sharedHintOffsetMeters: Double = 5
 @MapContentBuilder
 private func sharedHintPolyline(coordinates: [CLLocationCoordinate2D], color: Color) -> some MapContent {
     MapPolyline(coordinates: offsetCoordinates(coordinates, metersToTheRight: sharedHintOffsetMeters))
-        .stroke(color.opacity(0.6), style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [4, 4]))
+        .stroke(color.mapOpacity(0.6), style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [4, 4]))
 }
 
 /// `casedRoutePolyline`, except a stretch marked `true` in `mask` draws as
@@ -402,12 +400,13 @@ func routePolylineContent(
 /// ahead. Draws nothing when the two points are less than 2 m apart.
 @MapContentBuilder
 private func walkConnector(
-    from passenger: CLLocationCoordinate2D, to start: CLLocationCoordinate2D?, mode: TransportMode, color: Color
+    from passenger: CLLocationCoordinate2D, to start: CLLocationCoordinate2D?, color: Color
 ) -> some MapContent {
     if let start,
        CLLocation(latitude: passenger.latitude, longitude: passenger.longitude)
         .distance(from: CLLocation(latitude: start.latitude, longitude: start.longitude)) >= 2 {
-        flatRoutePolyline(coordinates: [passenger, start], mode: mode, width: RouteLine.currentWidth, color: color)
+        MapPolyline(coordinates: [passenger, start])
+            .stroke(color, style: RouteLine.connectorDotStyle)
     }
 }
 
@@ -426,36 +425,18 @@ func completedLegPolylineContent(leg: RouteLeg, coords: [CLLocationCoordinate2D]
 @MapContentBuilder
 func currentLegPolylineContent(
     leg: RouteLeg, coords: [CLLocationCoordinate2D], passenger: CLLocationCoordinate2D?,
-    geometry: RouteGeometry, walkGridStep: CLLocationDistance?, color: Color
+    color: Color
 ) -> some MapContent {
     let hasRealGeometry = coords.count >= 2
-    let gridIndex: Int? = {
-        guard leg.mode == .walk, hasRealGeometry, let passenger, let walkGridStep else { return nil }
-        return geometry.gridIndexAhead(leg: leg.id, passenger: passenger, step: walkGridStep)
-    }()
-    if let gridIndex, let walkGridStep {
-        // One overlay per chunk of ground. A chunk keeps its coordinates while the passenger
-        // advances, so no overlay swaps and no two overlays draw the same stretch.
-        let first = max(0, gridIndex - 1) / RouteGeometry.walkChunkSteps
-        ForEach(first..<max(first + 1, geometry.walkChunkCount(leg: leg.id, step: walkGridStep)), id: \.self) { index in
-            if let chunk = geometry.walkChunk(leg: leg.id, index: index, step: walkGridStep), chunk.count >= 2 {
-                flatRoutePolyline(coordinates: chunk, mode: leg.mode, width: RouteLine.currentWidth, color: color)
-            }
-        }
-        if let passenger {
-            walkConnector(from: passenger, to: splitPolyline(coords, at: passenger).ahead.first, mode: leg.mode, color: color)
-        }
-    } else {
-        let baseCoords: [CLLocationCoordinate2D] = hasRealGeometry ? coords : [
-            CLLocationCoordinate2D(latitude: leg.fromStation.coordinates.lat, longitude: leg.fromStation.coordinates.lng),
-            CLLocationCoordinate2D(latitude: leg.toStation.coordinates.lat, longitude: leg.toStation.coordinates.lng)
-        ]
-        let ahead = splitPolyline(baseCoords, at: passenger).ahead
-        if ahead.count >= 2 {
-            flatRoutePolyline(coordinates: ahead, mode: leg.mode, width: RouteLine.currentWidth, color: color)
-        }
-        if leg.mode == .walk, hasRealGeometry, let passenger {
-            walkConnector(from: passenger, to: ahead.first, mode: leg.mode, color: color)
-        }
+    let baseCoords: [CLLocationCoordinate2D] = hasRealGeometry ? coords : [
+        CLLocationCoordinate2D(latitude: leg.fromStation.coordinates.lat, longitude: leg.fromStation.coordinates.lng),
+        CLLocationCoordinate2D(latitude: leg.toStation.coordinates.lat, longitude: leg.toStation.coordinates.lng)
+    ]
+    let ahead = splitPolyline(baseCoords, at: passenger).ahead
+    if ahead.count >= 2 {
+        flatRoutePolyline(coordinates: ahead, mode: leg.mode, width: RouteLine.currentWidth, color: color)
+    }
+    if leg.mode == .walk, hasRealGeometry, let passenger {
+        walkConnector(from: passenger, to: ahead.first, color: color)
     }
 }

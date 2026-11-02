@@ -12,11 +12,11 @@ import WidgetKit
 private enum PreviewData {
     static let attributes = CommuteActivityAttributes(
         segments: [
-            .init(isWalk: true, weight: 4),
-            .init(isWalk: false, weight: 18),
-            .init(isWalk: true, weight: 5),
-            .init(isWalk: false, weight: 12),
-            .init(isWalk: true, weight: 3)
+            .init(isWalk: true, weight: 4, colorLight: 0x8A8A8A, colorDark: 0x7A7A7A),
+            .init(isWalk: false, weight: 18, colorLight: 0xE3203B, colorDark: 0xFF5A70),
+            .init(isWalk: true, weight: 5, colorLight: 0x8A8A8A, colorDark: 0x7A7A7A),
+            .init(isWalk: false, weight: 12, colorLight: 0x1F7A3D, colorDark: 0x3DDC84),
+            .init(isWalk: true, weight: 3, colorLight: 0x8A8A8A, colorDark: 0x7A7A7A)
         ],
         boundaryLabels: [
             .init(position: 0, text: "Origin"),

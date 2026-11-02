@@ -15,8 +15,11 @@ It also defines **`CommuteCameraMode`** (`twoD` / `threeD`), the two camera pose
 
 ## CommuteSheetCard.swift
 
-**`CommuteSheetCard`** is the floating commute card. It draws a `CommuteSheetModel` on a Liquid
-Glass background with a 30 pt corner radius and a 36 by 5 pt grabber. The header shows the
+**`CommuteSheetCard`** is the floating commute card. It draws a `CommuteSheetModel` on regular
+Liquid Glass with a 30 pt corner radius and a 36 by 5 pt grabber. The glass is
+`DesignTokens.Materials.cardGlass`, tinted with `Color(.systemGray5)` at 40 %: a charcoal gray in
+dark mode, a light gray in light mode. The blur keeps
+map lines out of the text. Clear glass refracts the map sharply, so it does not suit this card. The header shows the
 destination, the remaining distance, the speed and the arrival time without the AM/PM period, in
 both states. A tap on the header expands the card. The expanded state adds a 0.5 pt hairline and
 `CommuteLegList`.
@@ -27,11 +30,16 @@ follows the drag direction when the drag distance or the release velocity exceed
 state is a `CommuteCardState` binding. The arrived state shows "Arrived" and a Done button, and
 collapses the card. The End Commute alert attaches to the card.
 
+The header destination uses `instruction` (title3 semibold). The subtitle uses `bodyLarge` (body).
+The arrival time uses `etaLarge` (title semibold), and "arrive" uses `body`. A leg row has a 68 pt
+height. Its title uses `rowTitleLarge` (`rowTitleLargeCurrent` for the current row), and its
+subtitle and duration use `body`. The list is 212 pt tall and shows about three rows.
+
 ## CommuteLegList.swift
 
 **`CommuteLegList`** is the scrolling leg breakdown with a rail of nodes. **`CommuteLegRowModel`**
-turns one `RouteLeg` into the strings and the rail color of a row. A ride row uses the graph line color, or the mode color when the line has none. A walk row uses the walk color. A completed row uses `Faint` for its text, bar, dots and node border. The current row has a
-`Tangerine` node and a bold title. Walk rows draw 3 pt dots, spread evenly about 6 pt apart, with a 3 pt gap at each end. The list starts
+turns one `RouteLeg` into the strings and the rail color of a row. A ride row uses the graph line color, or the mode color when the line has none. A walk row uses the walk color. A completed row uses `Faint` for its text, bar and node border. The current row has a
+`Tangerine` node and a bold title. A walk row draws a solid 4 pt bar in the walk color. A ride row draws a 6 pt bar. The list starts
 4 pt below the hairline. The Done button is a `Tangerine` fill with `Licorice` text, and "Arrived" uses `Jade`.
 `CommuteSheetCard` keeps the hairline and the list in the layout in both states. The card height
 reveals them. Their opacity follows the live card height. It goes from 0 at the collapsed

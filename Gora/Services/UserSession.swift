@@ -49,6 +49,21 @@ final class UserSession {
         clearSession()
     }
 
+    /// Saves a new display name on the server, then updates the cached profile.
+    func updateDisplayName(_ name: String) async throws {
+        let response = try await APIClient.shared.request(
+            .updateMe(displayName: name, homeStationId: nil),
+            responseType: APIResponse<UserProfile>.self)
+        currentUser = response.data
+        persist(response.data)
+    }
+
+    /// Deletes the account on the server, then clears the local session.
+    func deleteAccount() async throws {
+        try await AuthService.shared.deleteAccount()
+        clearSession()
+    }
+
     // MARK: Private
 
     private func refreshSession() async {

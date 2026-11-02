@@ -8,7 +8,7 @@
 import Foundation
 
 // Wrapper used by all authenticated endpoints
-struct APIResponse<T: Decodable>: Decodable {
+nonisolated struct APIResponse<T: Decodable>: Decodable {
     let data: T
 }
 

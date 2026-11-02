@@ -6,7 +6,7 @@ Mode starts. (The bottom card shown *during* Commute Mode, `CommuteModeView`, li
 
 ## RouteChoiceSheet.swift
 
-**`RouteChoiceSheet`** — Liquid Glass bottom sheet for the selected route option: badge,
+**`RouteChoiceSheet`** — Liquid Glass bottom sheet (`DesignTokens.Materials.cardGlass`) for the selected route option: badge,
 duration, arrival, fare, leg chips, a details toggle, and the "Use This Route" button. The map
 sets `selectedID`. The sheet shows a hint instead of the button while `canStartCommute` is false.
 The commute sheet replaces it when Commute Mode starts.
@@ -19,8 +19,8 @@ per leg, joined by a line. It scrolls past 184 pt.
 - A ride leg fills its circle and its solid connector with the leg color, the color the map
   draws. The glyph is `Color.licorice` or `Color.white`, chosen by `Color.contrastingInk(in:)`
   from the fill's luminance in the current color scheme.
-- A walk leg keeps a `Color.haze` circle with a `.primary` glyph. Its connector is dotted
-  `Color.smoke`, like the walk dots on the map.
+- A walk leg keeps a `Color.haze` circle with a `.primary` glyph. Its connector is a solid
+  line in the walk color, `Color.cocoa`, like the walk line on the map.
 - `RouteChoiceSheet` takes `legColor` from `RouteStore.legColor` and passes it to
   `RouteCardSummary`, which stores the color in each `LegRow`.
 

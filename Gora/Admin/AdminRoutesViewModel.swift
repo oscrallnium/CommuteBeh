@@ -34,7 +34,11 @@ final class AdminRoutesViewModel {
 
     func load() {
         Task { await loadSettings() }
-        switch GraphLoader.load() {
+        Task { await loadGraph() }
+    }
+
+    private func loadGraph() async {
+        switch await GraphStore.shared.graph() {
         case .success(let graph):
             var dict: [String: [Station]] = [:]
             for station in graph.stations {
@@ -74,7 +78,7 @@ final class AdminRoutesViewModel {
                 sequence: serverStation.sequence ?? local.sequence,
                 boarding: serverStation.boarding
             )
-            persistToLocalGraph(serverStation, preserving: local)
+            await persistToLocalGraph(serverStation, preserving: local)
             break
         }
     }
@@ -82,7 +86,7 @@ final class AdminRoutesViewModel {
     /// Inserts a new stop and removing one both cascade across the whole line
     /// (renumbering STOP/SEG ids downstream), so rather than hand-patch the local
     /// graph cache like `updateStation` does, just force a full re-sync — matches
-    /// the pattern already used after PolylineRecorderView/LoopCreatorView mutations.
+    /// the pattern already used after LoopCreatorView mutations.
     func insertStation(payload: [String: Any]) async throws {
         _ = try await AdminService.shared.insertStation(payload: payload)
         await GraphService.shared.forceSync()
@@ -101,7 +105,7 @@ final class AdminRoutesViewModel {
         do {
             try await AdminService.shared.deleteRoute(lineId: lineId)
             lineGroups.removeAll { $0.id == lineId }
-            persistDeletionToLocalGraph(lineId: lineId)
+            await persistDeletionToLocalGraph(lineId: lineId)
         } catch let error as APIError {
             deleteRouteError = error.userMessage
         } catch {
@@ -137,10 +141,9 @@ final class AdminRoutesViewModel {
 
     // Writes the updated station back to the Documents-directory graph JSON so
     // the routing engine picks up the change immediately via TransitDataDidUpdate.
-    private func persistToLocalGraph(_ serverStation: Station, preserving local: Station) {
-        guard case .success(let graph) = GraphLoader.load(),
-              let idx = graph.stations.firstIndex(where: { $0.id == serverStation.id }),
-              let url = GraphLoader.documentsURL() else { return }
+    private func persistToLocalGraph(_ serverStation: Station, preserving local: Station) async {
+        guard case .success(let graph) = await GraphStore.shared.graph(),
+              let idx = graph.stations.firstIndex(where: { $0.id == serverStation.id }) else { return }
 
         let merged = Station(
             id: serverStation.id,
@@ -172,16 +175,14 @@ final class AdminRoutesViewModel {
             enforceOperatingHours: graph.enforceOperatingHours
         )
 
-        guard let data = try? JSONEncoder().encode(updated) else { return }
-        try? data.write(to: url)
+        try? await GraphStore.shared.replace(updated)
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }
 
     // Removes every station and edge on `lineId`, and strips it from each
     // transport mode's `lines` array — mirrors GraphService#delete_route on the backend.
-    private func persistDeletionToLocalGraph(lineId: String) {
-        guard case .success(let graph) = GraphLoader.load(),
-              let url = GraphLoader.documentsURL() else { return }
+    private func persistDeletionToLocalGraph(lineId: String) async {
+        guard case .success(let graph) = await GraphStore.shared.graph() else { return }
 
         let updatedModes = graph.transportModes.mapValues { config -> TransportModeConfig in
             guard config.lines.contains(lineId) else { return config }
@@ -219,8 +220,7 @@ final class AdminRoutesViewModel {
             enforceOperatingHours: graph.enforceOperatingHours
         )
 
-        guard let data = try? JSONEncoder().encode(updated) else { return }
-        try? data.write(to: url)
+        try? await GraphStore.shared.replace(updated)
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }
 }

@@ -29,7 +29,7 @@ Mode hues mark route lines, mode icons and legs only. They never mark a button, 
 | Bus | `Color.cobalt` | #1F63D6 / #5B9DFF |
 | Jeepney | `Color.amethyst` | #7247D8 / #B18CFF |
 | Tricycle | `Color.chartreuse` | #5F7F0E / #B9DB4C |
-| Walk | `Color.mist` | #4B5561 / #D5DCE3 |
+| Walk | `Color.cocoa` | #7A5230 / #C79A6B |
 
 The route choice leg list fills each ride leg's circle with its leg color. The glyph ink comes from the fill's luminance (`Color.contrastingInk(in:)`).
 
@@ -59,7 +59,7 @@ first, then from the mode color. Swift code never holds a per-line color.
 | Smoke | `Color.smoke` | Dividers, rings, connectors |
 | Haze | `Color.haze` | Icon chip, leg chip, quiet badge and secondary button fill |
 | Graphite | `Color.graphite` | Opaque floating surface |
-| Canvas | `Color.canvas` | Route casing, node fill, content on an Onyx fill. Light value #FFFFFF, because routes draw on Apple Maps tiles. The design file's warm #F0EDE4 applies only to its custom map ground. |
+| Canvas | `Color.canvas` | Node fill, dark-mode route casing, content on an Onyx fill. Light value #FFFFFF, because routes draw on Apple Maps tiles. The design file's warm #F0EDE4 applies only to its custom map ground. |
 | Charcoal Espresso | `Color.charcoal` | Unused. Do not add uses. |
 
 ## Emphasis without a hue
@@ -72,9 +72,9 @@ first, then from the mode color. Swift code never holds a per-line color.
 | Selected state | Onyx fill, Canvas content. In a sheet form, Lagoon. |
 | Badge, such as Fastest or Cheapest | Onyx or Haze fill with an SF Symbol. The symbol carries the meaning, not the color. |
 
-Xcode does not generate a SwiftUI `Color` static for `Lagoon` or `Charcoal Espresso`.
-`ColorAssets.swift` declares `Color.lagoon` and `Color.charcoal` by hand, from the asset name. If a later Xcode generates
-`Color.lagoon`, the build reports a duplicate declaration: then delete the line in `ColorAssets.swift`.
+Xcode generates a SwiftUI `Color` static for each color asset, including `Color.lagoon`. Do not
+declare an asset color by hand: the build then reports a duplicate declaration. A new asset that
+is added outside Xcode gets its symbol on the next build that rescans the asset catalog.
 
 ## Light and dark mode
 
@@ -96,6 +96,10 @@ Xcode does not generate a SwiftUI `Color` static for `Lagoon` or `Charcoal Espre
 - R6: No text is smaller than 12 pt. Use `.caption` as the smallest style.
 - R7: Spacing comes from stack `spacing:` with a `Space` token, not from per-element padding.
 - R8: Nothing inside a card has a shadow. Depth exists only where a surface floats over the map.
+- R9: Apply Liquid Glass with `goraGlass(_:tint:in:)`, not `glassEffect(_:in:)`. The modifier reads
+  the Liquid Glass toggle in `Settings.bundle`. When the toggle is off, it draws the tint as a solid
+  fill, or `.regularMaterial` when the glass has no tint. Put a tint in the `tint:` argument, not in
+  the `Glass` value, so the fallback can show it.
 
 ## Known exceptions
 

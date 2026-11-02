@@ -18,20 +18,24 @@ struct SegmentedRouteBar: View {
         var walk: Color
         var done: Color
         var markerFill: Color
+        var segmentColor: @Sendable (CommuteActivityAttributes.Segment) -> Color
 
         static let lockScreen = Style(
             height: 18, trackHeight: 6, markerSize: 18, markerBorder: 4,
             track: LiveActivityPalette.track, walk: LiveActivityPalette.tertiary,
-            done: LiveActivityPalette.done, markerFill: LiveActivityPalette.background)
+            done: LiveActivityPalette.done, markerFill: LiveActivityPalette.background,
+            segmentColor: { .adaptive(light: $0.colorLight, dark: $0.colorDark) })
 
         static let island = Style(
             height: 16, trackHeight: 4, markerSize: 16, markerBorder: 3,
             track: LiveActivityPalette.islandTrack, walk: LiveActivityPalette.islandWalk,
-            done: LiveActivityPalette.islandDone, markerFill: .black)
+            done: LiveActivityPalette.islandDone, markerFill: .black,
+            segmentColor: { Color(hex: $0.colorDark) })
     }
 
     let segments: [CommuteActivityAttributes.Segment]
     let progress: Double
+    let legIndex: Int
     let isStale: Bool
     let style: Style
 
@@ -103,13 +107,17 @@ struct SegmentedRouteBar: View {
             .opacity(isStale ? 0.5 : 1)
     }
 
+    private var markerColor: Color {
+        segments.indices.contains(legIndex) ? style.segmentColor(segments[legIndex]) : style.done
+    }
+
     private func marker(x: CGFloat, width: CGFloat) -> some View {
         let center = min(max(x, style.markerSize / 2), width - style.markerSize / 2)
         return Circle()
             .fill(style.markerFill)
             .overlay {
                 Circle().strokeBorder(
-                    style.done,
+                    markerColor,
                     style: StrokeStyle(lineWidth: style.markerBorder, dash: isStale ? [3, 2] : []))
             }
             .frame(width: style.markerSize, height: style.markerSize)

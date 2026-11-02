@@ -237,36 +237,38 @@ extension RouteStore {
         return false
     }
 
-    // MARK: Merging — stations first, then up to 5 address completions, text-level dedupe
+    // MARK: Merging — address completions online; station matches only when offline
 
     func remergeOriginSuggestions() {
         guard !lastOriginQuery.isEmpty else { return }
-        let q = lastOriginQuery.lowercased()
-        let stationMatches = allStations.filter {
-            $0.name.lowercased().contains(q) || $0.shortName.lowercased().contains(q)
-        }
-        let stationNames = Set(stationMatches.map { $0.name.lowercased() })
-        let addressMatches = addressSearchOrigin.completions.filter {
-            !($0.subtitle.isEmpty && stationNames.contains($0.title.lowercased()))
-        }
-        originSuggestions =
-            stationMatches.map(LocationSuggestion.station) +
-            addressMatches.prefix(5).map(LocationSuggestion.address)
+        originSuggestions = mergedSuggestions(query: lastOriginQuery,
+                                              completions: addressSearchOrigin.completions)
     }
 
     func remergeDestSuggestions() {
         guard !lastDestQuery.isEmpty else { return }
-        let q = lastDestQuery.lowercased()
-        let stationMatches = allStations.filter {
-            $0.name.lowercased().contains(q) || $0.shortName.lowercased().contains(q)
-        }
-        let stationNames = Set(stationMatches.map { $0.name.lowercased() })
-        let addressMatches = addressSearchDest.completions.filter {
+        destSuggestions = mergedSuggestions(query: lastDestQuery,
+                                            completions: addressSearchDest.completions)
+    }
+
+    /// A stop is not a place the passenger travels to, so the list holds stations only when
+    /// offline, when MapKit completions are unavailable. Online it holds up to 5 completions.
+    private func mergedSuggestions(query: String,
+                                   completions: [MKLocalSearchCompletion]) -> [LocationSuggestion] {
+        let matchedStations = networkStatus.isOnline ? [] : stationMatches(for: query)
+        let stationNames = Set(matchedStations.map { $0.name.lowercased() })
+        let addressMatches = completions.filter {
             !($0.subtitle.isEmpty && stationNames.contains($0.title.lowercased()))
         }
-        destSuggestions =
-            stationMatches.map(LocationSuggestion.station) +
+        return matchedStations.map(LocationSuggestion.station) +
             addressMatches.prefix(5).map(LocationSuggestion.address)
+    }
+
+    private func stationMatches(for query: String) -> [Station] {
+        let q = query.lowercased()
+        return allStations.filter {
+            $0.name.lowercased().contains(q) || $0.shortName.lowercased().contains(q)
+        }
     }
 
     // MARK: R4 — nearest-station lookups (Haversine via CLLocation)

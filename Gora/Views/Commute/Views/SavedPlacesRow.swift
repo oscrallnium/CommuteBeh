@@ -80,7 +80,7 @@ struct SavedPlacesRow: View {
         .buttonStyle(.plain)
         // Not interactive: interactive glass tracks the touch itself, which stops the row's
         // scroll pan and the vertical pull pan from starting on a chip.
-        .glassEffect(.clear, in: .capsule)
+        .goraGlass(.clear, in: .capsule)
         .animation(DesignTokens.Motion.disclose, value: isSelected)
         .savedPlaceDragSource(place: place, onEdit: { editingPlace = place })
         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -94,7 +94,7 @@ struct SavedPlacesRow: View {
         }
         .buttonStyle(.plain)
         .background(Capsule().fill(Color(.secondarySystemBackground)).opacity(hasChipBehindAdd ? 0.92 : 0))
-        .glassEffect(.clear.interactive(), in: .capsule)
+        .goraGlass(.clear.interactive(), in: .capsule)
         .animation(DesignTokens.Motion.disclose, value: hasChipBehindAdd)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { addChipWidth = $0 }
         .padding(.trailing, Self.bleed)

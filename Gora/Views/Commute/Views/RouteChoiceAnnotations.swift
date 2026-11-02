@@ -10,46 +10,8 @@ import SwiftUI
 // MARK: - Route Annotation Scale
 
 enum RouteAnnotationScale {
-    /// Smallest zoom scale for bubbles and the destination pin, so they stay legible.
+    /// Smallest zoom scale for callouts and the destination pin, so they stay legible.
     static let floor = 0.6
-}
-
-// MARK: - Route Time Bubble
-
-/// Travel-time capsule on a route. Tapping it selects the route.
-struct RouteTimeBubble: View {
-    let text: String
-    let accessibilityText: String
-    let isSelected: Bool
-    let isShown: Bool
-    let zoomScale: Double
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            Text(text)
-                .font(DesignTokens.TypeScale.controlLabel)
-                .monospacedDigit()
-                .foregroundStyle(isSelected ? Color.canvas : Color.onyx)
-                .padding(.horizontal, DesignTokens.Space.l)
-                .frame(height: 38)
-                .background(isSelected ? Color.onyx : Color.graphite, in: Capsule())
-                .overlay(Capsule().strokeBorder(Color.smoke, lineWidth: 1))
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .scaleEffect(isShown ? (isSelected ? 1.08 : 1) : 0.6)
-        .opacity(isShown ? (isSelected ? 1 : 0.72) : 0)
-        .scaleEffect(max(zoomScale, RouteAnnotationScale.floor))
-        .animation(.snappy(duration: 0.25), value: isSelected)
-        .animation(.spring(response: 0.4, dampingFraction: 0.65), value: isShown)
-        .animation(.snappy(duration: 0.25), value: zoomScale)
-        .allowsHitTesting(isShown)
-        .accessibilityLabel(accessibilityText)
-        .accessibilityValue(text)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
 }
 
 // MARK: - Route Stop Marker
@@ -123,12 +85,6 @@ private struct RouteAnnotationPreview: View {
         ZStack {
             Color(.systemGray4)
             VStack(spacing: DesignTokens.Space.l) {
-                HStack {
-                    RouteTimeBubble(text: "38", accessibilityText: "Route", isSelected: true,
-                                    isShown: true, zoomScale: 1, onTap: {})
-                    RouteTimeBubble(text: "45", accessibilityText: "Route", isSelected: false,
-                                    isShown: true, zoomScale: 1, onTap: {})
-                }
                 HStack {
                     TransferNode()
                     DestinationPin()

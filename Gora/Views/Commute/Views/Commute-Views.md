@@ -21,13 +21,6 @@ above even though everything here also renders onto the map.
   on every re-evaluation. Also precomputes `sharedWithNextMask(leg:)` — see below.
 - **`splitPolyline(_:at:)`** — projects the passenger's coordinate onto a polyline and splits it
   into the traveled and remaining halves.
-- **`RouteGeometry.gridIndexAhead(leg:passenger:step:)`** — the index of the first multiple of
-  `step` metres from the leg start at or past the passenger. Returns `nil` when the leg has no
-  geometry or the passenger is at the leg end.
-- **`RouteGeometry.walkChunk(leg:index:step:)`** — the part of a leg between two chunk
-  boundaries. A chunk is `walkChunkSteps` grid steps long, so boundaries stay on a fixed ground
-  grid. The last chunk ends at the leg end. `walkChunkCount` gives the number of chunks.
-  These live in `RouteGeometry+WalkChunks.swift`.
 - **`flatRoutePolyline(coordinates:mode:width:color:)`** — a single flat stroke in the leg color. Every
   polyline whose coordinates can change from one `body` evaluation to the next must draw this
   way. `MapPolyline` wraps an immutable `MKPolyline`, so a coordinate change swaps the whole
@@ -79,25 +72,21 @@ above even though everything here also renders onto the map.
   leg, since legs finish revealing at different times) — true routes to `flatRoutePolyline`
   (ignoring `sharedMask`, which is only valid against the full, untrimmed polyline), false to
   `maskedRoutePolyline`.
-- **`currentLegPolylineContent(leg:coords:passenger:geometry:walkGridStep:)`** — draws only the
+- **`currentLegPolylineContent(leg:coords:passenger:color:)`** — draws only the
   portion of the passenger's current leg still ahead of them, always via `flatRoutePolyline` —
   this polyline's coordinates are re-cut from the live passenger position up to 30 times a
-  second. A walking leg splits into chunks on a `walkGridStep` grid, and draws one overlay per chunk from the
-  passenger's chunk to the leg end, keyed by chunk index. A chunk keeps its coordinates while the
-  passenger advances, so MapKit never swaps an overlay and no frame loses its dots. No two overlays
-  draw the same ground, so dots of different overlays never merge. Each chunk starts a dot at its
-  own start, so the dots stay fixed to the ground. The puck covers the part of the chunk behind it. A solid leg cuts at the exact passenger position. Without a `walkGridStep` a walking leg cuts exactly.
+  second. Every leg, walk or ride, cuts at the exact passenger position.
   The traveled portion is dropped. On a walk leg with real geometry, a single dotted
-  connector (`walkConnector`) runs from the passenger to the nearest point on the line,
-  so it never overlaps the walk overlays. It exists because the passenger dot shows the real position, which is off the path. It is
+  connector (`walkConnector`, `RouteLine.connectorDotStyle`: 5 pt dots on a 9 pt pitch) runs from
+  the passenger to the nearest point on the line. It exists because the passenger dot shows the real position, which is off the path. It is
   skipped under 2 m. Not `maskedRoutePolyline`: the live leg
   is always the *earlier* one from its own perspective and `flatRoutePolyline` is already a
   single overlay, so there's nothing here for the mask to protect against.
 - **`completedLegPolylineContent`** — draws each leg the passenger has finished in `.faint`,
-  flat and without casing. Walk legs keep their dots.
-- **Line spec** — `DesignTokens.RouteLine`: a ride leg uses the graph line color, or the mode color when the line has none. A walk leg uses the walk color.
-  `RouteStore.legColor(_:)` gives the color. The core is 6 pt and has a 2 pt `.canvas` casing on each side. The current leg is 7 pt. Walk legs are 5 pt round dots on a
-  9 pt pitch with no casing (`RouteLine.walk`). Station connectors are 1.5 pt solid black
+  flat and without casing.
+- **Line spec** — `DesignTokens.RouteLine`: a ride leg uses the graph line color, or the mode color when the line has none. A walk leg uses the walk color, `Color.cocoa`.
+  `RouteStore.legColor(_:)` gives the color. The core is 6 pt and has a 2 pt casing on each side. The casing is the line color at 0.65 brightness in light mode, lowered further until it has 3:1 contrast against white (`Color.routeCasing`). In dark mode it is `.canvas`. The current leg is 7 pt. Walk legs have a 4 pt core with round cap and join
+  (`RouteLine.walkStyle`) and the same 2 pt casing. `RouteLine.casingStyle(for:)` gives the casing stroke for each mode. Station connectors are 1.5 pt solid black
   (`RouteLine.connectorStyle`).
 
 ## StationAccessConnector.swift
@@ -117,32 +106,36 @@ The collapsed top bar is a `GlassEffectContainer` that holds a 44 pt glass circl
 and a 44 pt glass capsule. The capsule shows the origin ring dot, origin text, an arrow, the
 destination square, and destination text.
 
-The expanded card is a Liquid Glass rounded rectangle (`glassEffect`, `Radius.card`). The
+The expanded card is a Liquid Glass rounded rectangle (`DesignTokens.Materials.cardGlass`, `Radius.card`). The
 `SavedPlacesRow` sits 12 pt under it.
 
 ## RouteChoiceMapContent.swift
 
 **`routeChoiceMapContent(_:legColor:onSelect:)`** — a `@MapContentBuilder` that draws each leg in
 its `RouteStore.legColor(_:)` color. Every route option draws its line. Only the selected route
-draws its stop markers and its time bubble. The selected route draws last. At rest it has a `.canvas` casing, width 6, and a dotted
-walk leg. An alternate is flat, width 4, opacity 0.26. A route that is still revealing or
-tweening draws flat.
+draws its stop markers. Every route draws a time callout. The selected route draws last. Every
+route draws a 6 pt core and 4 pt walk legs, each with a `Color.routeCasing` casing. A selection
+change does not change the casing or the width. Only the core color changes: the selected route
+uses its leg colors, and an alternate uses the faded `routeAlternate` blend at strength 0.3. A
+leg that is still revealing draws flat.
 
 ## RouteChoiceAnnotations.swift
 
-- **`RouteTimeBubble`** — capsule with the route time inside a 44 pt button. The selected
-  bubble uses `Onyx` and scale 1.08. The others use `Graphite` at opacity 0.72.
-  The bubble edge is a `Smoke` ring, and the bubble has no shadow.
-  It also scales by `frame.zoomScale`, with a floor of `RouteAnnotationScale.floor` (0.6).
-  Its coordinate is `bubbleCoordinate`. The bubble sits beside the route line, inside the
-  visible map area, clear of the stop markers. See `Commute-State.md`.
+- **`RouteCallout`** (in `RouteCallout.swift`) — rounded rectangle with a pointed tail at one
+  corner, in a 44 pt or larger button. Line 1 is the travel time. Line 2 is the option label.
+  The tail tip is the annotation anchor (`RouteCalloutCorner.unitPoint`), so the tip sits on
+  the route line. Scaling by `zoomScale` (floor 0.6) uses the tip as its anchor.
+  The selected callout uses `Onyx` fill, `Canvas` text, and full opacity. Each other
+  callout uses `Graphite` fill, primary and secondary text, a 1 pt `Smoke` border, opacity 0.85,
+  and a smaller size. It has no shadow. `RouteCalloutShape` draws the outline and
+  `RouteCalloutMetrics` holds the sizes that placement also uses. See `Commute-State.md`.
 - **`RouteStopMarker`** — destination or transfer marker in a 44 pt button. Alternate
   routes show it at opacity 0.5. The destination is `DestinationPin`, the SF Symbol `mappin` in `Onyx`. The commute map uses the same view. Its
   annotation anchors at `.bottom`, so the pin tip sits on the coordinate. The pin scales like
-  the bubbles, with anchor `.bottom`. Transfer markers anchor at the centre and
+  the callouts, with anchor `.bottom`. Transfer markers anchor at the centre and
   keep their size.
 
-Bubbles and markers are flat. Both views select their route on tap and carry accessibility labels.
+Callouts and markers are flat. Both views select their route on tap and carry accessibility labels.
 
 ## SuggestionList.swift
 

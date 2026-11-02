@@ -67,7 +67,7 @@ struct CommuteSearchPanel: View {
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .goraGlass(.regular.interactive(), in: .circle)
                 .accessibilityLabel("Back")
 
                 routePill
@@ -108,7 +108,7 @@ struct CommuteSearchPanel: View {
         }
         .padding(.horizontal, DesignTokens.Space.l)
         .frame(height: 44)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .goraGlass(.regular.interactive(), in: .capsule)
     }
 
     // MARK: Expanded card (default search state)
@@ -135,15 +135,7 @@ struct CommuteSearchPanel: View {
                             .focused($focusedField, equals: .origin)
                             .onChange(of: originText) { _, val in routeStore.updateOriginSuggestions(val) }
                     }
-                    if routeStore.isResolvingOrigin {
-                        ProgressView().controlSize(.small)
-                    } else if !originText.isEmpty {
-                        Button(action: onClearOrigin) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.tertiary)
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    trailingAccessory(isResolving: routeStore.isResolvingOrigin, hasText: !originText.isEmpty, onClear: onClearOrigin)
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 15)
@@ -169,15 +161,7 @@ struct CommuteSearchPanel: View {
                             .focused($focusedField, equals: .destination)
                             .onChange(of: destinationText) { _, val in routeStore.updateDestSuggestions(val) }
                     }
-                    if routeStore.isResolvingDestination {
-                        ProgressView().controlSize(.small)
-                    } else if !destinationText.isEmpty {
-                        Button(action: onClearDestination) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.tertiary)
-                        }
-                        .buttonStyle(.plain)
-                    }
+                    trailingAccessory(isResolving: routeStore.isResolvingDestination, hasText: !destinationText.isEmpty, onClear: onClearDestination)
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 15)
@@ -185,15 +169,15 @@ struct CommuteSearchPanel: View {
                 // Action row
                 HStack(spacing: 12) {
                     Button(action: onSearch) {
-                        Group {
-                            if showSearchProgress {
-                                ProgressView().tint(Color.licorice)
-                            } else {
-                                Text("SEARCH ROUTE")
-                                    .font(.system(.subheadline, weight: .bold))
-                                    .kerning(1.2)
+                        Text("SEARCH ROUTE")
+                            .font(.system(.subheadline, weight: .bold))
+                            .kerning(1.2)
+                            .opacity(showSearchProgress ? 0 : 1)
+                            .overlay {
+                                if showSearchProgress {
+                                    ProgressView().tint(Color.licorice)
+                                }
                             }
-                        }
                         .foregroundStyle(Color.licorice)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
@@ -214,22 +198,21 @@ struct CommuteSearchPanel: View {
                 .padding(.horizontal, 14)
                 .padding(.top, 4)
                 .padding(.bottom, 14)
-
-                if let error = routeStore.errorMessage {
-                    Text(error)
-                        .font(DesignTokens.TypeScale.meta)
-                        .foregroundStyle(Color.vermilion)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 18)
-                        .padding(.bottom, 12)
-                }
             }
-            .glassEffect(.clear, in: .rect(cornerRadius: DesignTokens.Radius.card))
+            .goraGlass(DesignTokens.Materials.cardGlass, in: .rect(cornerRadius: DesignTokens.Radius.card))
             // Measure the card, not the enclosing VStack. The suggestion list is a sibling in
             // that stack, so measuring the stack moves the strip edge whenever the list opens
             // or changes, and the camera tasks keyed on that edge re-frame the map per keystroke.
             .measuresVisibleTop(outerPadding: Self.panelPadding)
+
+            if let error = routeStore.errorMessage {
+                Text(error)
+                    .font(DesignTokens.TypeScale.meta)
+                    .foregroundStyle(Color.vermilion)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 18)
+            }
 
             if !suggestionsVisible {
                 SavedPlacesRow(
@@ -271,6 +254,26 @@ struct CommuteSearchPanel: View {
             }
         }
         .animation(DesignTokens.Motion.suggestEnter, value: suggestionsVisible)
+    }
+
+    /// Fixed-size slot so the field row height is the same while resolving, clearing, or empty.
+    /// The clear button keeps a 44 pt hit area through `contentShape`.
+    @ViewBuilder
+    private func trailingAccessory(isResolving: Bool, hasText: Bool, onClear: @escaping () -> Void) -> some View {
+        Group {
+            if isResolving {
+                ProgressView().controlSize(.small)
+            } else if hasText {
+                Button(action: onClear) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.tertiary)
+                        .frame(width: 22, height: 22)
+                        .contentShape(Rectangle().inset(by: -11))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(width: 22, height: 22)
     }
 
     private var dashedDivider: some View {

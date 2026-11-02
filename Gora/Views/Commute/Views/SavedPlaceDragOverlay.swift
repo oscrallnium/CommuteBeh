@@ -83,7 +83,7 @@ struct SavedPlaceDragOverlay: View {
             .font(.system(size: 24, weight: .semibold))
             .foregroundStyle(drag.isHovering ? AnyShapeStyle(Color.white) : AnyShapeStyle(HierarchicalShapeStyle.primary))
             .frame(width: Self.targetSize, height: Self.targetSize)
-            .glassEffect(.regular.tint(drag.isHovering ? Color.vermilion : nil), in: .circle)
+            .goraGlass(.regular, tint: drag.isHovering ? Color.vermilion : nil, in: .circle)
             .scaleEffect(drag.isHovering ? Self.targetHoverScale : 1)
             .animation(Self.hoverAnimation, value: drag.isHovering)
     }
@@ -103,7 +103,7 @@ struct SavedPlaceDragOverlay: View {
                 let center = chipCenter
                 SavedPlaceChipLabel(icon: place.icon.systemImage, iconSize: 17,
                                     title: place.name, isSelected: drag.isSelected)
-                    .glassEffect(.clear, in: .capsule)
+                    .goraGlass(.clear, in: .capsule)
                     .cardShadow(y: 6)
                     .scaleEffect(chipScale)
                     .opacity(chipOpacity)

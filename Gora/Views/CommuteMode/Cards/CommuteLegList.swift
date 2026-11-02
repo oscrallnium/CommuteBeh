@@ -65,20 +65,16 @@ struct CommuteLegList: View {
     let rows: [CommuteLegRowModel]
     let currentLegIndex: Int
 
-    @ScaledMetric(relativeTo: .body) private var listHeight: CGFloat = 200
+    @ScaledMetric(relativeTo: .body) private var listHeight: CGFloat = 212
     /// The step at the top of the list. The list snaps so one step always starts at the top.
     @State private var topRowID: UUID?
     /// True only while the passenger drags or flicks the list, so automatic scrolls stay silent.
     @State private var isUserScrolling = false
 
-    private let rowHeight: CGFloat = 64
+    private let rowHeight: CGFloat = 68
     private let topInset: CGFloat = 4
-    private let nodeY: CGFloat = 22
+    private let nodeY: CGFloat = 23
     private let nodeSize: CGFloat = 14
-    private let walkDotSize: CGFloat = 3
-    private let walkDotPitch: CGFloat = 6
-    /// Clear space between a walking dot and the node or the next leg's bar.
-    private let walkDotGap: CGFloat = 3
 
     var body: some View {
         ScrollView {
@@ -122,22 +118,22 @@ struct CommuteLegList: View {
             rail(row, state: state, isFirst: index == 0, isLast: index == rows.count - 1)
             VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
                 Text(row.title)
-                    .font(state == .current ? DesignTokens.TypeScale.rowTitleCurrent
-                                            : DesignTokens.TypeScale.rowTitle)
+                    .font(state == .current ? DesignTokens.TypeScale.rowTitleLargeCurrent
+                                            : DesignTokens.TypeScale.rowTitleLarge)
                     .foregroundStyle(state.titleColor)
                     .lineLimit(1)
                 Text(row.subtitle)
-                    .font(DesignTokens.TypeScale.subtitle.monospacedDigit())
+                    .font(DesignTokens.TypeScale.body.monospacedDigit())
                     .foregroundStyle(state.subtitleColor)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: DesignTokens.Space.xxs) {
                 Text(row.fareText)
-                    .font(DesignTokens.TypeScale.rowTitle.monospacedDigit())
+                    .font(DesignTokens.TypeScale.rowTitleLarge.monospacedDigit())
                     .foregroundStyle(state.titleColor)
                 Text(row.durationText)
-                    .font(DesignTokens.TypeScale.subtitle)
+                    .font(DesignTokens.TypeScale.body)
                     .foregroundStyle(state.subtitleColor)
             }
             .lineLimit(1)
@@ -148,22 +144,18 @@ struct CommuteLegList: View {
         .id(row.id)
     }
 
-    /// A bar in the leg color, or walking dots, through a node whose top edge is at
-    /// `nodeY`. The first rail starts at the node centre, and the last rail ends there.
+    /// A bar in the leg color through a node whose top edge is at `nodeY`. A walk bar is
+    /// 4 pt wide, a ride bar 6 pt. The first rail starts at the node centre, and the last rail ends there.
     private func rail(_ row: CommuteLegRowModel, state: RowState, isFirst: Bool, isLast: Bool) -> some View {
         let nodeCenter = nodeY + nodeSize / 2
         let top = isFirst ? nodeCenter : 0
         let bottom = isLast ? nodeCenter : rowHeight
         let color = state == .completed ? Color.faint : row.color
         return ZStack(alignment: .topLeading) {
-            if row.isWalk {
-                walkDots(isFirst: isFirst, isLast: isLast).fill(color)
-            } else {
-                Rectangle()
-                    .fill(color)
-                    .frame(width: 6, height: bottom - top)
-                    .offset(x: 4, y: top)
-            }
+            Rectangle()
+                .fill(color)
+                .frame(width: row.isWalk ? 4 : 6, height: bottom - top)
+                .offset(x: row.isWalk ? 5 : 4, y: top)
             Circle()
                 .fill(state == .current ? Color.tangerine : Color.graphite)
                 .overlay(Circle().strokeBorder(row.isWalk && state != .completed ? Color.onyx : color,
@@ -172,25 +164,5 @@ struct CommuteLegList: View {
                 .offset(y: nodeY)
         }
         .frame(width: nodeSize, height: rowHeight, alignment: .topLeading)
-    }
-
-    /// Walking dots above and below the node, spread evenly with `walkDotGap` at each end.
-    private func walkDots(isFirst: Bool, isLast: Bool) -> Path {
-        var path = Path()
-        if !isFirst { addWalkDots(to: &path, from: 0, to: nodeY) }
-        if !isLast { addWalkDots(to: &path, from: nodeY + nodeSize, to: rowHeight) }
-        return path
-    }
-
-    private func addWalkDots(to path: inout Path, from start: CGFloat, to end: CGFloat) {
-        let first = start + walkDotGap + walkDotSize / 2
-        let span = end - walkDotGap - walkDotSize / 2 - first
-        guard span >= 0 else { return }
-        let gaps = max(1, (span / walkDotPitch).rounded())
-        for index in 0...Int(gaps) {
-            let y = first + span * CGFloat(index) / gaps
-            path.addEllipse(in: CGRect(x: (nodeSize - walkDotSize) / 2, y: y - walkDotSize / 2,
-                                       width: walkDotSize, height: walkDotSize))
-        }
     }
 }

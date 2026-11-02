@@ -25,6 +25,10 @@ final class PuckGlideInterpolator {
     /// When the previous target arrived, so a glide's duration matches the real gap
     /// between fixes instead of a fixed length.
     private var lastTargetAt: Date?
+    /// The newest target, so the dot can jump to it when a suspension starts or ends.
+    private var latestTarget: Coordinates?
+    /// True while the app is in the background. `move(to:)` then records the target without gliding.
+    @ObservationIgnored private(set) var isSuspended = false
 
     /// Beyond this jump the dot moves instantly. A leg switch or an off-route raw fix
     /// is a correction, not travel, and gliding across it would read as flight.
@@ -41,9 +45,11 @@ final class PuckGlideInterpolator {
         glideToken += 1
         let token = glideToken
         glideTask?.cancel()
+        latestTarget = target
 
         let elapsed = lastTargetAt.map { now.timeIntervalSince($0) } ?? Self.minDuration
         lastTargetAt = now
+        if isSuspended { return }
 
         guard let start = displayedCoordinate else {
             displayedCoordinate = target
@@ -71,6 +77,25 @@ final class PuckGlideInterpolator {
         }
     }
 
+    /// Stops the glide loop and jumps the dot to the newest target. Later targets do not glide.
+    func suspend() {
+        isSuspended = true
+        stopGlide()
+    }
+
+    /// Jumps the dot to the newest target and lets later targets glide again.
+    func resume() {
+        isSuspended = false
+        stopGlide()
+    }
+
+    private func stopGlide() {
+        glideToken += 1
+        glideTask?.cancel()
+        glideTask = nil
+        if let latestTarget { displayedCoordinate = latestTarget }
+    }
+
     /// Clears all state when Commute Mode starts or ends.
     func reset() {
         glideToken += 1
@@ -78,5 +103,6 @@ final class PuckGlideInterpolator {
         glideTask = nil
         displayedCoordinate = nil
         lastTargetAt = nil
+        latestTarget = nil
     }
 }

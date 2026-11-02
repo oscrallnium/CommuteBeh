@@ -14,10 +14,6 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
   has any other way to notice that time has passed and the passenger may have moved.
 - **`cameraTransitionToken`** — identifies the transition `beginCameraTransition(_:)` most
   recently started. Changing it stops a running transition, which is how untracking cancels one.
-- **`walkGridStep`** — ground metres that `RouteLine.walkPitch` points span at the puck. The
-  follow loop measures it once per second through the `MapProxy`, and on a camera-mode change.
-  The current walking leg cuts its line on this grid, so its dots do not move between cuts.
-  See `ContentView+WalkGrid.swift`.
 - **Map body — polylines per leg**: in Commute Mode the line only ever shows what's left —
   nothing for a leg already ridden, the live-trimmed leg for the current one, the full leg for
   everything ahead. Outside Commute Mode every leg draws in full.
@@ -47,7 +43,9 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
   next to `HomeTrigger`'s own first-fix centring on ordinary launch; the case it actually
   matters for is `scenePhase` resetting `hasAutoSetOrigin` after the app returns from the
   background, where `HomeTrigger` has nothing left to change and would otherwise leave the
-  camera wherever it was left.
+  camera wherever it was left. `refreshAutoSetOrigin()` runs on that return and at the start of
+  `search()`. It moves the route origin to the live fix while the field still shows the
+  auto-filled text, and keeps the label.
 - **Live leg progress** (`onChange(of: routeStore.userLocation)`, while commuting) — always
   updates `commuteEngine`/`positionResolver`, but never writes the camera directly; the
   continuous follow loop (below) samples the puck's own glide every frame instead, so motion

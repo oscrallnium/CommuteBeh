@@ -31,19 +31,24 @@ final class GraphService {
         return resp.data
     }
 
-    // Downloads the graph from the backend and re-encodes it as camelCase JSON
-    // suitable for GraphLoader.load() (which uses the default JSONDecoder).
-    // Uses APIClient so auth headers and the { "data": {...} } unwrapping are handled.
-    func fetchGraph() async throws -> Data {
-        let resp: APIResponse<TransitGraph> = try await client.request(
-            .graph,
-            responseType: APIResponse<TransitGraph>.self
-        )
-        return try JSONEncoder().encode(resp.data)
+    // Downloads the graph from the backend and decodes it off the main actor.
+    // Uses APIClient so auth headers are handled; the { "data": {...} } unwrapping happens here.
+    func fetchGraph() async throws -> TransitGraph {
+        let data = try await client.requestData(.graph)
+        return try await Self.decodeGraph(data)
+    }
+
+    @concurrent
+    private static func decodeGraph(_ data: Data) async throws -> TransitGraph {
+        do {
+            return try APIClient.makeDecoder().decode(APIResponse<TransitGraph>.self, from: data).data
+        } catch {
+            throw APIError.decodingFailed(error)
+        }
     }
 
     // Checks remote version against the currently loaded graph version.
-    // If different, fetches, caches to Documents, and posts TransitDataDidUpdate
+    // If different, fetches, hands the graph to GraphStore, and posts TransitDataDidUpdate
     // so CommuteViewModel reloads the engine with fresh data.
     @discardableResult
     func syncIfNeeded(loadedVersion: String) async -> Bool {
@@ -70,17 +75,14 @@ final class GraphService {
     // MARK: Private
 
     private func download() async -> Bool {
-        let data: Data
+        let graph: TransitGraph
         do {
-            data = try await fetchGraph()
+            graph = try await fetchGraph()
         } catch {
             return fail("download failed: \(error.localizedDescription)")
         }
-        guard let url = GraphLoader.documentsURL() else {
-            return fail("no Documents directory to cache the graph in")
-        }
         do {
-            try data.write(to: url)
+            try await GraphStore.shared.replace(graph)
         } catch {
             return fail("cache write failed: \(error.localizedDescription)")
         }

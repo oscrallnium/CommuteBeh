@@ -13,9 +13,12 @@ import Foundation
 nonisolated struct CommuteActivityAttributes: ActivityAttributes {
 
     /// One leg of the route. `weight` is the planned minutes of the leg and sets its width on the bar.
+    /// `colorLight` and `colorDark` are the 0xRRGGBB leg color in light and dark mode.
     nonisolated struct Segment: Codable, Hashable {
         var isWalk: Bool
         var weight: Double
+        var colorLight: UInt32
+        var colorDark: UInt32
     }
 
     /// A station name under the bar. `position` runs from 0 (start) to 1 (end) along the bar.

@@ -20,6 +20,8 @@ from `Gora/LiveActivity/`. It holds no app logic.
 
 - The fill and the marker both draw at `state.progress`. They move on each update with an
   0.8 second ease.
+- The marker border uses the color of the leg at `state.legIndex`. The Lock Screen picks the light or
+  dark value. The island always uses the dark value. An index out of range uses the `done` color.
 - The timer text counts down to `eta` and updates without an app update.
 - A stale state dims the timer and the summary, dashes the marker, and removes the Live dot.
 - The extension target does not use `MainActor` as the default isolation.

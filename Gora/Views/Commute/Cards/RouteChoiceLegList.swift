@@ -10,13 +10,10 @@ import SwiftUI
 // MARK: - Route Choice Leg List
 
 /// The leg-by-leg timeline in the route choice sheet. A ride leg fills its 30 pt icon circle and
-/// its connector with the leg color. A walk leg uses a haze circle and a dotted connector.
+/// its connector with the leg color. A walk leg uses a haze circle and a solid connector.
 struct RouteChoiceLegList: View {
     let legRows: [RouteCardSummary.LegRow]
     @Environment(\.self) private var environment
-
-    private let walkDotSize: CGFloat = 3
-    private let walkDotPitch: CGFloat = 6
 
     var body: some View {
         ScrollView {
@@ -65,27 +62,9 @@ struct RouteChoiceLegList: View {
         }
     }
 
-    @ViewBuilder
     private func connector(_ row: RouteCardSummary.LegRow) -> some View {
-        if row.isWalk {
-            VerticalLine()
-                .stroke(Color.smoke, style: StrokeStyle(lineWidth: walkDotSize, lineCap: .round,
-                                                        dash: [0, walkDotPitch]))
-                .frame(width: walkDotSize)
-        } else {
-            Capsule()
-                .fill(row.color)
-                .frame(width: 2)
-        }
-    }
-}
-
-/// A vertical line through the middle of its frame.
-private struct VerticalLine: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.midX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
-        return path
+        Capsule()
+            .fill(row.color)
+            .frame(width: 2)
     }
 }

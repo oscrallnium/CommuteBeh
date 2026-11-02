@@ -5,7 +5,7 @@
 `View.commuteSheet(...)` floats the commute card over the map while `isActive` is true.
 
 - **Card state** — `CommuteCardState` has two cases, `collapsed` and `expanded`. Their heights
-  come from `CommuteSheetHeight` and scale with Dynamic Type. The card cannot be dismissed. It
+  come from `CommuteSheetHeight` and scale with Dynamic Type. The collapsed height is 86 pt and the expanded height is 298.5 pt at the default size. The card cannot be dismissed. It
   enters and leaves with a move-from-bottom transition.
 - **Placement** — the card layer ignores the safe area. The card sits 16 pt from the left, right
   and bottom screen edges. The map stays interactive outside the card.

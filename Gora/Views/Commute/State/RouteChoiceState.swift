@@ -46,9 +46,12 @@ struct RouteChoiceFrame {
         let title: String
     }
 
-    struct Bubble {
+    struct Callout {
+        /// The route-line point that the callout tail touches.
         let coordinate: CLLocationCoordinate2D
+        let corner: RouteCalloutCorner
         let timeText: String
+        let labelText: String
         let accessibilityText: String
         let isShown: Bool
     }
@@ -59,18 +62,16 @@ struct RouteChoiceFrame {
         let geometry: RouteGeometry
         let isSelected: Bool
         let opacity: Double
-        let width: Double
-        /// True while the emphasis tween runs. Flat strokes avoid casing and core redrawing
-        /// out of step. See `flatRoutePolyline`.
-        let isFlat: Bool
         let markers: [Marker]
-        let bubble: Bubble?
+        let callout: Callout?
     }
 
     /// Alternates first and the selected route last, so it draws on top.
     let routes: [Route]
     let revealedFraction: Double
-    /// Camera-distance scale for walk dots, time bubbles, and the destination pin.
+    /// Draw-on fraction of the selected route after a change of selection. 1 at rest.
+    let selectedRevealedFraction: Double
+    /// Camera-distance scale for route callouts and the destination pin.
     /// See `RouteChoiceState.zoomScale`.
     let zoomScale: Double
 }
@@ -87,12 +88,19 @@ final class RouteChoiceState {
         let geometry: RouteGeometry
         let markers: [RouteChoiceFrame.Marker]
         let timeText: String
+        let labelText: String
         let accessibilityText: String
     }
 
+    /// Where one route's callout tip sits and which corner holds the tail.
+    private struct CalloutSpot {
+        let coordinate: CLLocationCoordinate2D
+        let corner: RouteCalloutCorner
+    }
+
     var selectedID: RouteOption.ID?
-    /// Where the selected route's bubble sits. Nil hides the bubble.
-    private(set) var bubbleCoordinate: CLLocationCoordinate2D?
+    /// Where each route's callout sits. A route with no entry shows no callout.
+    private var callouts: [RouteOption.ID: CalloutSpot] = [:]
     var isDetailExpanded = false
     /// Camera distance of the last settled map position, in metres.
     var cameraDistance: CLLocationDistance = RouteChoiceState.zoomReferenceDistance
@@ -101,6 +109,8 @@ final class RouteChoiceState {
     private var order: [RouteOption.ID] = []
     private var entries: [RouteOption.ID: Entry] = [:]
     private var shownBubbles: Set<RouteOption.ID> = []
+    /// Ids that `revealBubbles()` has reached. A placement shows a callout only for these.
+    private var revealedBubbles: Set<RouteOption.ID> = []
     /// The route that lost selection while the emphasis tween runs. Nil at rest.
     private var outgoingID: RouteOption.ID?
     /// Progress of the selection tween, 0...1. Rests at 1.
@@ -110,16 +120,18 @@ final class RouteChoiceState {
     private var revealTask: Task<Void, Never>?
     private var tweenToken = 0
     private var placementTask: Task<Void, Never>?
+    private var calloutMoveTask: Task<Void, Never>?
     private var lastAnnotationTap: Date?
 
     static let emphasisDuration: TimeInterval = 0.3
     static let bubbleStagger: Duration = .milliseconds(60)
+    /// Time a callout takes to fade out before it moves. `RouteCallout` uses it for its hide animation.
+    static let calloutFadeDuration: TimeInterval = 0.15
+    private static let calloutSettleDelay: Duration = .milliseconds(20)
+    /// Spots closer than this, with the same corner, count as unchanged.
+    private static let calloutMoveThreshold: CLLocationDistance = 1
     private static let placementDelay: Duration = .milliseconds(120)
-    private static let bubbleWidth = 110.0
-    private static let bubbleHeight = 44.0
-    static let alternateOpacity = 0.26
-    static let alternateWidth = 4.0
-    static let selectedWidth = RouteLine.coreWidth
+    static let alternateOpacity = 0.3
     /// Camera distance at or below which route decorations draw at full size.
     static let zoomReferenceDistance: CLLocationDistance = 1500
     /// Seconds after an annotation tap during which a map tap does not change selection.
@@ -128,13 +140,16 @@ final class RouteChoiceState {
     // MARK: Sync
 
     /// Rebuilds the per-option map data. Call whenever the options or their legs change.
-    /// A new set of options hides the bubbles until `revealBubbles()` runs.
+    /// A new set of options hides the bubbles until `revealBubbles()` runs. A new order of
+    /// the same options keeps them, because the traffic step re-sorts options after the reveal.
     func sync(options: [RouteOption]) {
         let ids = options.map(\.id)
-        if ids != order {
+        if Set(ids) != Set(order) {
             shownBubbles = []
-            bubbleCoordinate = nil
+            revealedBubbles = []
+            callouts = [:]
             revealTask?.cancel()
+            calloutMoveTask?.cancel()
         }
         order = ids
         guard !options.isEmpty else {
@@ -143,6 +158,8 @@ final class RouteChoiceState {
             isDetailExpanded = false
             outgoingID = nil
             emphasisTask?.cancel()
+            emphasis = 1
+            tweenToken += 1
             return
         }
 
@@ -164,6 +181,7 @@ final class RouteChoiceState {
                 geometry: geometry,
                 markers: Self.markers(for: option.result),
                 timeText: timeText,
+                labelText: Self.labelName(option.label),
                 accessibilityText: "\(Self.labelName(option.label)) route, \(summary.durationText)")
         }
         entries = next
@@ -219,15 +237,16 @@ final class RouteChoiceState {
         revealTask = Task { [weak self] in
             for id in self?.order ?? [] {
                 guard !Task.isCancelled, let self else { return }
+                self.revealedBubbles.insert(id)
                 self.shownBubbles.insert(id)
                 try? await Task.sleep(for: Self.bubbleStagger)
             }
         }
     }
 
-    /// Places the selected route's bubble after `placementDelay`, so a burst of calls runs
-    /// once. `visible` is the map area in screen points that no panel covers. A route with
-    /// no valid spot hides the bubble.
+    /// Places every route's callout after `placementDelay`, so a burst of calls runs once.
+    /// `visible` is the map area in screen points that no panel covers. A route with no
+    /// valid spot shows no callout.
     func scheduleBubblePlacement(
         options: [RouteOption], visible: CGRect,
         project: @escaping (CLLocationCoordinate2D) -> CGPoint?,
@@ -237,30 +256,72 @@ final class RouteChoiceState {
         placementTask = Task { [weak self] in
             try? await Task.sleep(for: Self.placementDelay)
             guard !Task.isCancelled, let self else { return }
-            self.placeBubble(options: options, visible: visible, project: project, unproject: unproject)
+            self.placeCallouts(options: options, visible: visible, project: project, unproject: unproject)
         }
     }
 
-    private func placeBubble(
+    /// The selected route goes first, so it takes the best spot. The others follow in option order.
+    private func placeCallouts(
         options: [RouteOption], visible: CGRect,
         project: (CLLocationCoordinate2D) -> CGPoint?,
         unproject: (CGPoint) -> CLLocationCoordinate2D?
     ) {
-        guard let option = options.first(where: { $0.id == selectedID }),
-              let entry = entries[option.id] else { bubbleCoordinate = nil; return }
-        let geometry = currentGeometry(of: option, entry: entry)
-        let path = option.result.legs.flatMap { geometry.polylines[$0.id] ?? [] }.compactMap(project)
         let scale = max(zoomScale, RouteAnnotationScale.floor)
-        let size = CGSize(width: Self.bubbleWidth * scale, height: Self.bubbleHeight * scale)
-        let center = RouteBubblePlacement.center(
-            path: path, avoid: entry.markers.compactMap { project($0.coordinate) }, visible: visible, size: size)
-        let next = center.flatMap(unproject)
-        // The bubble glides from its old spot. A first placement appears in place.
-        if bubbleCoordinate != nil, next != nil {
-            withAnimation(.smooth(duration: 0.35)) { bubbleCoordinate = next }
-        } else {
-            bubbleCoordinate = next
+        let ordered = options.filter { $0.id == selectedID } + options.filter { $0.id != selectedID }
+        let routes = ordered.compactMap { option -> RouteCalloutPlacement.Route<RouteOption.ID>? in
+            guard let entry = entries[option.id] else { return nil }
+            let geometry = currentGeometry(of: option, entry: entry)
+            let size = RouteCalloutMetrics.frameSize(isSelected: option.id == selectedID)
+            return .init(
+                id: option.id,
+                path: option.result.legs.flatMap { geometry.polylines[$0.id] ?? [] }.compactMap(project),
+                size: CGSize(width: size.width * scale, height: size.height * scale),
+                tail: RouteCalloutMetrics.tail * scale)
         }
+        let markers = selectedID.flatMap { entries[$0] }?.markers ?? []
+        let spots = RouteCalloutPlacement.place(
+            routes: routes, avoid: markers.compactMap { project($0.coordinate) }, visible: visible)
+        #if DEBUG
+        print("[CalloutDebug] placed \(spots.count) of \(routes.count) callouts, visible=\(visible)")
+        #endif
+        var next: [RouteOption.ID: CalloutSpot] = [:]
+        for (id, spot) in spots {
+            guard let coordinate = unproject(spot.tip) else { continue }
+            next[id] = CalloutSpot(coordinate: coordinate, corner: spot.corner)
+        }
+        moveCallouts(to: next)
+    }
+
+    /// A callout whose spot changes fades out, moves while hidden, and fades in. The newest
+    /// call ends with every revealed route that has a spot in `shownBubbles`.
+    private func moveCallouts(to next: [RouteOption.ID: CalloutSpot]) {
+        calloutMoveTask?.cancel()
+        let moving = Set(callouts.filter { id, old in
+            guard let new = next[id] else { return true }
+            return new.corner != old.corner || Self.distance(old.coordinate, new.coordinate) > Self.calloutMoveThreshold
+        }.keys)
+        calloutMoveTask = Task { [weak self] in
+            guard let self else { return }
+            if !moving.isEmpty {
+                self.shownBubbles.subtract(moving)
+                try? await Task.sleep(for: .seconds(Self.calloutFadeDuration))
+                guard !Task.isCancelled else { return }
+            }
+            self.callouts = next
+            guard !moving.isEmpty else { return self.showRevealedBubbles() }
+            try? await Task.sleep(for: Self.calloutSettleDelay)
+            guard !Task.isCancelled else { return }
+            self.showRevealedBubbles()
+        }
+    }
+
+    private func showRevealedBubbles() {
+        shownBubbles.formUnion(revealedBubbles.intersection(callouts.keys))
+    }
+
+    private static func distance(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> CLLocationDistance {
+        CLLocation(latitude: a.latitude, longitude: a.longitude)
+            .distance(from: CLLocation(latitude: b.latitude, longitude: b.longitude))
     }
 
     // MARK: Map data
@@ -280,51 +341,51 @@ final class RouteChoiceState {
 
     /// Builds the draw data for `options`. Reads every observed property here, so the caller
     /// must run this inside `body`, not inside the map content closure.
-    func frame(options: [RouteOption], revealedFraction: Double) -> RouteChoiceFrame {
-        let isTweening = outgoingID != nil
+    func frame(
+        options: [RouteOption], revealedFraction: Double, selectedRevealedFraction: Double
+    ) -> RouteChoiceFrame {
         let routes = options.compactMap { option -> RouteChoiceFrame.Route? in
             guard let entry = entries[option.id] else { return nil }
             let geometry = currentGeometry(of: option, entry: entry)
             let isSelected = option.id == selectedID
-            let (opacity, width) = stroke(for: option.id, isSelected: isSelected)
-            let bubble = (isSelected ? bubbleCoordinate : nil).map {
-                RouteChoiceFrame.Bubble(
-                    coordinate: $0, timeText: entry.timeText,
-                    accessibilityText: entry.accessibilityText,
+            let opacity = opacity(for: option.id, isSelected: isSelected)
+            let callout = callouts[option.id].map {
+                RouteChoiceFrame.Callout(
+                    coordinate: $0.coordinate, corner: $0.corner, timeText: entry.timeText,
+                    labelText: entry.labelText, accessibilityText: entry.accessibilityText,
                     isShown: shownBubbles.contains(option.id))
             }
             return RouteChoiceFrame.Route(
                 id: option.id, legs: option.result.legs, geometry: geometry,
-                isSelected: isSelected, opacity: opacity, width: width, isFlat: isTweening,
+                isSelected: isSelected, opacity: opacity,
                 markers: entry.markers,
-                bubble: bubble)
+                callout: callout)
         }
         let ordered = routes.filter { !$0.isSelected } + routes.filter(\.isSelected)
         return RouteChoiceFrame(
-            routes: ordered, revealedFraction: revealedFraction, zoomScale: routes.isEmpty ? 1 : zoomScale)
+            routes: ordered, revealedFraction: revealedFraction,
+            selectedRevealedFraction: selectedRevealedFraction,
+            zoomScale: routes.isEmpty ? 1 : zoomScale)
     }
 
     private func currentGeometry(of option: RouteOption, entry: Entry) -> RouteGeometry {
         entry.geometry.matches(option.result) ? entry.geometry : (RouteGeometry(option.result) ?? entry.geometry)
     }
 
-    /// Shrinks walk dots, bubbles, and the destination pin as the camera zooms out. MapKit
-    /// draws dashes larger when zoomed out, so the dots need the same ratio. Steps of 0.05
-    /// limit overlay redraws.
+    /// Shrinks callouts and the destination pin as the camera zooms out. Steps of 0.05
+    /// limit redraws.
     private var zoomScale: Double {
         let ratio = Self.zoomReferenceDistance / max(cameraDistance, 1)
         return (min(max(ratio, 0.35), 1) * 20).rounded() / 20
     }
 
-    private func stroke(for id: RouteOption.ID, isSelected: Bool) -> (opacity: Double, width: Double) {
+    /// Fill strength of one route: 1 for the selected route, `alternateOpacity` for the others.
+    /// The two routes in a selection change blend between them while the emphasis tween runs.
+    private func opacity(for id: RouteOption.ID, isSelected: Bool) -> Double {
         let rise = Self.alternateOpacity + (1 - Self.alternateOpacity) * emphasis
-        let widthRise = Self.alternateWidth + (Self.selectedWidth - Self.alternateWidth) * emphasis
-        if isSelected { return (rise, widthRise) }
-        if id == outgoingID {
-            return (1 - (1 - Self.alternateOpacity) * emphasis,
-                    Self.selectedWidth - (Self.selectedWidth - Self.alternateWidth) * emphasis)
-        }
-        return (Self.alternateOpacity, Self.alternateWidth)
+        if isSelected { return rise }
+        if id == outgoingID { return 1 - (1 - Self.alternateOpacity) * emphasis }
+        return Self.alternateOpacity
     }
 
     // MARK: Helpers

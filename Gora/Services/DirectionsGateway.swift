@@ -58,6 +58,9 @@ actor DirectionsGateway {
     /// `await`), so concurrent callers each take a distinct slot instead of all firing now.
     private var nextSlot = Date.distantPast
     private let requestTimeout: Duration = .seconds(8)
+    /// Live (traffic-dependent) ETAs, memory only. Each entry expires after `liveETALifetime`.
+    private var liveETAs: [String: (seconds: Double, expires: Date)] = [:]
+    private let liveETALifetime: TimeInterval = 300
 
     /// Directions between two points, or `nil` if MapKit couldn't supply them.
     /// Never returns a straight line — callers must handle `nil` by drawing nothing.
@@ -78,6 +81,41 @@ actor DirectionsGateway {
                                             timeout: requestTimeout) else { return nil }
         store(path, for: key)
         return path
+    }
+
+    /// Driving time in seconds for a departure at `departure`, or `nil` on any failure.
+    /// `cacheOnDisk` keeps the answer with no expiry; otherwise it lives in memory for 5 minutes.
+    func travelSeconds(
+        from: Coordinates,
+        to: Coordinates,
+        departure: Date,
+        cacheOnDisk: Bool,
+        urgency: Urgency
+    ) async -> Double? {
+        loadDiskCacheIfNeeded()
+
+        let key = Self.etaKey(from: from, to: to, departure: departure, cacheOnDisk: cacheOnDisk)
+        if cacheOnDisk, let hit = cache[key] { return hit.minutes * 60 }
+        if !cacheOnDisk, let hit = liveETAs[key], hit.expires > Date() { return hit.seconds }
+
+        await waitForSlot(urgency)
+
+        guard let seconds = await Self.requestETA(from: from, to: to, departure: departure,
+                                                  timeout: requestTimeout) else { return nil }
+        if cacheOnDisk {
+            store(Path(minutes: seconds / 60, distanceKm: 0, coordinates: []), for: key)
+        } else {
+            liveETAs = liveETAs.filter { $0.value.expires > Date() }
+            liveETAs[key] = (seconds, Date().addingTimeInterval(liveETALifetime))
+        }
+        return seconds
+    }
+
+    private static func etaKey(from: Coordinates, to: Coordinates, departure: Date, cacheOnDisk: Bool) -> String {
+        // A disk entry is a free-flow time, so it carries no departure. A live entry is
+        // bucketed to the 5 minutes it stays valid.
+        let bucket = cacheOnDisk ? "free" : String(Int(departure.timeIntervalSince1970 / 300))
+        return String(format: "eta|%@|%.5f,%.5f>%.5f,%.5f", bucket, from.lat, from.lng, to.lat, to.lng)
     }
 
     // MARK: Pacing
@@ -168,6 +206,41 @@ actor DirectionsGateway {
                     distanceKm: route.distance / 1000,
                     coordinates: coords.map { Coordinates(lat: $0.latitude, lng: $0.longitude) }
                 )
+            }
+            group.addTask {
+                try? await Task.sleep(for: timeout)
+                return nil
+            }
+            let first = await group.next() ?? nil
+            group.cancelAll()
+            return first
+        }
+    }
+
+    /// One ETA attempt, raced against `timeout` like `request(...)`.
+    private static func requestETA(
+        from: Coordinates,
+        to: Coordinates,
+        departure: Date,
+        timeout: Duration
+    ) async -> Double? {
+        let request = MKDirections.Request()
+        request.source = MKMapItem(location: CLLocation(latitude: from.lat, longitude: from.lng),
+                                   address: nil)
+        request.destination = MKMapItem(location: CLLocation(latitude: to.lat, longitude: to.lng),
+                                        address: nil)
+        request.transportType = .automobile
+        request.departureDate = departure
+
+        return await withTaskGroup(of: Double?.self) { group in
+            group.addTask {
+                do {
+                    let response = try await MKDirections(request: request).calculateETA()
+                    return response.expectedTravelTime
+                } catch {
+                    directionsLog.error("eta: \(error.localizedDescription, privacy: .public)")
+                    return nil
+                }
             }
             group.addTask {
                 try? await Task.sleep(for: timeout)

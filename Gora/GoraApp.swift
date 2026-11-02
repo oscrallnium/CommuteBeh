@@ -43,13 +43,10 @@ struct MainTabView: View {
             Tab("Commute", systemImage: "arrow.triangle.swap") {
                 ContentView()
             }
-            Tab("Explore", systemImage: "map.fill") {
-                ExploreView()
-            }
-            Tab("Record", systemImage: "record.circle") {
-                RecordCommuteView()
-            }
             if session.isAdmin {
+                Tab("Routes", systemImage: "map.fill") {
+                    ExploreView()
+                }
                 Tab("Admin", systemImage: "gear.badge") {
                     AdminRoutesView()
                 }

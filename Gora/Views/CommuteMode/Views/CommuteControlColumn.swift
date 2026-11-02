@@ -47,7 +47,7 @@ struct CommuteControlColumn: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.clear.interactive(), in: .circle)
+        .goraGlass(.clear.interactive(), in: .circle)
         .accessibilityLabel(cameraMode == .twoD ? "Switch to 3D" : "Switch to 2D")
     }
 
@@ -60,7 +60,7 @@ struct CommuteControlColumn: View {
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .glassEffect(.clear.interactive(), in: .circle)
+        .goraGlass(.clear.interactive(), in: .circle)
         .accessibilityLabel(isFollowing ? "Stop following your location" : "Follow your location")
     }
 
@@ -98,7 +98,7 @@ struct CommuteControlColumn: View {
         .menuStyle(.button)
         .menuOrder(.fixed)
         .buttonStyle(.plain)
-        .glassEffect(.clear.interactive(), in: .circle)
+        .goraGlass(.clear.interactive(), in: .circle)
         .accessibilityLabel("More")
     }
 

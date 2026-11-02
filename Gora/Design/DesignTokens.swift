@@ -36,6 +36,14 @@ enum DesignTokens {
         static let subtitleEmphasis: Font = .footnote.weight(.semibold)
         /// Field text, suggestion names.
         static let body: Font = .subheadline
+        /// Arrival time on the commute card header.
+        static let etaLarge: Font = .title.weight(.semibold)
+        /// Subtitle of the commute card header.
+        static let bodyLarge: Font = .body
+        /// Leg title on the commute card.
+        static let rowTitleLarge: Font = .body.weight(.semibold)
+        /// Title of the current leg on the commute card.
+        static let rowTitleLargeCurrent: Font = .body.bold()
         /// Timestamps, line labels, stop counts.
         static let meta: Font = .caption
     }
@@ -54,6 +62,7 @@ enum DesignTokens {
         static let l: CGFloat = 16
         static let xl: CGFloat = 18
         static let xxl: CGFloat = 22
+        static let xxxl: CGFloat = 32
     }
 
     // MARK: Corner radius
@@ -81,6 +90,15 @@ enum DesignTokens {
 
         /// Halo around the position puck: `Color.tangerine` at 22 %.
         static let positionHalo = Color.tangerine.opacity(0.22)
+    }
+
+    // MARK: Materials
+    enum Materials {
+        /// Glass of a card over the map: frosted and tinted with `systemGray5`, a charcoal gray in dark
+        /// mode and a light gray in light mode. A black tint makes the card near-black and opaque.
+//        static let cardGlass = Glass.regular.tint(Color(.systemGray5).opacity(0.4))
+        static let cardGlass = Glass.regular.tint(Color(.clear))
+
     }
 
     // MARK: Motion patterns
@@ -149,10 +167,19 @@ extension View {
     }
 }
 
+// MARK: - Map overlay alpha
+extension Color {
+    /// This color with `opacity` stored in the UIColor. MapKit overlay renderers ignore a
+    /// SwiftUI `opacity(_:)` modifier, so map strokes and fills use this instead.
+    func mapOpacity(_ opacity: Double) -> Color {
+        Color(uiColor: UIColor(self).withAlphaComponent(opacity))
+    }
+}
+
 // MARK: - Hex color
 extension Color {
     /// Parses `#RRGGBB`. Returns nil for any other format.
-    init?(hex: String) {
+    nonisolated init?(hex: String) {
         guard hex.hasPrefix("#"), hex.count == 7, let value = UInt32(hex.dropFirst(), radix: 16) else { return nil }
         self.init(red: Double((value >> 16) & 0xFF) / 255,
                   green: Double((value >> 8) & 0xFF) / 255,
@@ -166,10 +193,11 @@ extension TransportMode {
     var color: Color {
         switch self {
         case .train:    return .orchid
-        case .bus:      return .cobalt
+        case .bus:      return .purple // default in-case color from backend is not used
         case .jeepney:  return .amethyst
+        case .uvExpress: return .amethyst
         case .tricycle: return .chartreuse
-        case .walk:     return .mist
+        case .walk:     return .cocoa
         }
     }
 
@@ -180,9 +208,15 @@ extension TransportMode {
         case .train:    return "tram.fill"
         case .bus:      return "bus.fill"
         case .jeepney:  return "bus.fill"
+        case .uvExpress: return "car.side.fill"
         case .tricycle: return "bicycle"
         case .walk:     return "figure.walk"
         }
+    }
+
+    /// Name shown in mode pickers.
+    var displayName: String {
+        self == .uvExpress ? "UV Express" : rawValue.capitalized
     }
 }
 
@@ -195,26 +229,72 @@ enum RouteLine {
     static let currentWidth: CGFloat = 7
     /// Casing width on each side of a core.
     static let casing: CGFloat = 2
-    /// Walking dot diameter.
-    static let walkDot: CGFloat = 5
-    /// Distance between walking dot centers.
-    static let walkPitch: CGFloat = 9
+    /// Solid width of a walk leg.
+    static let walkWidth: CGFloat = 4
+    /// Dot diameter of the walk connector.
+    static let connectorDot: CGFloat = 5
+    /// Distance between dot centers of the walk connector.
+    static let connectorDotPitch: CGFloat = 9
 
-    /// Walking dots at the default scale.
-    static let walk = walkStyle()
+    /// Solid stroke of a walk leg.
+    static let walkStyle = solidStyle(width: walkWidth)
     /// Thin solid stroke of a station access connector.
     static let connectorStyle = StrokeStyle(lineWidth: 1.5, lineCap: .round)
 
-    /// Round dots in `walkDot` size on `walkPitch`, scaled by `scale`. The dash is near zero
-    /// so each round cap draws a full circle.
-    static func walkStyle(scale: Double = 1) -> StrokeStyle {
-        StrokeStyle(lineWidth: walkDot * scale, lineCap: .round, lineJoin: .round,
-                    dash: [0.01, walkPitch * scale - 0.01])
+    /// Round dots of the walk connector. The dash is near zero so each round cap draws a full circle.
+    static let connectorDotStyle = StrokeStyle(
+        lineWidth: connectorDot, lineCap: .round, lineJoin: .round,
+        dash: [0.01, connectorDotPitch - 0.01])
+
+    /// Round-capped casing stroke under a leg core of `mode`. A walk leg cases its thinner core.
+    static func casingStyle(for mode: TransportMode) -> StrokeStyle {
+        solidStyle(width: (mode == .walk ? walkWidth : coreWidth) + 2 * casing)
     }
 
     /// Solid round-capped stroke of `width`.
     static func solidStyle(width: CGFloat) -> StrokeStyle {
         StrokeStyle(lineWidth: width, lineCap: .round, lineJoin: .round)
+    }
+}
+
+// MARK: - Route casing
+extension Color {
+    /// Brightness factor of a light-mode casing.
+    nonisolated private static let casingBrightness: CGFloat = 0.65
+    /// Brightness factor of each safety step.
+    nonisolated private static let casingStep: CGFloat = 0.9
+    /// Lowest contrast ratio against white that a light-mode casing keeps.
+    nonisolated private static let casingMinContrast: CGFloat = 3.0
+
+    /// Casing of a route line drawn in this color. Light mode darkens the color to 3:1 contrast
+    /// against white at least. Dark mode uses `Color.canvas`.
+    var routeCasing: Color {
+        let base = UIColor(self)
+        let canvas = UIColor(Color.canvas)
+        return Color(UIColor { @Sendable traits in
+            if traits.userInterfaceStyle == .dark { return canvas.resolvedColor(with: traits) }
+            var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+            let resolved = base.resolvedColor(with: traits)
+            guard resolved.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) else {
+                return resolved
+            }
+            brightness *= Color.casingBrightness
+            var casing = UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha)
+            while brightness > 0.01, Color.contrastAgainstWhite(casing) < Color.casingMinContrast {
+                brightness *= Color.casingStep
+                casing = UIColor(hue: hue, saturation: saturation, brightness: brightness, alpha: alpha)
+            }
+            return casing
+        })
+    }
+
+    /// WCAG contrast ratio of `color` against white.
+    nonisolated private static func contrastAgainstWhite(_ color: UIColor) -> CGFloat {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        color.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        func linear(_ c: CGFloat) -> CGFloat { c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
+        let luminance = 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+        return 1.05 / (luminance + 0.05)
     }
 }
 

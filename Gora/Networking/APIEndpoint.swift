@@ -176,7 +176,9 @@ enum APIEndpoint {
             if let direction { edge["direction"] = direction ?? NSNull() }
             return ["edge": edge]
         case .createRoute(let payload):
+            #if DEBUG
             print("createRoute payload: \(payload)")
+            #endif
             return payload
         case .insertStation(let payload):
             return payload

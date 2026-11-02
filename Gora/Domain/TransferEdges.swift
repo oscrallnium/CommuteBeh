@@ -18,7 +18,7 @@ nonisolated enum TransferPolicy {
 
     /// One edge in each direction for every close pair on different chains that has no
     /// `INTERCHANGE` edge yet. The edges use the `INTERCHANGE` line, so they never merge
-    /// into a ride and carry no fare. The pair scan is quadratic in the station count.
+    /// into a ride and carry no fare. A grid limits each station to its nearby cells.
     static func edges(
         stations: [Station],
         existing: [TransitEdge],
@@ -30,10 +30,13 @@ nonisolated enum TransferPolicy {
         let located = stations.map {
             ($0, CLLocation(latitude: $0.coordinates.lat, longitude: $0.coordinates.lng))
         }
+        let chainKeys = stations.map(StationChain.key(of:))
+        let grid = StationGrid(coordinates: stations.map(\.coordinates), cellKm: maxKm)
 
         var result: [TransitEdge] = []
         for (i, (a, locationA)) in located.enumerated() {
-            for (b, locationB) in located[(i + 1)...] where StationChain.key(of: a) != StationChain.key(of: b) {
+            for j in grid.indices(near: a.coordinates, radiusKm: maxKm) where j > i && chainKeys[i] != chainKeys[j] {
+                let (b, locationB) = located[j]
                 guard !linked.contains(pairKey(a.id, b.id)) else { continue }
                 let km = locationA.distance(from: locationB) / 1000
                 guard km <= maxKm else { continue }

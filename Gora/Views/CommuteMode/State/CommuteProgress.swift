@@ -175,6 +175,13 @@ final class CommuteProgressEngine {
         trainSnapTask?.cancel()
     }
 
+    /// Adopts a route whose leg minutes changed and whose geometry did not. Rebuilds only the
+    /// planned schedule, so snap and track progress carry on unbroken.
+    func applyRetiming(_ newResult: RouteResult) {
+        result = newResult
+        plannedElapsedAtLegStart = Self.buildPlannedElapsedAtLegStart(for: newResult)
+    }
+
     /// Closest point anywhere along `geo`'s polyline to `point`, as a distance off the
     /// route, how far along the route that point sits, and the route's own bearing at
     /// that point. See `CommuteMode-State.md`.

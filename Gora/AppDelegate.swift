@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAnalytics
 import FirebaseCore
 
 /// Configures Firebase at launch. It runs before any view, so every Firebase call in the app
@@ -16,6 +17,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
+        Analytics.setAnalyticsCollectionEnabled(UserDefaults.standard.bool(forKey: SettingsKey.shareUsageData))
         return true
     }
 }

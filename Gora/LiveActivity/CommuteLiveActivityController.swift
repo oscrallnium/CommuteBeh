@@ -7,6 +7,7 @@
 
 import ActivityKit
 import Foundation
+import SwiftUI
 
 /// Owns the one commute Live Activity: start, throttled update, end. See `LiveActivity.md`.
 @MainActor
@@ -34,13 +35,14 @@ final class CommuteLiveActivityController {
     }
 
     func start(result: RouteResult, engine: CommuteProgressEngine, destinationName: String,
-               now: Date, lineName: @escaping (String) -> String) {
+               now: Date, lineName: @escaping (String) -> String,
+               legColor: (RouteLeg) -> Color) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         isRunning = true
         self.destinationName = destinationName
         self.lineName = lineName
         lastFixAt = now
-        let attributes = Snapshot.attributes(result: result, destinationName: destinationName)
+        let attributes = Snapshot.attributes(result: result, destinationName: destinationName, legColor: legColor)
         let state = Snapshot.state(result: result, engine: engine, destinationName: destinationName,
                                    lastFixAt: now, now: now, lineName: lineName)
         let previous = pending
@@ -56,11 +58,12 @@ final class CommuteLiveActivityController {
     /// Adopts the activity an earlier app run left and ends any extra ones. Starts a new activity
     /// when none is active. The next `update` sends fresh content.
     func reattach(result: RouteResult, engine: CommuteProgressEngine, destinationName: String,
-                  startedAt: Date, lineName: @escaping (String) -> String) {
+                  startedAt: Date, lineName: @escaping (String) -> String,
+                  legColor: (RouteLeg) -> Color) {
         let existing = Activity<CommuteActivityAttributes>.activities.filter { $0.activityState == .active }
         guard let adopted = existing.first else {
             return start(result: result, engine: engine, destinationName: destinationName,
-                         now: startedAt, lineName: lineName)
+                         now: startedAt, lineName: lineName, legColor: legColor)
         }
         isRunning = true
         activity = adopted

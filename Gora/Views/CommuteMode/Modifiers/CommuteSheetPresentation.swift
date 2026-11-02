@@ -22,9 +22,9 @@ enum CommuteCardState {
 /// Commute card heights, scaled with Dynamic Type.
 enum CommuteSheetHeight {
     /// Height of the header alone.
-    static var collapsed: CGFloat { scaled(76) }
+    static var collapsed: CGFloat { scaled(86) }
     /// Height of the header, the hairline and the leg list.
-    static var expanded: CGFloat { scaled(276.5) }
+    static var expanded: CGFloat { scaled(298.5) }
     /// Halfway between the two states. A taller card shows its leg list fully during a drag.
     static var midpoint: CGFloat { (collapsed + expanded) / 2 }
 
@@ -65,7 +65,8 @@ struct CommuteSheetPresentation<Card: View>: ViewModifier {
     @State private var cardState: CommuteCardState = .collapsed
     @State private var sheetTop: CGFloat = 0
     @State private var isMerged = false
-    /// The settled card top in the collapsed state. `nil` until the first measure.
+    /// The settled card top in the collapsed state. `nil` until the card first rests collapsed,
+    /// because the first measures come from the entrance transition, below the screen.
     @State private var collapsedTop: CGFloat?
     @State private var showEndAlert = false
     @State private var settleTask: Task<Void, Never>?
@@ -108,7 +109,6 @@ struct CommuteSheetPresentation<Card: View>: ViewModifier {
                 card($cardState, $showEndAlert)
                     .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                         let isFirstMeasure = sheetTop == 0
-                        if isFirstMeasure { collapsedTop = top }
                         moveColumn(toTop: top, isFirstMeasure: isFirstMeasure)
                         updateMerge(forTop: top)
                         reportSettledTop(top, immediately: isFirstMeasure)
@@ -143,14 +143,14 @@ struct CommuteSheetPresentation<Card: View>: ViewModifier {
     /// not update on every frame of a state animation.
     private func reportSettledTop(_ top: CGFloat, immediately: Bool) {
         settleTask?.cancel()
-        if immediately {
-            onSheetTopChange(top)
-            return
-        }
+        if immediately { onSheetTopChange(top) }
         settleTask = Task {
             try? await Task.sleep(for: settleDelay)
             guard !Task.isCancelled else { return }
-            if cardState == .collapsed { collapsedTop = top }
+            if cardState == .collapsed {
+                collapsedTop = top
+                updateMerge(forTop: top)
+            }
             onSheetTopChange(top)
         }
     }

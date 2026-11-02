@@ -22,9 +22,20 @@ extension ContentView {
 
     /// Draw data for every option. Call from `body`, so the reads of `routeChoice` register
     /// with the view's observation scope.
-    func routeChoiceFrame(revealedFraction: Double) -> RouteChoiceFrame {
+    func routeChoiceFrame(
+        revealedFraction: Double, selectedRevealedFraction: Double
+    ) -> RouteChoiceFrame {
         routeChoice.frame(
-            options: routeStore.routeOptions, revealedFraction: revealedFraction)
+            options: routeStore.routeOptions, revealedFraction: revealedFraction,
+            selectedRevealedFraction: selectedRevealedFraction)
+    }
+
+    /// Starts the draw-on of the newly selected route. Skips the first selection and a new
+    /// search, where the previous route is no longer among the options.
+    func redrawSelectedRoute(from old: RouteOption.ID?, to new: RouteOption.ID?) {
+        guard showsRouteChoice, new != nil, let old,
+              routeStore.routeOptions.contains(where: { $0.id == old }) else { return }
+        selectionDrawAnimator.start()
     }
 
     /// Identity of every option, its legs, and what walk refinement changes in them. Refinement
@@ -41,7 +52,7 @@ extension ContentView {
         placeRouteBubble()
     }
 
-    /// Re-places the selected route's bubble beside its line, inside the map area that no panel covers.
+    /// Re-places every route's callout beside its line, inside the map area that no panel covers.
     func placeRouteBubble() {
         guard showsRouteChoice, let proxy = mapProxy else { return }
         let size = screenSize

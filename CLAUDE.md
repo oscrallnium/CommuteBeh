@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Gora** — iOS transit navigation app for Metro Manila. Finds optimal multimodal routes across MRT-3, LRT-1, LRT-2, buses, jeepneys, and tricycles via an A* engine on a bundled JSON graph. External dependencies come from Swift Package Manager only; see Dependencies.
+**Gora** — iOS transit navigation app for Metro Manila. Finds optimal multimodal routes across MRT-3, LRT-1, LRT-2, buses, jeepneys, and tricycles via an A* engine on a JSON graph that the app downloads from the backend and caches in Documents. External dependencies come from Swift Package Manager only; see Dependencies.
 
 - iOS 26+ · SwiftUI · MapKit · Swift Concurrency
 - Bundle ID: `com.banaueinc.gora`
@@ -197,7 +197,7 @@ Rules:
 - All `Codable` model types (`Station`, `TransitEdge`, `RouteLeg`, `RouteResult`, `TransitGraph`, …)
 - `TransitGraphEngine` — Swift `actor`; builds the adjacency list, runs A*
 - `CommuteViewModel` — `@Observable final class`; drives `ContentView`
-- `GraphLoader` — decodes JSON from the app bundle
+- `GraphLoader` — decodes the cached graph from `Documents/transit_graph_v3.json`
 - Supporting algorithms: `MinHeap`, Haversine, peak-hour multipliers
 
 Everything else is UI: `ContentView.swift` (Commute tab), `ExploreView.swift` (Explore tab + its own `ExploreViewModel`).
@@ -248,11 +248,22 @@ private func footer(fare: Double) -> some View { … }
 
 Rules:
 
+- Make `body` an outline. It lists named sections and the container modifiers of the root view.
 - Give each extracted part a name that states what it shows.
-- Use a computed property when the part needs no input. Use a function when it takes a
-  parameter.
-- Extract a part into its own `View` struct when two or more screens use it.
+- Use `private var name: some View` when the part needs no input. Use
+  `@ViewBuilder private func name(_ value: T) -> some View` when it takes a parameter.
+- Add `@ViewBuilder` only when the part has more than one top-level view or contains `if` or
+  `switch`.
+- Use a `private struct NameView: View` when the part owns state or exceeds about 40 lines.
+- Move a part into its own file, as a `View` struct, when two or more screens use it or when
+  its file nears the 500-line ceiling.
+- Keep container modifiers (padding, background, frame, overlay) on the root view in `body`.
+- Keep every value and modifier order the same when you extract a part. Keep
+  `.animation(_:value:)`, `.transition`, `.id`, and accessibility modifiers on the same element.
 - Keep a `body` short enough to read on one screen.
+
+Example: `GoraLiveActivity/CommuteLockScreenView.swift` has a short `body`, the sections
+`headline` and `stationLabels`, and the parameterized `labelView(_:width:)`.
 
 ### Reuse before you write
 
@@ -279,6 +290,70 @@ weight as the Swift file header and the comment rules above.
   functions instead.
 - Remove dead code and commented-out code. Git history holds the old version.
 - Prefer early returns over nested `if` blocks. Handle the failure case first and return.
+
+### Constants in a private enum
+
+Put each magic value and each string constant of a file in a `private enum` namespace. Give
+the enum a name that states what the values are for, such as `Layout` or `Strings`.
+
+```swift
+// [Wrong] magic values inline
+.padding(.horizontal, 20)
+.cornerRadius(8)
+
+// [Correct] named values in a private enum
+private enum Layout {
+    static let horizontalPadding: CGFloat = 20
+    static let cornerRadius: CGFloat = 8
+}
+```
+
+Rules:
+
+- Use a case-less `enum`, not a `struct`. A case-less enum has no instance, so no code can
+  create one by mistake.
+- Use `private enum` when only one file uses the values.
+- Use a shared type when two or more files use the value, for example `DesignTokens` or
+  `RouteLine`. Search for an existing value before you add one.
+- A value made from other values, such as an interpolated key, is not a constant. Keep it inline.
+- This rule does not override the key invariants. Station names, fares, coordinates, mode
+  strings, and payment strings come from `transit_graph_v3.json`, never from an enum.
+
+### Closed sets as an enum
+
+Model each closed set of values as an `enum` with cases. A closed set has a fixed list of
+values that the code knows at compile time. Examples are the commute lifecycle, a card state,
+a drag phase, and a loading state.
+
+```swift
+// [Wrong] booleans that can hold an impossible combination
+var isPlanning = false
+var isCommuting = false
+var hasArrived = false
+
+// [Correct] one value, one state at a time
+enum CommutePhase {
+    case planning
+    case commuting(legIndex: Int)
+    case arrived
+}
+var phase: CommutePhase = .planning
+```
+
+Rules:
+
+- Replace two or more booleans that describe one state with one enum. The enum makes an
+  impossible combination, such as commuting and arrived together, impossible to write.
+- Put data that belongs to only one state in that case as an associated value.
+- Switch over the enum exhaustively. Do not add a `default` case, so the compiler reports
+  each `switch` that a new case must update.
+- Use a `String` raw value only when the value crosses a boundary, such as `Codable` storage
+  or a Live Activity. `CommuteActivityAttributes.Phase` is the model to follow.
+- Use an enum only for a set that the code fixes. `TransportMode` and `PaymentMethod` are
+  closed sets, so they are enums. Lines and stations change with `transit_graph_v3.json`, so
+  keep them data, not cases.
+- Existing examples: `CommuteActivityAttributes.Phase`, `CommuteCardState`,
+  `SavedPlaceDragState.Phase`, `SurveyState`.
 
 ### SOLID Principles
 
@@ -308,7 +383,8 @@ Opus 5.5 (`claude-opus-5-5`) is the orchestrator. Sonnet 5.5 (`claude-sonnet-5-5
 - **Opus 5.5 does**: read the request, research the codebase, ask the user questions, write the plan, split the work, and review the result. It also does architecture, refactor plans, and audits.
 - **Sonnet 5.5 does**: code edits that need judgement. Start each one with the `Agent` tool and `model: "sonnet"`.
 - **Haiku 5.5 does**: code edits that the brief fully defines. Start each one with the `Agent` tool and `model: "haiku"`.
-- **Opus 5.5 edits directly only**: documentation (`CLAUDE.md`, `.claude/` files, memory) and a fix of a few lines after review.
+- **Agent mode is the default.** Every code edit goes to a Sonnet 5.5 or Haiku 5.5 agent. This includes a one-line fix and a fix after review.
+- **Opus 5.5 edits directly only**: documentation (`CLAUDE.md`, `.claude/` files, memory). Opus 5.5 never edits a `.swift` file or `project.pbxproj`.
 
 | Task | Implementor |
 |---|---|
@@ -369,11 +445,12 @@ Opus 5.5 (`claude-opus-5-5`) is the orchestrator. Sonnet 5.5 (`claude-sonnet-5-5
 
 ## Apple Xcode Skills
 
-These are the Apple skills for Xcode work. They are installed in `.agents/skills/`, and each one has a link in `.claude/skills/`. Git tracks both. To install them again or update them, run this command from the repository root:
+These are the Apple skills for Xcode work. They are installed in `.agents/skills/`, and each one has a link in `.claude/skills/`. Git tracks both.
 
-```bash
-npx skills add superagents-lab/xcode27-skills --skill '*'
-```
+Two sources supply the skills:
+
+- Xcode supplies most skills. To update them after an Xcode update, run `.agents/extract-xcode-skills.sh` from the repository root. The script replaces each skill folder with the version from `/Applications/Xcode.app`. Add a `.claude/skills/` link for each new skill, and remove the folder and the link of a skill that Xcode no longer supplies.
+- `npx skills` supplies `device-interaction` and `test-modernizer`. `skills-lock.json` records only these two. To update them, run `npx skills add superagents-lab/xcode27-skills --skill device-interaction --skill test-modernizer`. Do not run it with `--skill '*'`, because that replaces the Xcode versions.
 
 Each skill folder must hold a `SKILL.md`. A folder with no `SKILL.md` does not load. If a skill does not load when its trigger applies, tell the user.
 
@@ -389,8 +466,12 @@ Each skill folder must hold a `SKILL.md`. A folder with no `SKILL.md` does not l
 |---|---|---|
 | `swiftui-specialist` | You write, edit, or review a SwiftUI view or a ViewModel. Invoke it before the first SwiftUI edit in a session. | Its `@Observable` advice applies directly. Keep `@State private var vm = MyViewModel()`, the 500-line file ceiling, and the rules in "Break up nested view bodies". |
 | `swiftui-whats-new-27` | A SwiftUI build fails after an SDK 27 update (for example, `@State` errors such as "used before being initialized"), or the user asks about new SwiftUI APIs. | Fix SDK errors as the skill says. Do not add an iOS 27 API unless the user asks, and then only behind `if #available(iOS 27, *)`. |
-| `uikit-app-modernization` | Only when the user asks to modernize UIKit code. | The app is SwiftUI, so this skill rarely applies. The surgical-changes rule wins over its "always apply a replacement" rule. |
+| `app-resizability` | Only when the user asks for resizable windows, multiple windows, or iPhone Duo support. | The surgical-changes rule wins over its "always apply a replacement" rule. |
 | `test-modernizer` | Only when the user asks to migrate or modernize existing tests. | New tests use Swift Testing, as `.claude/skills/swift-testing.md` describes. |
 | `device-interaction` | Only when the user asks to verify the app on a device or simulator. | It needs the Xcode MCP device tools. If they are not connected, tell the user. |
 | `audit-xcode-security-settings` | Only when the user asks for a security or warnings audit of the build settings. | Report the proposed setting changes and get approval before you edit `project.pbxproj`. |
-| `c-bounds-safety` | Never automatically. The app has no C code. | Use it only on an explicit request. |
+| `xctrace` | The user asks why the app is slow, uses too much CPU or memory, or hangs, or asks for a profile. | Do not record a trace unless the user asks. A trace needs a build, and the user builds. |
+| `app-intents-specialist` | You write or review App Intents code. | The app has no App Intents code now. |
+| `app-intents-whats-new-27` | The user asks about new App Intents APIs. | Use an iOS 27 API only behind `if #available(iOS 27, *)`. |
+| `building-document-based-swiftui-applications` | Never automatically. The app is not document-based. | Use it only on an explicit request. |
+| `adopt-c-bounds-safety` | Never automatically. The app has no C code. | Use it only on an explicit request. |

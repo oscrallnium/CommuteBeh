@@ -47,7 +47,8 @@ struct RouteChoiceSheet: View {
         .padding(.horizontal, DesignTokens.Space.xl)
         .padding(.top, DesignTokens.Space.s)
         .padding(.bottom, DesignTokens.Space.l)
-        .glassEffect(.regular, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
+        .goraGlass(DesignTokens.Materials.cardGlass, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
+        
         .animation(DesignTokens.Motion.morph, value: isDetailExpanded)
     }
 
@@ -187,7 +188,7 @@ struct RouteChoiceSheet: View {
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .capsule)
+        .goraGlass(.regular.interactive(), in: .capsule)
         .accessibilityLabel(isDetailExpanded ? "Hide route details" : "Show route details")
     }
 
@@ -203,7 +204,7 @@ struct RouteChoiceSheet: View {
                 .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.tint(Color.tangerine).interactive(), in: .capsule)
+        .goraGlass(.regular.interactive(), tint: Color.tangerine, in: .capsule)
     }
 
     private var startHint: some View {

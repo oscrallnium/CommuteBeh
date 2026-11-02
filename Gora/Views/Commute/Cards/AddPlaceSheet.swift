@@ -65,7 +65,7 @@ struct AddPlaceSheet: View {
                         .frame(width: 36, height: 36)
                 }
                 .buttonStyle(.plain)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .goraGlass(.regular.interactive(), in: .circle)
                 .accessibilityLabel("Close")
                 Spacer()
             }

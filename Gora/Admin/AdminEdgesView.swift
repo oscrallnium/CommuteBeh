@@ -33,7 +33,11 @@ final class AdminEdgesViewModel {
     var bulkUpdateError: String?
 
     func load() {
-        switch GraphLoader.load() {
+        Task { await loadGraph() }
+    }
+
+    private func loadGraph() async {
+        switch await GraphStore.shared.graph() {
         case .success(let graph):
             stationIndex = Dictionary(uniqueKeysWithValues: graph.stations.map { ($0.id, $0) })
             var dict: [String: [TransitEdge]] = [:]
@@ -60,7 +64,7 @@ final class AdminEdgesViewModel {
         let updated = try await AdminService.shared.updateEdge(
             id: edge.id, polylineCoordinates: polylineCoordinates, bidirectional: bidirectional
         )
-        apply(updated)
+        await apply(updated)
     }
 
     /// Sets one-wayness across a whole line in one action.
@@ -82,7 +86,7 @@ final class AdminEdgesViewModel {
                 let updated = try await AdminService.shared.updateEdge(
                     id: edge.id, bidirectional: value
                 )
-                apply(updated)
+                await apply(updated)
             } catch {
                 failed.append(edge.id)
             }
@@ -95,11 +99,11 @@ final class AdminEdgesViewModel {
         isBulkUpdating = false
     }
 
-    private func apply(_ updated: TransitEdge) {
+    private func apply(_ updated: TransitEdge) async {
         for i in lineGroups.indices {
             guard let j = lineGroups[i].edges.firstIndex(where: { $0.id == updated.id }) else { continue }
             lineGroups[i].edges[j] = updated
-            persistToLocalGraph(updated)
+            await persistToLocalGraph(updated)
             break
         }
     }
@@ -108,10 +112,9 @@ final class AdminEdgesViewModel {
     // cached one — the server recomputes distance_km and (as of this fix) sets
     // is_road_snapped: true for a hand-edited polyline; reusing stale `old` values
     // for those would silently undo half the point of trusting this edit.
-    private func persistToLocalGraph(_ updatedEdge: TransitEdge) {
-        guard case .success(let graph) = GraphLoader.load(),
-              let idx = graph.edges.firstIndex(where: { $0.id == updatedEdge.id }),
-              let url = GraphLoader.documentsURL() else { return }
+    private func persistToLocalGraph(_ updatedEdge: TransitEdge) async {
+        guard case .success(let graph) = await GraphStore.shared.graph(),
+              let idx = graph.edges.firstIndex(where: { $0.id == updatedEdge.id }) else { return }
 
         var edges = graph.edges
         edges[idx] = updatedEdge
@@ -121,8 +124,7 @@ final class AdminEdgesViewModel {
             transportModes: graph.transportModes, paymentMethods: graph.paymentMethods,
             lines: graph.lines, enforceOperatingHours: graph.enforceOperatingHours
         )
-        guard let data = try? JSONEncoder().encode(newGraph) else { return }
-        try? data.write(to: url)
+        try? await GraphStore.shared.replace(newGraph)
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
     }
 }

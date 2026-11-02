@@ -23,21 +23,23 @@
 import CoreLocation
 import Foundation
 import SwiftUI
+import os
 
 // MARK: - Domain Types
 
 typealias StationID = String
 
-enum TransportMode: String, Codable, CaseIterable, Hashable {
+nonisolated enum TransportMode: String, Codable, CaseIterable, Hashable {
     case train
     case bus
     case jeepney
+    case uvExpress = "uv_express"
     case tricycle
     case walk        // interchange transfers; always allowed
 }
 
 /// Maps to the accepted payment strings in the JSON data.
-enum PaymentMethod: String, Codable, CaseIterable, Hashable {
+nonisolated enum PaymentMethod: String, Codable, CaseIterable, Hashable {
     case cash       = "cash"
     case gcash      = "gcash"
     case maya       = "maya"
@@ -64,7 +66,7 @@ nonisolated struct Coordinates: Codable, Hashable, Sendable {
 
 /// Decoded from `transportModes` in the JSON.
 /// Single source of truth for display name, map colour, icon, and routing hints.
-struct TransportModeConfig: Codable {
+nonisolated struct TransportModeConfig: Codable {
     let id: String
     let displayName: String
     let pluralName: String
@@ -81,7 +83,7 @@ struct TransportModeConfig: Codable {
 }
 
 /// Decoded from `paymentMethods` in the JSON.
-struct PaymentMethodConfig: Codable {
+nonisolated struct PaymentMethodConfig: Codable {
     let id: String
     let displayName: String
     let sfSymbol: String
@@ -94,7 +96,7 @@ struct PaymentMethodConfig: Codable {
 /// Decoded from `lines` in the JSON — the human-readable name for a line key like
 /// "UPLB_KANAN" or "EDSA_BUS". Train lines (MRT-3, LRT-1, LRT-2) read fine as their raw
 /// key and are included here too, so callers never need a mode-specific exception.
-struct LineConfig: Codable {
+nonisolated struct LineConfig: Codable {
     let id: String
     let displayName: String
     /// Present on every line seeded server-side; optional only so a hand-written test
@@ -109,12 +111,12 @@ struct LineConfig: Codable {
 
 /// A stop, or one of the two synthetic nodes the engine injects for a pinned coordinate
 /// (see `isPinnedLocation`).
-struct Station: Codable, Identifiable, Hashable {
+nonisolated struct Station: Codable, Identifiable, Hashable {
     let id: StationID
     let name: String
     let shortName: String
     let line: String
-    let type: String            // "train" | "bus" | "jeepney" | "tricycle"
+    let type: String            // "train" | "bus" | "jeepney" | "uv_express" | "tricycle"
     let coordinates: Coordinates
     let isTerminal: Bool
     let isInterchange: Bool
@@ -138,7 +140,7 @@ struct Station: Codable, Identifiable, Hashable {
     let boarding: Boarding?
 
     /// Decoded leniently: an unrecognised value becomes `.both`.
-    enum Boarding: String, Codable, Hashable {
+    nonisolated enum Boarding: String, Codable, Hashable {
         case both
         case alightOnly = "alight_only"
 
@@ -151,7 +153,7 @@ struct Station: Codable, Identifiable, Hashable {
     /// True when a vehicle stops here only to let passengers off.
     var isAlightOnly: Bool { boarding == .alightOnly }
 
-    struct OperatingHours: Codable, Hashable {
+    nonisolated struct OperatingHours: Codable, Hashable {
         let open: String
         let close: String
     }
@@ -211,7 +213,7 @@ struct Station: Codable, Identifiable, Hashable {
 /// measured from it get snapped by MKDirections to whatever footpath happens to be
 /// nearest, which is why the MRT-3 Taft ⇄ LRT-1 EDSA transfer is routed between two
 /// arbitrary points rather than between the doors the footbridge actually joins.
-struct StationAccessPoint: Codable, Identifiable, Hashable {
+nonisolated struct StationAccessPoint: Codable, Identifiable, Hashable {
     let id: String
     let name: String
     let kind: Kind
@@ -222,7 +224,7 @@ struct StationAccessPoint: Codable, Identifiable, Hashable {
 
     /// Decoded leniently: an unrecognised value from a newer server becomes `.both`
     /// rather than failing the whole graph decode over one station's door.
-    enum Kind: String, Codable, Hashable {
+    nonisolated enum Kind: String, Codable, Hashable {
         case entrance, exit, both
 
         init(from decoder: Decoder) throws {
@@ -255,11 +257,11 @@ struct StationAccessPoint: Codable, Identifiable, Hashable {
     }
 }
 
-struct TransitEdge: Codable, Identifiable {
+nonisolated struct TransitEdge: Codable, Identifiable {
     let id: String
     let from: StationID
     let to: StationID
-    let mode: String            // raw string from JSON ("train" | "bus" | "jeepney" | "tricycle" | "walk")
+    let mode: String            // raw string from JSON ("train" | "bus" | "jeepney" | "uv_express" | "tricycle" | "walk")
     let line: String
     let travelTimeMinutes: Double
     let distanceKm: Double
@@ -294,14 +296,10 @@ struct TransitEdge: Codable, Identifiable {
     var transportMode: TransportMode {
         TransportMode(rawValue: mode) ?? .walk
     }
-
-    var acceptedPaymentSet: Set<String> {
-        Set(acceptedPayments)
-    }
 }
 
-struct PeakHourMultiplier: Codable {
-    struct TimeRange: Codable {
+nonisolated struct PeakHourMultiplier: Codable {
+    nonisolated struct TimeRange: Codable {
         let start: String
         let close: String
 
@@ -315,8 +313,8 @@ struct PeakHourMultiplier: Codable {
     let modes: [String]
 }
 
-struct TransitGraph: Codable {
-    struct PeakHours: Codable {
+nonisolated struct TransitGraph: Codable, Sendable {
+    nonisolated struct PeakHours: Codable {
         let morningPeak: PeakHourMultiplier
         let eveningPeak: PeakHourMultiplier
         let trainPeak: PeakHourMultiplier
@@ -381,8 +379,8 @@ struct RouteRequest {
     enum CostStrategy { case balanced, fastest, cheapest }
 
     /// Virtual station IDs injected when routing from/to a raw coordinate.
-    static let virtualOriginID: StationID = "__ORIGIN__"
-    static let virtualDestID: StationID   = "__DEST__"
+    nonisolated static let virtualOriginID: StationID = "__ORIGIN__"
+    nonisolated static let virtualDestID: StationID   = "__DEST__"
 
     let originID: StationID
     let destinationID: StationID
@@ -702,9 +700,18 @@ actor TransitGraphEngine {
 
     // Adjacency list: stationID → outgoing edges
     // Built once; reused across all route calculations.
-    private let adjacency: [StationID: [TransitEdge]]
+    private let adjacency: [StationID: [EngineEdge]]
     private let stationMap: [StationID: Station]
-    private let peakHours: TransitGraph.PeakHours
+    private let peakTable: PeakHourTable
+    /// Distinct edge mode ids; an `EngineEdge.modeSlot` indexes this list.
+    private let modeNames: [String]
+    private let walkSlot: Int
+    private let openWindows: [StationID: OpenWindow]
+    /// One entry per station id, in graph order; `stationGrid` indexes this list.
+    private let stationList: [Station]
+    private let stationGrid: StationGrid
+    private let sortedStations: [Station]
+    private let searchIndex: [(station: Station, name: String, shortName: String)]
 
     /// Decoded from JSON — single source of truth for mode display & routing properties.
     let transportModes: [String: TransportModeConfig]
@@ -727,6 +734,9 @@ actor TransitGraphEngine {
     /// Loads the bundled JSON graph and builds O(1) adjacency structures.
     /// Time: O(E) to build adjacency. Space: O(V + E).
     init(graph: TransitGraph) {
+        let signpost = EngineSignpost.signposter.beginInterval("EngineInit")
+        defer { EngineSignpost.signposter.endInterval("EngineInit", signpost) }
+
         var adj: [StationID: [TransitEdge]] = [:]
         var stMap: [StationID: Station] = [:]
 
@@ -775,19 +785,47 @@ actor TransitGraphEngine {
             adj[transfer.from, default: []].append(transfer)
         }
 
-        adjacency = adj
+        let alwaysAllowed = Set(
+            graph.transportModes.values
+                .filter(\.isAlwaysAllowed)
+                .map(\.id)
+        )
+        var slots: [String: Int] = [:]
+        var names: [String] = []
+        func slot(of mode: String) -> Int {
+            if let known = slots[mode] { return known }
+            slots[mode] = names.count
+            names.append(mode)
+            return names.count - 1
+        }
+        let walkModeSlot = slot(of: walkMode)
+        adjacency = adj.mapValues { edges in
+            edges.map { EngineEdge($0, modeSlot: slot(of: $0.mode), alwaysAllowedModes: alwaysAllowed) }
+        }
+        modeNames = names
+        walkSlot = walkModeSlot
         stationMap = stMap
-        peakHours = graph.peakHourMultipliers
+        peakTable = PeakHourTable(graph.peakHourMultipliers)
+        openWindows = stMap.mapValues { OpenWindow($0.operatingHours) }
+
+        var lastIndex: [StationID: Int] = [:]
+        for (index, station) in graph.stations.enumerated() { lastIndex[station.id] = index }
+        let uniqueStations = graph.stations.enumerated()
+            .filter { lastIndex[$0.element.id] == $0.offset }
+            .map(\.element)
+        stationList = uniqueStations
+        stationGrid = StationGrid(coordinates: uniqueStations.map(\.coordinates),
+                                  cellKm: AccessPolicy.hardCeilingKm)
+
+        let byName = Array(stMap.values).sorted { $0.name < $1.name }
+        sortedStations = byName
+        searchIndex = byName.map { ($0, $0.name.lowercased(), $0.shortName.lowercased()) }
         transportModes = graph.transportModes
         paymentMethods = graph.paymentMethods
         lines = graph.lines
 
         // Derive the always-allowed set from JSON data — no hardcoded mode strings.
-        alwaysAllowedModes = Set(
-            graph.transportModes.values
-                .filter(\.isAlwaysAllowed)
-                .map(\.id)
-        )
+        alwaysAllowedModes = alwaysAllowed
         walkModeID = walkMode
         enforceOperatingHours = graph.enforceOperatingHours
     }
@@ -805,6 +843,9 @@ actor TransitGraphEngine {
     }
 
     func findRoute(_ request: RouteRequest) -> Result<RouteResult, RouteError> {
+        let signpost = EngineSignpost.signposter.beginInterval("FindRoute")
+        defer { EngineSignpost.signposter.endInterval("FindRoute", signpost) }
+
         // Station existence check — skip virtual IDs (they won't be in stationMap).
         for stationID in [request.originID, request.destinationID] {
             guard stationID.hasPrefix("__") || stationMap[stationID] != nil else {
@@ -872,6 +913,12 @@ actor TransitGraphEngine {
     /// `nil` when the point is served. Returns `nil` for an empty graph too — an unloaded
     /// graph is not a "too far" condition.
     private func unreachable(_ coord: Coordinates) -> (name: String, km: Double)? {
+        let ceiling = AccessPolicy.hardCeilingKm
+        let hasStopInRange = stationGrid.indices(near: coord, radiusKm: ceiling).contains {
+            haversine(from: coord, to: stationList[$0].coordinates) <= ceiling
+        }
+        if hasStopInRange { return nil }
+
         guard let nearest = stationMap.values
             .map({ (station: $0, dist: haversine(from: coord, to: $0.coordinates)) })
             .min(by: { $0.dist < $1.dist }) else { return nil }
@@ -883,8 +930,8 @@ actor TransitGraphEngine {
     private func buildVirtualNodes(
         for request: RouteRequest,
         widened: Bool
-    ) -> (adjacency: [StationID: [TransitEdge]], stations: [StationID: Station]) {
-        var extraAdj: [StationID: [TransitEdge]] = [:]
+    ) -> (adjacency: [StationID: [EngineEdge]], stations: [StationID: Station]) {
+        var extraAdj: [StationID: [EngineEdge]] = [:]
         var extraStations: [StationID: Station] = [:]
 
         if let coord = request.originCoordinate {
@@ -937,9 +984,9 @@ actor TransitGraphEngine {
         virtualID: StationID,
         outgoing: Bool,
         widened: Bool
-    ) -> [StationID: [TransitEdge]] {
-        let candidates = stationMap.values
-            .map { (station: $0, dist: haversine(from: coord, to: $0.coordinates)) }
+    ) -> [StationID: [EngineEdge]] {
+        let candidates = stationGrid.indices(near: coord, radiusKm: AccessPolicy.hardCeilingKm)
+            .map { (station: stationList[$0], dist: haversine(from: coord, to: stationList[$0].coordinates)) }
             .filter { item in
                 let limit = widened
                     ? AccessPolicy.hardCeilingKm
@@ -953,7 +1000,7 @@ actor TransitGraphEngine {
             .prefix(AccessPolicy.maxLines)
             .flatMap(\.stops)
 
-        var extraAdj: [StationID: [TransitEdge]] = [:]
+        var extraAdj: [StationID: [EngineEdge]] = [:]
         for item in nearby {
             let travelMin = AccessPolicy.walkMinutes(forKm: item.dist)
             let fromID    = outgoing ? virtualID : item.station.id
@@ -979,7 +1026,8 @@ actor TransitGraphEngine {
                 mkDirectionsTransportType: "walking",
                 isRoadSnapped: false
             )
-            extraAdj[fromID, default: []].append(edge)
+            extraAdj[fromID, default: []].append(
+                EngineEdge(edge, modeSlot: walkSlot, alwaysAllowedModes: alwaysAllowedModes))
         }
         return extraAdj
     }
@@ -991,14 +1039,14 @@ actor TransitGraphEngine {
     }
 
     func allStations() -> [Station] {
-        Array(stationMap.values).sorted { $0.name < $1.name }
+        sortedStations
     }
 
     func stations(matching query: String) -> [Station] {
         let q = query.lowercased()
-        return allStations().filter {
-            $0.name.lowercased().contains(q) || $0.shortName.lowercased().contains(q)
-        }
+        return searchIndex
+            .filter { $0.name.contains(q) || $0.shortName.contains(q) }
+            .map(\.station)
     }
 
     // MARK: Mode & payment config helpers (used by ViewModel / UI)
@@ -1041,29 +1089,19 @@ actor TransitGraphEngine {
     // Walk/interchange edges bypass this check entirely — the concourse is always
     // passable even if the paid platform has closed.
 
-    private func minutesSinceMidnight(_ hhmm: String) -> Int {
-        let parts = hhmm.split(separator: ":").compactMap { Int($0) }
-        guard parts.count == 2 else { return 0 }
-        return parts[0] * 60 + parts[1]
-    }
-
     /// Returns true if a traveller arriving `arrivalMinutes` minutes after midnight
     /// can still use `station` (i.e. the station is within its operating window).
     /// Walk/interchange edges bypass this — returns true unconditionally for them.
     private func stationOpen(_ station: Station, arrivalMinutes: Int, isAlwaysAllowed: Bool) -> Bool {
         guard !isAlwaysAllowed else { return true }
-        let open  = minutesSinceMidnight(station.operatingHours.open)
-        let close = minutesSinceMidnight(station.operatingHours.close)
-        // Overnight service (e.g. close=00:00 < open=05:00): always passable.
-        if close <= open { return true }
-        return arrivalMinutes >= open && arrivalMinutes < close
+        return OpenWindow(station.operatingHours).contains(arrivalMinutes: arrivalMinutes)
     }
 
     private func astar(
         request: RouteRequest,
         originID: StationID,
         destID: StationID,
-        extraAdj: [StationID: [TransitEdge]],
+        extraAdj: [StationID: [EngineEdge]],
         extraStations: [StationID: Station]
     ) -> RouteResult? {
         func effectiveStation(_ id: StationID) -> Station? {
@@ -1078,6 +1116,14 @@ actor TransitGraphEngine {
         let depHour   = calendar.component(.hour,   from: request.departureTime)
         let depMinute = calendar.component(.minute, from: request.departureTime)
         let departureMinutes = depHour * 60 + depMinute
+
+        // Values that depend on the request only, computed once per search.
+        let peakBySlot = modeNames.map {
+            peakTable.multiplier(forMode: $0, atMinutes: departureMinutes)
+        }
+        let userPayments = Set(request.preferredPayments.map { $0.rawValue })
+        let allowedModes = request.allowedModes
+        let costStrategy = request.costStrategy
 
         // gScore is the *search* cost (includes the access-walk discomfort weight);
         // timeScore is the cost the user is shown. They diverge only on access walks —
@@ -1109,93 +1155,97 @@ actor TransitGraphEngine {
                 )
             }
 
-            // Combine real adjacency with virtual-node edges.
-            let neighbors = (adjacency[currentID] ?? []) + (extraAdj[currentID] ?? [])
+            // Every edge in both lists starts at `currentID`.
+            let currentStation = effectiveStation(currentID)
+            let incoming = cameFrom[currentID]?.edge
+            let currentG = gScore[currentID] ?? .infinity
+            let currentTime = timeScore[currentID] ?? .infinity
+            let realEdges = adjacency[currentID] ?? []
+            let virtualEdges = extraAdj[currentID] ?? []
 
-            for edge in neighbors {
-                let neighbor = edge.to
-                guard !closed.contains(neighbor) else { continue }
-                guard canTraverse(edge, from: effectiveStation(edge.from), to: effectiveStation(edge.to),
-                                  arrivedVia: cameFrom[currentID]?.edge) else { continue }
+            for pass in 0..<2 {
+                for item in (pass == 0 ? realEdges : virtualEdges) {
+                    let edge = item.edge
+                    let neighbor = edge.to
+                    guard !closed.contains(neighbor) else { continue }
+                    let neighborStation = effectiveStation(neighbor)
+                    guard canTraverse(item, from: currentStation, to: neighborStation,
+                                      arrivedVia: incoming) else { continue }
 
-                // ── Payment filter ──────────────────────────────────────────
-                // Modes marked isAlwaysAllowed (e.g. walk) bypass both filters.
-                let isAlwaysAllowed = alwaysAllowedModes.contains(edge.mode)
-                if !isAlwaysAllowed {
-                    if !request.preferredPayments.isEmpty {
-                        let edgePayments = edge.acceptedPaymentSet
-                        let userPayments = Set(request.preferredPayments.map { $0.rawValue })
-                        guard !edgePayments.isDisjoint(with: userPayments) else { continue }
+                    // ── Payment filter ──────────────────────────────────────
+                    // Modes marked isAlwaysAllowed (e.g. walk) bypass both filters.
+                    if !item.isAlwaysAllowed {
+                        if !userPayments.isEmpty {
+                            guard !item.payments.isDisjoint(with: userPayments) else { continue }
+                        }
+
+                        // ── Mode filter ─────────────────────────────────────
+                        if !allowedModes.isEmpty {
+                            guard let mode = item.mode, allowedModes.contains(mode) else { continue }
+                        }
                     }
 
-                    // ── Mode filter ─────────────────────────────────────────
-                    if !request.allowedModes.isEmpty {
-                        guard let mode = TransportMode(rawValue: edge.mode),
-                              request.allowedModes.contains(mode) else { continue }
+                    // ── Effective cost calculation ──────────────────────────
+                    let rawMinutes = edge.travelTimeMinutes
+                    let peakMultiplier = peakBySlot[item.modeSlot]
+
+                    let effectiveMinutes: Double
+                    switch costStrategy {
+                    case .balanced:
+                        let reliabilityPenalty = rawMinutes * (1.0 - edge.reliability) * 0.2
+                        let crowdPenalty       = rawMinutes * edge.crowdFactor * 0.1
+                        effectiveMinutes = (rawMinutes * peakMultiplier) + reliabilityPenalty + crowdPenalty
+                    case .fastest:
+                        effectiveMinutes = rawMinutes * peakMultiplier
+                    case .cheapest:
+                        effectiveMinutes = rawMinutes * peakMultiplier
                     }
-                }
 
-                // ── Effective cost calculation ──────────────────────────────
-                let rawMinutes = edge.travelTimeMinutes
-                let peakMultiplier = peakMultiplier(for: edge, at: request.departureTime)
+                    // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
+                    // cost only, so the shown travel time stays real minutes.
+                    let fareSearchMinutes = costStrategy == .cheapest && !item.isFareFree
+                        ? (edge.baseFare + edge.farePerKm * edge.distanceKm) * 1.5
+                        : 0.0
 
-                let effectiveMinutes: Double
-                switch request.costStrategy {
-                case .balanced:
-                    let reliabilityPenalty = rawMinutes * (1.0 - edge.reliability) * 0.2
-                    let crowdPenalty       = rawMinutes * edge.crowdFactor * 0.1
-                    effectiveMinutes = (rawMinutes * peakMultiplier) + reliabilityPenalty + crowdPenalty
-                case .fastest:
-                    effectiveMinutes = rawMinutes * peakMultiplier
-                case .cheapest:
-                    effectiveMinutes = rawMinutes * peakMultiplier
-                }
+                    // Access walking costs more than it takes: without this weight A* will walk
+                    // 1.2 km to a stop to shave two riding minutes off, which no passenger does.
+                    let accessWeighted = item.isAccessWalk
+                        ? effectiveMinutes * AccessPolicy.discomfortFactor
+                        : effectiveMinutes
 
-                // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
-                // cost only, so the shown travel time stays real minutes.
-                let isFareFree = edge.line == "INTERCHANGE" || edge.line == "ACCESS_WALK"
-                let fareSearchMinutes = request.costStrategy == .cheapest && !isFareFree
-                    ? (edge.baseFare + edge.farePerKm * edge.distanceKm) * 1.5
-                    : 0.0
+                    // A train ride gets a matching search-only discount, so A* settles on rail
+                    // over a bus, jeepney, or walk alternative of similar real duration.
+                    let weightedMinutes = accessWeighted + fareSearchMinutes
+                    let searchMinutes = item.isTrain
+                        ? weightedMinutes * RoutePreference.trainDiscountFactor
+                        : weightedMinutes
 
-                // Access walking costs more than it takes: without this weight A* will walk
-                // 1.2 km to a stop to shave two riding minutes off, which no passenger does.
-                let accessWeighted = edge.line == "ACCESS_WALK"
-                    ? effectiveMinutes * AccessPolicy.discomfortFactor
-                    : effectiveMinutes
+                    let tentativeG = currentG + searchMinutes
+                    let tentativeTime = currentTime + effectiveMinutes
 
-                // A train ride gets a matching search-only discount, so A* settles on rail
-                // over a bus, jeepney, or walk alternative of similar real duration.
-                let weightedMinutes = accessWeighted + fareSearchMinutes
-                let searchMinutes = TransportMode(rawValue: edge.mode) == .train
-                    ? weightedMinutes * RoutePreference.trainDiscountFactor
-                    : weightedMinutes
+                    // ── Operating-hours filter ──────────────────────────────
+                    // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
+                    if enforceOperatingHours, !neighbor.hasPrefix("__"),
+                       neighborStation != nil, let window = openWindows[neighbor] {
+                        let arrivalMinutes = departureMinutes + Int(tentativeTime)
+                        guard item.isAlwaysAllowed
+                                || window.contains(arrivalMinutes: arrivalMinutes) else { continue }
+                    }
 
-                let tentativeG = (gScore[currentID] ?? .infinity) + searchMinutes
-                let tentativeTime = (timeScore[currentID] ?? .infinity) + effectiveMinutes
-
-                // ── Operating-hours filter ──────────────────────────────────
-                // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
-                if enforceOperatingHours, !neighbor.hasPrefix("__"),
-                   let neighborStation = effectiveStation(neighbor) {
-                    let arrivalMinutes = departureMinutes + Int(tentativeTime)
-                    guard stationOpen(neighborStation, arrivalMinutes: arrivalMinutes,
-                                      isAlwaysAllowed: isAlwaysAllowed) else { continue }
-                }
-
-                if tentativeG < (gScore[neighbor] ?? .infinity),
-                   let neighborCoords = effectiveStation(neighbor)?.coordinates {
-                    gScore[neighbor] = tentativeG
-                    timeScore[neighbor] = tentativeTime
-                    cameFrom[neighbor] = (parent: currentID, edge: edge)
-                    let h = heuristic(from: neighborCoords, to: destCoords)
-                    openHeap.push(AStarNode(
-                        stationID: neighbor,
-                        gCost: tentativeG,
-                        hCost: h,
-                        parent: currentID,
-                        edgeFromParent: edge
-                    ))
+                    if tentativeG < (gScore[neighbor] ?? .infinity),
+                       let neighborCoords = neighborStation?.coordinates {
+                        gScore[neighbor] = tentativeG
+                        timeScore[neighbor] = tentativeTime
+                        cameFrom[neighbor] = (parent: currentID, edge: edge)
+                        let h = heuristic(from: neighborCoords, to: destCoords)
+                        openHeap.push(AStarNode(
+                            stationID: neighbor,
+                            gCost: tentativeG,
+                            hCost: h,
+                            parent: currentID,
+                            edgeFromParent: edge
+                        ))
+                    }
                 }
             }
         }
@@ -1205,16 +1255,14 @@ actor TransitGraphEngine {
 
     /// An alight-only station accepts a ride in and releases a walk out. A ride out needs a
     /// ride on the same line in, because boarding there is forbidden.
-    private func canTraverse(_ edge: TransitEdge, from: Station?, to: Station?,
+    private func canTraverse(_ item: EngineEdge, from: Station?, to: Station?,
                              arrivedVia incoming: TransitEdge?) -> Bool {
-        let isWalkLike = alwaysAllowedModes.contains(edge.mode)
-            || edge.line == "ACCESS_WALK" || edge.line == "INTERCHANGE"
-        if isWalkLike {
+        if item.isWalkLike {
             return !(to?.isAlightOnly ?? false)
         }
         guard from?.isAlightOnly ?? false else { return true }
         guard let incoming else { return false }
-        return incoming.line == edge.line
+        return incoming.line == item.edge.line
             && !alwaysAllowedModes.contains(incoming.mode)
             && incoming.line != "ACCESS_WALK" && incoming.line != "INTERCHANGE"
     }
@@ -1237,40 +1285,6 @@ actor TransitGraphEngine {
             + cos(from.lat.toRadians) * cos(to.lat.toRadians)
             * sin(dLng / 2) * sin(dLng / 2)
         return R * 2 * atan2(sqrt(a), sqrt(1 - a))
-    }
-
-    // MARK: - Peak Hour Multiplier
-
-    private func peakMultiplier(for edge: TransitEdge, at date: Date) -> Double {
-        let calendar = Calendar.current
-        let hour = calendar.component(.hour, from: date)
-        let minute = calendar.component(.minute, from: date)
-        let totalMinutes = hour * 60 + minute
-
-        func inRange(_ peak: PeakHourMultiplier) -> Bool {
-            let parts = { (s: String) -> Int in
-                let p = s.split(separator: ":").compactMap { Int($0) }
-                return (p.first ?? 0) * 60 + (p.last ?? 0)
-            }
-            let start = parts(peak.timeRange.start)
-            let end   = parts(peak.timeRange.close)
-            return totalMinutes >= start && totalMinutes <= end
-        }
-
-        var multiplier = 1.0
-
-        if peak(peakHours.morningPeak, applies: edge.mode, in: &multiplier, when: inRange(peakHours.morningPeak)) {}
-        if peak(peakHours.eveningPeak, applies: edge.mode, in: &multiplier, when: inRange(peakHours.eveningPeak)) {}
-        if peak(peakHours.trainPeak,   applies: edge.mode, in: &multiplier, when: inRange(peakHours.trainPeak))   {}
-
-        return multiplier
-    }
-
-    @discardableResult
-    private func peak(_ p: PeakHourMultiplier, applies mode: String, in multiplier: inout Double, when condition: Bool) -> Bool {
-        guard condition && p.modes.contains(mode) else { return false }
-        multiplier = max(multiplier, p.travelTimeMultiplier)
-        return true
     }
 
     // MARK: - Path Reconstruction
@@ -1502,6 +1516,9 @@ actor TransitGraphEngine {
         case .jeepney:
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
             return "Ride jeepney (\(lineName))\(dirLabel) from \(from.shortName) to \(to.shortName)"
+        case .uvExpress:
+            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
+            return "Ride UV Express (\(lineName))\(dirLabel) from \(from.shortName) to \(to.shortName)"
         case .tricycle:
             let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
             return "Take tricycle\(dirLabel) from \(from.shortName) to \(to.shortName)"
@@ -1539,15 +1556,14 @@ actor TransitGraphEngine {
 
 // MARK: - Graph Loader
 
-enum GraphLoadError: Error {
+nonisolated enum GraphLoadError: Error {
     case fileNotFound
     case decodingFailed(Error)
 }
 
-struct GraphLoader {
-    /// Loads the graph from the Documents cache only. Returns `.failure(.fileNotFound)`
-    /// if no cached file exists — callers should call `ensureLoaded()` instead when
-    /// they want an automatic network fetch on first launch.
+nonisolated struct GraphLoader {
+    /// Reads and decodes the Documents file synchronously. Returns `.failure(.fileNotFound)`
+    /// if no file exists. Call it only off the main actor; `GraphStore.graph()` is the entry point.
     static func load(from fileName: String = "transit_graph_v3") -> Result<TransitGraph, GraphLoadError> {
         guard let url = documentsURL(for: fileName),
               FileManager.default.fileExists(atPath: url.path) else {
@@ -1562,23 +1578,6 @@ struct GraphLoader {
         }
     }
 
-    /// Like `load()` but fetches the graph from the backend when no valid local copy
-    /// exists. Handles both missing files and stale/corrupt caches by re-downloading.
-    static func ensureLoaded(from fileName: String = "transit_graph_v3") async -> Result<TransitGraph, GraphLoadError> {
-        switch load(from: fileName) {
-        case .success(let g): return .success(g)
-        case .failure:
-            // fileNotFound: first launch. decodingFailed: corrupt or pre-fix cache.
-            // Either way, fetch a fresh copy from the backend.
-            guard let data = try? await GraphService.shared.fetchGraph(),
-                  let url = documentsURL(for: fileName) else {
-                return .failure(.fileNotFound)
-            }
-            try? data.write(to: url)
-            return load(from: fileName)
-        }
-    }
-
     static func documentsURL(for fileName: String = "transit_graph_v3") -> URL? {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)
@@ -1589,19 +1588,19 @@ struct GraphLoader {
 
 // MARK: - Station Cache
 // Lightweight [Station] cache persisted to Documents.
-// Loaded synchronously on ViewModel init so search works before the full
+// Loaded off the main actor on ViewModel init so search works before the full
 // routing engine finishes its async setup.
 
-struct StationCache {
+nonisolated struct StationCache {
     private static let fileName = "stations_cache"
 
-    static func save(_ stations: [Station]) {
+    @concurrent static func save(_ stations: [Station]) async {
         guard let url = GraphLoader.documentsURL(for: fileName),
               let data = try? JSONEncoder().encode(stations) else { return }
         try? data.write(to: url, options: .atomic)
     }
 
-    static func load() -> [Station] {
+    @concurrent static func load() async -> [Station] {
         guard let url = GraphLoader.documentsURL(for: fileName),
               FileManager.default.fileExists(atPath: url.path),
               let data = try? Data(contentsOf: url),
@@ -1884,11 +1883,17 @@ final class RouteStore {
     var lastDestQuery: String = ""
     let addressSearchOrigin = AddressSearchService()
     let addressSearchDest = AddressSearchService()
+    let networkStatus = NetworkStatus()
     var originDebounce: Task<Void, Never>?
     var destDebounce: Task<Void, Never>?
     /// In-flight MKDirections re-measurement of the current results' walk legs.
     /// Cancelled on every new search so a stale refinement can't overwrite fresh results.
     var walkRefineTask: Task<Void, Never>?
+    /// Counts searches; a search that sees a newer count stops before it writes results.
+    private var searchGeneration = 0
+    /// Largest distance gap, in km, between the fastest and cheapest routes
+    /// at which the cheapest route is hidden.
+    private static let cheapestHiddenDistanceGapKm: Double = 0.5
 
     /// Populated from JSON — drives the mode filter picker UI.
     var availableModes: [TransportModeConfig] = []
@@ -1956,11 +1961,18 @@ final class RouteStore {
     // MARK: Init
 
     init() {
-        // Populate stations immediately from disk cache so search works before
-        // the async engine finishes loading (or on subsequent launches).
-        self.allStations = StationCache.load()
+        // The cache fills `allStations` only while the engine has not set it.
+        Task {
+            let cached = await StationCache.load()
+            if engine == nil, allStations.isEmpty { allStations = cached }
+        }
         addressSearchOrigin.onUpdate = { [weak self] in self?.remergeOriginSuggestions() }
         addressSearchDest.onUpdate = { [weak self] in self?.remergeDestSuggestions() }
+        networkStatus.onChange = { [weak self] in
+            self?.remergeOriginSuggestions()
+            self?.remergeDestSuggestions()
+        }
+        networkStatus.start()
         Task { await setupEngine() }
         NotificationCenter.default.addObserver(
             forName: Notification.Name("TransitDataDidUpdate"),
@@ -1973,15 +1985,15 @@ final class RouteStore {
 
     @MainActor
     private func setupEngine() async {
-        switch await GraphLoader.ensureLoaded() {
+        switch await GraphStore.shared.graph() {
         case .success(let graph):
-            let eng = TransitGraphEngine(graph: graph)
+            let eng = await GraphStore.makeEngine(for: graph)
             self.engine = eng
             let stations = await eng.allStations()
             self.allStations = stations
             self.availableModes = await eng.selectableModes()
             self.availablePayments = await eng.selectablePayments()
-            StationCache.save(stations)
+            Task { await StationCache.save(stations) }
             let loadedVersion = graph.version
             Task.detached(priority: .background) {
                 await GraphService.shared.syncIfNeeded(loadedVersion: loadedVersion)
@@ -2008,6 +2020,9 @@ final class RouteStore {
             return
         }
 
+        walkRefineTask?.cancel()
+        searchGeneration += 1
+        let generation = searchGeneration
         isLoading = true
         errorMessage = nil
         routeResult = nil
@@ -2037,6 +2052,7 @@ final class RouteStore {
         async let r2 = engine.findRoute(req2)
         async let r3 = engine.findRoute(req3)
         let (fr, cr, br) = await (r1, r2, r3)
+        guard generation == searchGeneration else { return }
 
         isLoading = false
 
@@ -2082,18 +2098,21 @@ final class RouteStore {
             options.append(RouteOption(result: r, label: label))
         }
 
+        let hidesCheapest = if let fastest, let cheapest {
+            abs(cheapest.totalDistanceKm - fastest.totalDistanceKm) <= Self.cheapestHiddenDistanceGapKm
+        } else {
+            false
+        }
+
         addIfNew(fastest,  label: .fastest)
-        addIfNew(cheapest, label: .cheapest)
+        if !hidesCheapest {
+            addIfNew(cheapest, label: .cheapest)
+        }
         addIfNew(balanced, label: .balanced)
 
         // Shortest time first. Fewer transfers break a tie in time, and the index keeps the
         // insertion order after that.
-        options = options.enumerated()
-            .sorted {
-                ($0.element.result.totalTimeMinutes, $0.element.result.transfers, $0.offset)
-                    < ($1.element.result.totalTimeMinutes, $1.element.result.transfers, $1.offset)
-            }
-            .map(\.element)
+        options = options.sortedByDuration()
         routeOptions = Array(options.prefix(3))
         routeResult  = routeOptions.first?.result
 
@@ -2102,8 +2121,14 @@ final class RouteStore {
         // alike. Re-measure the ones that survived against real pedestrian directions, off
         // the critical path, so results appear at engine speed and sharpen a moment later.
         // Implementation: WalkRouteRefiner.swift (keeps MapKit out of the domain layer).
+        // Then road legs take their time from live traffic (RoadTrafficRefiner.swift). Both run
+        // in order in one task, so the two never overwrite each other.
         walkRefineTask?.cancel()
-        walkRefineTask = Task { [weak self] in await self?.refineWalkLegs() }
+        walkRefineTask = Task { [weak self] in
+            await self?.refineWalkLegs()
+            guard !Task.isCancelled else { return }
+            await self?.applyTrafficToRoadLegs()
+        }
     }
 
     /// Confirms a route selection: sets it as the active map route and dismisses the results panel.
@@ -2258,4 +2283,17 @@ final class RouteStore {
 
 private extension Double {
     var toRadians: Double { self * .pi / 180 }
+}
+
+extension Array where Element == RouteOption {
+    /// Shortest time first. Fewer transfers break a tie in time, and the current order
+    /// breaks a tie after that.
+    func sortedByDuration() -> [RouteOption] {
+        enumerated()
+            .sorted {
+                ($0.element.result.totalTimeMinutes, $0.element.result.transfers, $0.offset)
+                    < ($1.element.result.totalTimeMinutes, $1.element.result.transfers, $1.offset)
+            }
+            .map(\.element)
+    }
 }
