@@ -240,7 +240,7 @@ struct SettingsView: View {
     private var aboutSection: some View {
         Section("About") {
             NavigationLink {
-                SettingsDocumentView(document: .privacyPolicy)
+                SettingsWebPageView(title: "Privacy Policy", url: LegalLinks.privacyPolicy)
             } label: {
                 SettingsRowLabel(title: "Privacy Policy", systemImage: "hand.raised")
             }

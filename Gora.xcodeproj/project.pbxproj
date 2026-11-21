@@ -429,9 +429,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Gora uses the camera to show walking directions and the signs you place in AR.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Records your commute path in the background so you can create transit routes.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your lcoation is used to gather location data";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Records your commute path for route creation.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Gora uses your location in the background during an active commute, so stop alerts and Live Activities keep working when your screen is locked.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Gora uses your location in the background during an active commute, so stop alerts and Live Activities keep working when your screen is locked.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Gora uses your location to start routes where you are and to guide you on each step.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -482,9 +482,9 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Gora uses the camera to show walking directions and the signs you place in AR.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Records your commute path in the background so you can create transit routes.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Your lcoation is used to gather location data";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Records your commute path for route creation.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Gora uses your location in the background during an active commute, so stop alerts and Live Activities keep working when your screen is locked.";
+				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Gora uses your location in the background during an active commute, so stop alerts and Live Activities keep working when your screen is locked.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Gora uses your location to start routes where you are and to guide you on each step.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

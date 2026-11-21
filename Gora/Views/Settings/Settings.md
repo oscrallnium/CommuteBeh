@@ -14,7 +14,7 @@ navigation bar, back button, toggles and alerts, so no view in this folder draws
 | `SettingsChoicePage.swift` | `SettingsChoice` protocol, `RoutePriority`, `FareDiscount`, the checkmark list page |
 | `SettingsPaymentsView.swift` | Payment Methods page: one toggle row per payment method of the graph, and its view model |
 | `SettingsSavedPlacesView.swift` | Saved places list with swipe to delete |
-| `SettingsDocument.swift`, `SettingsDocumentView.swift` | Privacy Policy and Terms text, and the page that shows it |
+| `SettingsDocument.swift`, `SettingsDocumentView.swift` | Terms text, and the page that shows it. The Privacy Policy row opens `SettingsWebPageView`, which shows the published web page |
 | `SettingsInfoPages.swift` | Download My Data, Report a Route Problem and Acknowledgements pages |
 | `SettingsPermissions.swift` | Location and notification access as text |
 | `SettingsKey.swift` | Storage keys of the settings |

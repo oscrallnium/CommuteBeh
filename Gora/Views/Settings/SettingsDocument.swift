@@ -22,21 +22,6 @@ struct SettingsDocument {
 }
 
 extension SettingsDocument {
-    static let privacyPolicy = SettingsDocument(
-        title: "Privacy Policy",
-        effective: "Effective October 1, 2026",
-        sections: [
-            Section(heading: "What Gora collects",
-                    body: "Your name and email, the places you save, and the trips you plan or record. Location is used only while you use the app or during an active commute."),
-            Section(heading: "How it is used",
-                    body: "To find routes, follow your trip in Commute mode and estimate fares. Anonymous usage data is collected only if you turn it on in Settings."),
-            Section(heading: "Your choices",
-                    body: "Turn off trip history, download a copy of your data or delete your account at any time from Settings."),
-            Section(heading: "Contact",
-                    body: "Questions about privacy go to privacy@commutebeh.app."),
-        ],
-        footer: "The full policy is also published at commutebeh.app/privacy.")
-
     static let terms = SettingsDocument(
         title: "Terms",
         effective: "Effective October 1, 2026",
