@@ -53,6 +53,15 @@ stations rather than the real track alignment. Publishes the result as `snappedL
   `legGeometries`/`plannedElapsedAtLegStart` from the same helpers `init` uses, keeps
   `startedAt`/`currentLegIndex`, and clears `lastConfirmedLegProgress`/`trainProgress` the way a
   normal leg switch already does.
+- **`setCurrentLeg(_:)`** — makes a leg current without a GPS fix, for a rider who steps by tap with Location
+  off. It sets the meters into the leg to 0 and the meters left to the leg length, clears `snappedLocation`,
+  `lastConfirmedLegProgress` and `trainProgress`, and cancels the train snap. `progressFraction`,
+  `plannedSecondsRemaining` and the Live Activity then follow the step. While Location is off, `ContentView`
+  feeds the engine no fix, runs no dead reckoning, and does not end the commute by distance. The first fix
+  after Location returns snaps the engine again. `setCurrentLeg(_:)` also sets `minimumLegIndex`: GPS moves
+  the current leg forward only through the normal switch rules and never to a leg before the chosen step.
+- **`SavedCommute.legIndex`** — `saveCommute()` stores the current leg index. A relaunch restores it with
+  `setCurrentLeg(_:)` for live and manual guidance. A commute saved without an index restores as step 0.
 - **`progressFraction`**, **`plannedSecondsRemaining`**, **`fractionAlongCurrentLeg`** — route
   progress weighted by each leg's planned minutes, the planned time left, and the share of the
   current leg covered. `CommuteActivitySnapshot` reads them to build the Live Activity state. See

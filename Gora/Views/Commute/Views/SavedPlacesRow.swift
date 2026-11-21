@@ -9,13 +9,11 @@ import SwiftUI
 
 /// The row of saved-place chips under the search card. The Add Place chip stays pinned at the
 /// trailing edge. The saved places scroll behind it, newest on the left and oldest next to it.
-/// A chip counts as selected while the destination holds that place's name and coordinates.
+/// A chip counts as selected while the origin or the destination holds that place's name and
+/// coordinates. A tap fills the origin when it has focus, and the destination otherwise.
 struct SavedPlacesRow: View {
     let routeStore: RouteStore
-    @Binding var destinationText: String
     @FocusState.Binding var focusedField: SearchField?
-    let onClearDestination: () -> Void
-    let onSearch: () -> Void
 
     @Environment(SavedPlacesStore.self) private var store
     @Environment(SavedPlaceDragState.self) private var drag
@@ -61,6 +59,7 @@ struct SavedPlacesRow: View {
         .contentMargins(.trailing, addChipWidth + DesignTokens.Space.xs + Self.bleed, for: .scrollContent)
         .defaultScrollAnchor(.trailing)
         .scrollIndicators(.hidden)
+        .scrollClipDisabled()
         .scrollDisabled(drag.phase != .idle)
         .onScrollGeometryChange(for: Bool.self) { geometry in
             let hiddenWidth = geometry.contentSize.width + geometry.contentInsets.trailing
@@ -78,9 +77,7 @@ struct SavedPlacesRow: View {
                                 isSelected: isSelected)
         }
         .buttonStyle(.plain)
-        // Not interactive: interactive glass tracks the touch itself, which stops the row's
-        // scroll pan and the vertical pull pan from starting on a chip.
-        .goraGlass(.clear, in: .capsule)
+        .goraGlass(.regular.interactive(), in: .capsule)
         .animation(DesignTokens.Motion.disclose, value: isSelected)
         .savedPlaceDragSource(place: place, onEdit: { editingPlace = place })
         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -90,11 +87,14 @@ struct SavedPlacesRow: View {
 
     private var addChip: some View {
         Button { showsAddPlace = true } label: {
-            SavedPlaceChipLabel(icon: "plus", iconSize: 15, title: "Add Place", isSelected: false)
+            SavedPlaceChipLabel(icon: "plus", iconSize: 15, title: "Add Place", isSelected: false,
+                                restingColor: DesignTokens.Colors.secondaryAction)
+                .background(DesignTokens.Colors.secondaryActionFill, in: .capsule)
         }
         .buttonStyle(.plain)
-        .background(Capsule().fill(Color(.secondarySystemBackground)).opacity(hasChipBehindAdd ? 0.92 : 0))
-        .goraGlass(.clear.interactive(), in: .capsule)
+        // Same glass as the place chips, so the two have the same size. The fill is part of the
+        // glass content, so it draws above the glass and inside the capsule.
+        .goraGlass(.regular.interactive(), in: .capsule)
         .animation(DesignTokens.Motion.disclose, value: hasChipBehindAdd)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { addChipWidth = $0 }
         .padding(.trailing, Self.bleed)
@@ -121,53 +121,57 @@ struct SavedPlacesRow: View {
 
     // MARK: Selection
 
-    private func isSelected(_ place: SavedPlace) -> Bool {
-        routeStore.destinationCoordinate == place.coordinates
-            && routeStore.confirmedDestLabel == place.name
+    private func fieldsHolding(_ place: SavedPlace) -> [SearchField] {
+        var fields: [SearchField] = []
+        if routeStore.originCoordinate == place.coordinates
+            && routeStore.confirmedOriginLabel == place.name { fields.append(.origin) }
+        if routeStore.destinationCoordinate == place.coordinates
+            && routeStore.confirmedDestLabel == place.name { fields.append(.destination) }
+        return fields
     }
 
-    /// Fills the destination with the place and searches when a start is set. A tap on the
-    /// selected place clears the destination.
+    private func isSelected(_ place: SavedPlace) -> Bool {
+        !fieldsHolding(place).isEmpty
+    }
+
+    /// Fills the focused origin field, or the destination when the origin is not focused. A tap on
+    /// a place that already fills the target field clears that field. The passenger starts the search.
     private func toggle(_ place: SavedPlace) {
         if drag.swallowsTap { return }
-        if isSelected(place) {
-            onClearDestination()
+        let field: SearchField = focusedField == .origin ? .origin : .destination
+        if fieldsHolding(place).contains(field) {
+            routeStore.clear(field)
             return
         }
-        fillDestination(with: place)
-        if routeStore.canCalculate { onSearch() }
+        routeStore.fill(field, with: place)
+        focusedField = field == .origin ? .destination : nil
     }
 
-    private func fillDestination(with place: SavedPlace) {
-        routeStore.destDebounce?.cancel()
-        routeStore.setDestinationCoordinate(place.coordinates)
-        routeStore.confirmedDestLabel = place.name
-        routeStore.destSuggestions = []
-        routeStore.showDestSuggestions = false
-        destinationText = place.name
-        focusedField = nil
-    }
-
-    /// Saves the edit. A place that is the selected destination refreshes the destination too.
+    /// Saves the edit. Each field that held the old place takes the new place.
     private func update(_ place: SavedPlace, replacing old: SavedPlace) {
-        let wasSelected = isSelected(old)
+        let heldFields = fieldsHolding(old)
         withAnimation(drag.slotAnimation) { store.update(place) }
-        if wasSelected { fillDestination(with: place) }
+        heldFields.forEach { routeStore.fill($0, with: place) }
     }
 
-    /// Clears the destination when the place is selected, then deletes the place.
+    /// Clears each field that holds the place, then deletes the place.
     private func remove(_ place: SavedPlace) {
-        clearDestinationIfSelected(place)
+        clearFieldsHolding(place)
         withAnimation(DesignTokens.Motion.disclose) { store.remove(id: place.id) }
     }
 
     /// Deletes a dropped place with no animation. Its slot is closed and its chip is hidden.
     private func removeDropped(_ place: SavedPlace) {
-        clearDestinationIfSelected(place)
+        clearFieldsHolding(place)
         store.remove(id: place.id)
     }
 
-    private func clearDestinationIfSelected(_ place: SavedPlace) {
-        if isSelected(place) { onClearDestination() }
+    private func clearFieldsHolding(_ place: SavedPlace) {
+        fieldsHolding(place).forEach { routeStore.clear($0) }
     }
+}
+
+private enum Layout {
+    /// Opacity of the gray fill behind the Add Place glass.
+    static let addChipFillOpacity: Double = 0.1
 }

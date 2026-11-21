@@ -20,3 +20,10 @@ one `View` extension built on top of them:
 - **`measuresVisibleTop(outerPadding:)`** — the `View` extension that publishes `VisibleTopKey`;
   apply only to the search card/pill itself, never a container that also holds the transient
   suggestion list.
+
+## TurnOnLocationAlert.swift
+
+`View.turnOnLocationAlert(isPresented:)` shows the one Turn On Location alert. Its buttons are "Not Now"
+(cancel role) and "Open Settings", which opens `UIApplication.openSettingsURLString`. iOS does not show the
+permission prompt again after Don't Allow, so every Turn On control sets
+`RouteStore.isTurnOnLocationAlertPresented` and this alert always comes first. `ContentView` attaches it once.

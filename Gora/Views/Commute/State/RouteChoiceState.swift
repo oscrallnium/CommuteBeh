@@ -44,6 +44,8 @@ struct RouteChoiceFrame {
         let name: String
         /// Only the destination of a route that ends on a station shows its name.
         let title: String
+        /// The leg that starts at a transfer marker. Nil for the destination.
+        var legID: RouteLeg.ID? = nil
     }
 
     struct Callout {
@@ -53,6 +55,7 @@ struct RouteChoiceFrame {
         let timeText: String
         let labelText: String
         let accessibilityText: String
+        let schedule: RouteCalloutSchedule?
         let isShown: Bool
     }
 
@@ -68,9 +71,6 @@ struct RouteChoiceFrame {
 
     /// Alternates first and the selected route last, so it draws on top.
     let routes: [Route]
-    let revealedFraction: Double
-    /// Draw-on fraction of the selected route after a change of selection. 1 at rest.
-    let selectedRevealedFraction: Double
     /// Camera-distance scale for route callouts and the destination pin.
     /// See `RouteChoiceState.zoomScale`.
     let zoomScale: Double
@@ -90,7 +90,17 @@ final class RouteChoiceState {
         let timeText: String
         let labelText: String
         let accessibilityText: String
+        let schedule: RouteCalloutSchedule?
+
+        /// True when the callout draws the same text and style as `other`.
+        func drawsSame(as other: Entry) -> Bool {
+            timeText == other.timeText && accessibilityText == other.accessibilityText
+                && schedule == other.schedule
+        }
     }
+
+    /// Reads the schedule status of a route at a moment. Nil when the route has no status.
+    typealias ScheduleProvider = (RouteResult, Date) -> ScheduleStatus?
 
     /// Where one route's callout tip sits and which corner holds the tail.
     private struct CalloutSpot {
@@ -122,6 +132,10 @@ final class RouteChoiceState {
     private var placementTask: Task<Void, Never>?
     private var calloutMoveTask: Task<Void, Never>?
     private var lastAnnotationTap: Date?
+    private var scheduleTask: Task<Void, Never>?
+    /// Options that hold a timetable leg. Only these entries change as time passes.
+    private var scheduledOptions: [RouteOption] = []
+    private var scheduleProvider: ScheduleProvider = { _, _ in nil }
 
     static let emphasisDuration: TimeInterval = 0.3
     static let bubbleStagger: Duration = .milliseconds(60)
@@ -131,6 +145,9 @@ final class RouteChoiceState {
     /// Spots closer than this, with the same corner, count as unchanged.
     private static let calloutMoveThreshold: CLLocationDistance = 1
     private static let placementDelay: Duration = .milliseconds(120)
+    private static let secondsPerMinute: TimeInterval = 60
+    /// Slack after the minute boundary, so the clock has crossed it when the refresh reads the time.
+    private static let scheduleTickSlack: TimeInterval = 0.5
     static let alternateOpacity = 0.3
     /// Camera distance at or below which route decorations draw at full size.
     static let zoomReferenceDistance: CLLocationDistance = 1500
@@ -142,7 +159,8 @@ final class RouteChoiceState {
     /// Rebuilds the per-option map data. Call whenever the options or their legs change.
     /// A new set of options hides the bubbles until `revealBubbles()` runs. A new order of
     /// the same options keeps them, because the traffic step re-sorts options after the reveal.
-    func sync(options: [RouteOption]) {
+    /// `scheduleStatus` reads the schedule status of an option that holds a timetable leg.
+    func sync(options: [RouteOption], scheduleStatus: @escaping ScheduleProvider = { _, _ in nil }) {
         let ids = options.map(\.id)
         if Set(ids) != Set(order) {
             shownBubbles = []
@@ -152,6 +170,9 @@ final class RouteChoiceState {
             calloutMoveTask?.cancel()
         }
         order = ids
+        scheduleProvider = scheduleStatus
+        scheduledOptions = options.filter { $0.result.hasScheduledLeg }
+        updateScheduleTicker()
         guard !options.isEmpty else {
             entries = [:]
             selectedID = nil
@@ -175,17 +196,63 @@ final class RouteChoiceState {
         var next: [RouteOption.ID: Entry] = [:]
         for option in options {
             guard let geometry = geometries[option.id] else { continue }
-            let summary = RouteCardSummary(result: option.result)
-            let timeText = summary.durationParts.map { "\($0.value) \($0.unit)" }.joined(separator: " ")
-            next[option.id] = Entry(
-                geometry: geometry,
-                markers: Self.markers(for: option.result),
-                timeText: timeText,
-                labelText: Self.labelName(option.label),
-                accessibilityText: "\(Self.labelName(option.label)) route, \(summary.durationText)")
+            next[option.id] = entry(for: option, geometry: geometry,
+                                    markers: Self.markers(for: option.result, geometry: geometry), now: Date())
         }
         entries = next
         if selectedID.map({ ids.contains($0) }) != true { selectedID = ids.first }
+    }
+
+    // MARK: Schedule
+
+    private func entry(for option: RouteOption, geometry: RouteGeometry,
+                       markers: [RouteChoiceFrame.Marker], now: Date) -> Entry {
+        let uses24HourTime = SettingsKey.uses24HourTime
+        let summary = RouteCardSummary(result: option.result, uses24HourTime: uses24HourTime)
+        let label = Self.labelName(option.label)
+        var timeText = summary.durationParts.map { "\($0.value) \($0.unit)" }.joined(separator: " ")
+        var spoken = "\(label) route, \(summary.durationText)"
+        var schedule: RouteCalloutSchedule?
+        if option.result.hasScheduledLeg, let status = scheduleProvider(option.result, now) {
+            let copy = ScheduleCopy(status, uses24HourTime: uses24HourTime)
+            if let reason = ScheduleCopy.calloutReason(for: status, uses24HourTime: uses24HourTime) {
+                schedule = .off
+                timeText = reason
+                spoken = "\(label) route, \(copy.spoken)"
+            } else {
+                schedule = .ready
+                spoken += ". \(copy.spoken)"
+            }
+        }
+        return Entry(geometry: geometry, markers: markers, timeText: timeText, labelText: label,
+                     accessibilityText: spoken, schedule: schedule)
+    }
+
+    /// Rebuilds the entry of each timetable option and stores it only when its drawing changes.
+    private func refreshScheduledEntries(now: Date) {
+        for option in scheduledOptions {
+            guard let old = entries[option.id] else { continue }
+            let new = entry(for: option, geometry: old.geometry, markers: old.markers, now: now)
+            if !new.drawsSame(as: old) { entries[option.id] = new }
+        }
+    }
+
+    /// Runs one refresh at each minute boundary while a timetable option is on screen.
+    private func updateScheduleTicker() {
+        guard !scheduledOptions.isEmpty else {
+            scheduleTask?.cancel()
+            scheduleTask = nil
+            return
+        }
+        guard scheduleTask == nil else { return }
+        scheduleTask = Task { [weak self] in
+            while !Task.isCancelled {
+                let seconds = Date().timeIntervalSince1970.truncatingRemainder(dividingBy: Self.secondsPerMinute)
+                try? await Task.sleep(for: .seconds(Self.secondsPerMinute - seconds + Self.scheduleTickSlack))
+                guard !Task.isCancelled, let self else { return }
+                self.refreshScheduledEntries(now: Date())
+            }
+        }
     }
 
     // MARK: Selection
@@ -340,10 +407,8 @@ final class RouteChoiceState {
     }
 
     /// Builds the draw data for `options`. Reads every observed property here, so the caller
-    /// must run this inside `body`, not inside the map content closure.
-    func frame(
-        options: [RouteOption], revealedFraction: Double, selectedRevealedFraction: Double
-    ) -> RouteChoiceFrame {
+    /// must run this inside a view `body`.
+    func frame(options: [RouteOption]) -> RouteChoiceFrame {
         let routes = options.compactMap { option -> RouteChoiceFrame.Route? in
             guard let entry = entries[option.id] else { return nil }
             let geometry = currentGeometry(of: option, entry: entry)
@@ -353,6 +418,7 @@ final class RouteChoiceState {
                 RouteChoiceFrame.Callout(
                     coordinate: $0.coordinate, corner: $0.corner, timeText: entry.timeText,
                     labelText: entry.labelText, accessibilityText: entry.accessibilityText,
+                    schedule: entry.schedule,
                     isShown: shownBubbles.contains(option.id))
             }
             return RouteChoiceFrame.Route(
@@ -363,8 +429,7 @@ final class RouteChoiceState {
         }
         let ordered = routes.filter { !$0.isSelected } + routes.filter(\.isSelected)
         return RouteChoiceFrame(
-            routes: ordered, revealedFraction: revealedFraction,
-            selectedRevealedFraction: selectedRevealedFraction,
+            routes: ordered,
             zoomScale: routes.isEmpty ? 1 : zoomScale)
     }
 
@@ -390,22 +455,18 @@ final class RouteChoiceState {
 
     // MARK: Helpers
 
-    private static func markers(for result: RouteResult) -> [RouteChoiceFrame.Marker] {
+    private static func markers(for result: RouteResult, geometry: RouteGeometry) -> [RouteChoiceFrame.Marker] {
         var markers: [RouteChoiceFrame.Marker] = []
-        func coordinate(_ station: Station, toward other: Station) -> CLLocationCoordinate2D {
-            let point = station.accessPoint(kind: .both, direction: nil, nearestTo: other.coordinates)
-            return CLLocationCoordinate2D(latitude: point.lat, longitude: point.lng)
-        }
         if let last = result.legs.last {
             markers.append(.init(
-                id: "destination", kind: .destination, coordinate: coordinate(last.toStation, toward: last.fromStation),
+                id: "destination", kind: .destination, coordinate: RouteAnnotationBuilder.legEnd(last, geometry: geometry),
                 name: last.toStation.shortName,
                 title: last.line == "ACCESS_WALK" ? "" : last.toStation.shortName))
         }
         for leg in result.modeChangeLegs {
             markers.append(.init(
-                id: "transfer-\(leg.id)", kind: .transfer, coordinate: coordinate(leg.fromStation, toward: leg.toStation),
-                name: leg.fromStation.shortName, title: ""))
+                id: "transfer-\(leg.id)", kind: .transfer, coordinate: RouteAnnotationBuilder.legStart(leg, geometry: geometry),
+                name: leg.fromStation.shortName, title: "", legID: leg.id))
         }
         return markers
     }

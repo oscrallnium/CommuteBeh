@@ -23,17 +23,27 @@ struct CommuteLegRowModel: Identifiable {
         id = leg.id
         mode = leg.mode
         color = legColor(leg)
-        isWalk = leg.mode == .walk || leg.line == "INTERCHANGE"
+        isWalk = Self.isWalkStep(leg)
         title = isWalk ? "Walk" : lineName(leg.line)
         if isWalk {
-            subtitle = "\(RouteCardSummary.distanceLabel(leg.distanceKm)) to \(leg.toStation.shortName)"
+            subtitle = "\(RouteCardSummary.distanceLabel(leg.distanceKm)) to \(leg.toStation.name)"
         } else {
-            let path = "\(leg.fromStation.shortName) → \(leg.toStation.shortName)"
+            let path = "\(leg.fromStation.name) → \(leg.toStation.name)"
             subtitle = leg.stopCount > 1 ? "\(path) · \(leg.stopCount) stops" : path
         }
-        fareText = leg.fare > 0 ? "₱\(Int(leg.fare))" : "–"
+        fareText = leg.fare > 0 ? FareText.pesos(leg.fare) : "–"
+        durationText = Self.durationText(for: leg)
+    }
+
+    /// True for a walk and for an interchange transfer.
+    static func isWalkStep(_ leg: RouteLeg) -> Bool {
+        leg.mode == .walk || leg.line == "INTERCHANGE"
+    }
+
+    /// The leg time as "1 min" or "12 mins".
+    static func durationText(for leg: RouteLeg) -> String {
         let minutes = Int(leg.effectiveTravelMinutes.rounded())
-        durationText = "\(minutes) \(minutes == 1 ? "min" : "mins")"
+        return "\(minutes) \(minutes == 1 ? "min" : "mins")"
     }
 }
 
@@ -60,10 +70,12 @@ private enum RowState {
 }
 
 /// The scrolling leg breakdown in the expanded commute sheet. A rail on the leading edge
-/// joins one node per leg.
+/// joins one node per leg. A non-nil `onSelectStep` is the manual mode for Location off:
+/// every row is a button that makes its step current.
 struct CommuteLegList: View {
     let rows: [CommuteLegRowModel]
     let currentLegIndex: Int
+    var onSelectStep: ((Int) -> Void)?
 
     @ScaledMetric(relativeTo: .body) private var listHeight: CGFloat = 212
     /// The step at the top of the list. The list snaps so one step always starts at the top.
@@ -75,6 +87,12 @@ struct CommuteLegList: View {
     private let topInset: CGFloat = 4
     private let nodeY: CGFloat = 23
     private let nodeSize: CGFloat = 14
+    private let checkmarkSize: CGFloat = 8
+    private let currentFillInset = DesignTokens.Space.xs
+
+    private var isManual: Bool { onSelectStep != nil }
+    /// Changes with the current step in manual mode only, so the live list keeps its own animation.
+    private var manualStateKey: Int { isManual ? currentLegIndex : -1 }
 
     var body: some View {
         ScrollView {
@@ -84,6 +102,7 @@ struct CommuteLegList: View {
                 }
             }
             .scrollTargetLayout()
+            .animation(DesignTokens.Motion.locationState, value: manualStateKey)
         }
         .scrollIndicators(.hidden)
         .scrollTargetBehavior(.viewAligned)
@@ -114,55 +133,115 @@ struct CommuteLegList: View {
 
     private func legRow(_ row: CommuteLegRowModel, index: Int) -> some View {
         let state = RowState(index: index, currentLegIndex: currentLegIndex)
-        return HStack(spacing: DesignTokens.Space.ml) {
-            rail(row, state: state, isFirst: index == 0, isLast: index == rows.count - 1)
+        return Group {
+            if let onSelectStep {
+                Button { onSelectStep(index) } label: { rowBody(row, index: index, state: state) }
+                    .buttonStyle(.plain)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(accessibilityLabel(row, index: index, state: state))
+                    .accessibilityHint("Makes this the current step.")
+            } else {
+                rowBody(row, index: index, state: state)
+            }
+        }
+        .id(row.id)
+    }
+
+    private func accessibilityLabel(_ row: CommuteLegRowModel, index: Int, state: RowState) -> String {
+        var parts = ["Step \(index + 1) of \(rows.count)", row.mode.displayName, row.title, row.subtitle,
+                     row.fareText, row.durationText]
+        switch state {
+        case .completed: parts.append("done")
+        case .current: parts.append("current step")
+        case .ahead: break
+        }
+        return parts.joined(separator: ", ")
+    }
+
+    private func rowBody(_ row: CommuteLegRowModel, index: Int, state: RowState) -> some View {
+        HStack(spacing: DesignTokens.Space.ml) {
+            Color.clear.frame(width: nodeSize)
             VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
-                Text(row.title)
-                    .font(state == .current ? DesignTokens.TypeScale.rowTitleLargeCurrent
-                                            : DesignTokens.TypeScale.rowTitleLarge)
-                    .foregroundStyle(state.titleColor)
-                    .lineLimit(1)
+                HStack(spacing: DesignTokens.Space.xs) {
+                    Text(row.title)
+                        .typeScale(state == .current ? .rowTitleLargeCurrent : .rowTitleLarge)
+                        .foregroundStyle(state.titleColor)
+                        .lineLimit(1)
+                    if isManual, state == .current { nowTag }
+                }
                 Text(row.subtitle)
-                    .font(DesignTokens.TypeScale.body.monospacedDigit())
+                    .typeScale(.body).monospacedDigit()
                     .foregroundStyle(state.subtitleColor)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             VStack(alignment: .trailing, spacing: DesignTokens.Space.xxs) {
                 Text(row.fareText)
-                    .font(DesignTokens.TypeScale.rowTitleLarge.monospacedDigit())
+                    .typeScale(.rowTitleLarge).monospacedDigit()
                     .foregroundStyle(state.titleColor)
                 Text(row.durationText)
-                    .font(DesignTokens.TypeScale.body)
+                    .typeScale(.body)
                     .foregroundStyle(state.subtitleColor)
             }
             .lineLimit(1)
             .fixedSize()
         }
         .padding(.horizontal, DesignTokens.Space.l)
-        .frame(height: rowHeight)
-        .id(row.id)
+        .frame(minHeight: rowHeight)
+        .background(alignment: .leading) {
+            rail(row, state: state, isFirst: index == 0, isLast: index == rows.count - 1)
+                .padding(.leading, DesignTokens.Space.l)
+        }
+        .background {
+            if isManual, state == .current {
+                RoundedRectangle(cornerRadius: DesignTokens.Radius.control)
+                    .fill(Color.haze)
+                    .padding(.horizontal, currentFillInset)
+            }
+        }
+        .contentShape(.rect)
+    }
+
+    /// Names the current step in text, so the state never depends on color alone.
+    private var nowTag: some View {
+        Text("Now")
+            .typeScale(.subtitleEmphasis)
+            .foregroundStyle(.primary)
+            .padding(.horizontal, DesignTokens.Space.xs)
+            .background(Color.tangerine.opacity(0.18), in: .capsule)
     }
 
     /// A bar in the leg color through a node whose top edge is at `nodeY`. A walk bar is
-    /// 4 pt wide, a ride bar 6 pt. The first rail starts at the node centre, and the last rail ends there.
+    /// 4 pt wide, a ride bar 6 pt. The rail sits in the row background and fills the row height.
+    /// The first bar starts at the node centre, and the last bar ends there.
     private func rail(_ row: CommuteLegRowModel, state: RowState, isFirst: Bool, isLast: Bool) -> some View {
         let nodeCenter = nodeY + nodeSize / 2
         let top = isFirst ? nodeCenter : 0
-        let bottom = isLast ? nodeCenter : rowHeight
+        let barMaxHeight = isLast ? nodeCenter - top : CGFloat.infinity
         let color = state == .completed ? Color.faint : row.color
         return ZStack(alignment: .topLeading) {
             Rectangle()
                 .fill(color)
-                .frame(width: row.isWalk ? 4 : 6, height: bottom - top)
-                .offset(x: row.isWalk ? 5 : 4, y: top)
+                .frame(width: row.isWalk ? 4 : 6)
+                .frame(maxHeight: barMaxHeight)
+                .padding(.top, top)
+                .padding(.leading, row.isWalk ? 5 : 4)
             Circle()
                 .fill(state == .current ? Color.tangerine : Color.graphite)
                 .overlay(Circle().strokeBorder(row.isWalk && state != .completed ? Color.onyx : color,
                                                lineWidth: 3))
+                .overlay {
+                    if isManual, state == .completed {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: checkmarkSize, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 .frame(width: nodeSize, height: nodeSize)
-                .offset(y: nodeY)
+                .padding(.top, nodeY)
         }
-        .frame(width: nodeSize, height: rowHeight, alignment: .topLeading)
+        .frame(width: nodeSize, alignment: .topLeading)
+        .frame(maxHeight: .infinity, alignment: .topLeading)
     }
 }

@@ -21,6 +21,38 @@ struct RouteChoiceSheet: View {
     let onUse: (RouteOption) -> Void
     /// The color the map draws a leg in.
     let legColor: (RouteLeg) -> Color
+    @AppStorage(SettingsKey.use24HourTime) private var use24HourTime = false
+    @AppStorage(SettingsKey.showOtherModes) private var showOtherModes = true
+    @Environment(RouteStore.self) private var routeStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @State private var summaryCache = SummaryCache()
+
+    private enum Layout {
+        static let contentFadeOut: Animation = .easeOut(duration: 0.1)
+        static let contentFadeIn: Animation = .easeOut(duration: 0.2).delay(0.1)
+        static let fareTintOpacity = 0.18
+        static let fareMinHeight: CGFloat = 30
+        static let fareVerticalPadding = DesignTokens.Space.xs
+        static let overlineSymbolSpacing = DesignTokens.Space.xs
+        static let actionSpacing: CGFloat = 8
+        static let labelSpacing: CGFloat = 8
+        static let labelMotion: Animation = .easeInOut(duration: 0.32)
+        static let labelMotionReduced: Animation = .easeInOut(duration: 0.15)
+        static let offOpacity = 0.55
+        static let reasonLines = 2
+        static let readyFade: Animation = .easeInOut(duration: 0.24)
+    }
+
+    private enum Strings {
+        static let fastest = "Fastest"
+        static let balanced = "Balanced"
+        static let cheapest = "Cheapest"
+        static let fare = "fare"
+        static let useRoute = "Use This Route"
+        static let showDetails = "Show Route Details"
+        static let showSummary = "Show Route Summary"
+    }
 
     private var option: RouteOption? {
         options.first { $0.id == selectedID } ?? options.first
@@ -28,7 +60,14 @@ struct RouteChoiceSheet: View {
 
     var body: some View {
         if let option {
-            let summary = RouteCardSummary(result: option.result, legColor: legColor)
+            let summary = summaryCache.summary(for: option, uses24HourTime: use24HourTime,
+                                               includesOtherModes: showOtherModes,
+                                               graphVersion: routeStore.graphVersion) {
+                RouteCardSummary(result: option.result, uses24HourTime: use24HourTime, legColor: legColor,
+                                 lineName: routeStore.lineDisplayName,
+                                 modePlural: routeStore.modePluralName,
+                                 includesOtherModes: showOtherModes)
+            }
             sheet(option: option, summary: summary)
         }
     }
@@ -37,19 +76,36 @@ struct RouteChoiceSheet: View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.m) {
             grabber
             summaryBlock(option: option, summary: summary)
-            legChips(summary.legRows)
+            if option.result.hasScheduledLeg {
+                ScheduleTicker(result: option.result) { status in
+                    if let status { ScheduleTripRow(status: status) }
+                }
+            }
             if isDetailExpanded {
-                RouteChoiceLegList(legRows: summary.legRows)
-                    .transition(.opacity)
+                legList(option: option, summary: summary)
+                    .transition(contentTransition)
+            } else {
+                RouteChoiceRideList(summary: summary, isDetailExpanded: $isDetailExpanded)
+                    .transition(contentTransition)
             }
             actionRow(option: option)
         }
         .padding(.horizontal, DesignTokens.Space.xl)
         .padding(.top, DesignTokens.Space.s)
         .padding(.bottom, DesignTokens.Space.l)
-        .goraGlass(DesignTokens.Materials.cardGlass, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
-        
-        .animation(DesignTokens.Motion.morph, value: isDetailExpanded)
+        // The glass is a background layer, not a host. Content hosted inside a resizing glass view
+        // is laid out from the glass's top edge, so the action row moves during the expand animation.
+        .background {
+            Color.clear
+                .goraGlass(DesignTokens.Materials.routeSheetGlass, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
+        }
+        .background(DesignTokens.Colors.sheetDim, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
+    }
+
+    /// The outgoing content fades out first, then the incoming content fades in, so the two never overlap.
+    private var contentTransition: AnyTransition {
+        .asymmetric(insertion: .opacity.animation(Layout.contentFadeIn),
+                    removal: .opacity.animation(Layout.contentFadeOut))
     }
 
     // MARK: Header
@@ -63,38 +119,52 @@ struct RouteChoiceSheet: View {
 
     private func summaryBlock(option: RouteOption, summary: RouteCardSummary) -> some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
-            header(option: option)
+            overline(for: option.label)
             metrics(summary: summary)
-            Text("Arrive by \(summary.arrivalTime) \(summary.arrivalPeriod) · \(summary.transfersText)")
-                .font(DesignTokens.TypeScale.subtitle)
-                .foregroundStyle(.secondary)
+            ScheduleTicker(result: option.result) { status in
+                if let status {
+                    ScheduleStatusBlock(status: status)
+                } else {
+                    arrivalLine(summary)
+                }
+            }
         }
     }
 
-    private func header(option: RouteOption) -> some View {
-        HStack {
-            Spacer()
-            badge(for: option.label)
-        }
+    private func arrivalLine(_ summary: RouteCardSummary) -> some View {
+        Text("Arrive by \([summary.arrivalTime, summary.arrivalPeriod].filter { !$0.isEmpty }.joined(separator: " "))")
+            .typeScale(.subtitle)
+            .foregroundStyle(.secondary)
     }
 
     @ViewBuilder
-    private func badge(for label: RouteOption.Label) -> some View {
-        switch label {
-        case .fastest:  badgeText("Fastest", symbol: "bolt.fill")
-        case .cheapest: badgeText("Cheapest", symbol: "pesosign.circle.fill")
-        case .balanced: EmptyView()
+    private func legList(option: RouteOption, summary: RouteCardSummary) -> some View {
+        if option.result.hasScheduledLeg {
+            ScheduleTicker(result: option.result) { status in
+                RouteChoiceLegList(legRows: summary.legRows, schedule: status)
+            }
+        } else {
+            RouteChoiceLegList(legRows: summary.legRows)
         }
     }
 
-    private func badgeText(_ text: String, symbol: String) -> some View {
-        Label(text, systemImage: symbol)
-            .font(DesignTokens.TypeScale.subtitleEmphasis)
-            .foregroundStyle(Color.onyx)
-            .padding(.horizontal, DesignTokens.Space.s)
-            .padding(.vertical, DesignTokens.Space.xxs)
-            .background(Color.haze,
-                        in: RoundedRectangle(cornerRadius: DesignTokens.Radius.badge))
+    private func overline(for label: RouteOption.Label) -> some View {
+        let (text, symbol) = overlineContent(label)
+        return HStack(spacing: Layout.overlineSymbolSpacing) {
+            Image(systemName: symbol)
+            Text(text)
+        }
+        .typeScale(.subtitleEmphasis)
+        .foregroundStyle(.secondary)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func overlineContent(_ label: RouteOption.Label) -> (String, String) {
+        switch label {
+        case .fastest:  (Strings.fastest, "bolt.fill")
+        case .balanced: (Strings.balanced, "scalemass.fill")
+        case .cheapest: (Strings.cheapest, "pesosign.circle.fill")
+        }
     }
 
     /// Ride modes in order, such as "Train, then Bus". Consecutive repeats collapse.
@@ -109,114 +179,174 @@ struct RouteChoiceSheet: View {
     // MARK: Metrics
 
     private func metrics(summary: RouteCardSummary) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.m) {
-            HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xs) {
-                ForEach(summary.durationParts, id: \.self) { part in
-                    HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xxs) {
-                        Text(part.value)
-                            .font(DesignTokens.TypeScale.display)
-                        Text(part.unit)
-                            .font(DesignTokens.TypeScale.instruction)
-                    }
-                }
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: DesignTokens.Space.sm) {
+                duration(summary)
+                fareCapsule(summary)
             }
-            .monospacedDigit()
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            Spacer(minLength: DesignTokens.Space.s)
-            HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xxs) {
-                Text("₱\(summary.fareText)")
-                    .font(DesignTokens.TypeScale.statValue)
-                    .monospacedDigit()
-                Text("fare")
-                    .font(DesignTokens.TypeScale.subtitle)
-                    .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
+                duration(summary)
+                fareCapsule(summary)
             }
-            .lineLimit(1)
         }
     }
 
-    // MARK: Leg chips
-
-    private func legChips(_ rows: [RouteCardSummary.LegRow]) -> some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: DesignTokens.Space.xs) {
-                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                    if index > 0 {
-                        Image(systemName: "chevron.right")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.tertiary)
-                    }
-                    chip(row)
+    private func duration(_ summary: RouteCardSummary) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xs) {
+            ForEach(summary.durationParts, id: \.self) { part in
+                HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xxs) {
+                    Text(part.value)
+                        .typeScale(.display)
+                    Text(part.unit)
+                        .typeScale(.instruction)
                 }
             }
         }
-        .scrollIndicators(.hidden)
+        .monospacedDigit()
+        .lineLimit(1)
     }
 
-    private func chip(_ row: RouteCardSummary.LegRow) -> some View {
-        Label(row.minutesText, systemImage: row.isWalk ? TransportMode.walk.icon : row.mode.icon)
-            .font(DesignTokens.TypeScale.subtitleEmphasis)
-            .padding(.horizontal, DesignTokens.Space.s)
-            .frame(height: 28)
-            .background(Color.haze,
-                        in: RoundedRectangle(cornerRadius: DesignTokens.Radius.badge, style: .continuous))
+    private func fareCapsule(_ summary: RouteCardSummary) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: DesignTokens.Space.xxs) {
+            Text("₱\(summary.fareText)")
+                .typeScale(.subtitleEmphasis)
+                .monospacedDigit()
+            Text(Strings.fare)
+                .typeScale(.subtitle)
+        }
+        .foregroundStyle(.primary)
+        .lineLimit(1)
+        .padding(.horizontal, DesignTokens.Space.m)
+        .padding(.vertical, Layout.fareVerticalPadding)
+        .frame(minHeight: Layout.fareMinHeight)
+        .background(Color.jade.opacity(Layout.fareTintOpacity), in: .capsule)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(summary.fareText) pesos")
     }
 
     // MARK: Actions
 
     private func actionRow(option: RouteOption) -> some View {
-        HStack(spacing: DesignTokens.Space.sm) {
-            detailsButton
+        VStack(spacing: Layout.actionSpacing) {
             if canStartCommute {
-                useButton(option: option)
+                ScheduleTicker(result: option.result) { status in
+                    useButton(option: option, status: status)
+                }
+                .frame(maxWidth: .infinity)
             } else {
                 startHint
             }
+            detailsButton
         }
     }
 
     private var detailsButton: some View {
         Button {
-            isDetailExpanded.toggle()
+            withAnimation(DesignTokens.Motion.routeDetail(reduceMotion: reduceMotion)) {
+                isDetailExpanded.toggle()
+            }
         } label: {
-            Image(systemName: isDetailExpanded ? "chevron.down.2" : "chevron.up.2")
-                .font(.body.weight(.semibold))
-                .symbolEffect(.pulse, options: .repeat(.continuous))
-                .contentTransition(.symbolEffect(.replace.magic(fallback: .replace)))
-                .frame(width: 50, height: 50)
-                .contentShape(.capsule)
+            HStack(spacing: Layout.labelSpacing) {
+                Image(systemName: "chevron.up")
+                    .font(.body.weight(.semibold))
+                    .rotationEffect(.degrees(isDetailExpanded && !reduceMotion ? 180 : 0))
+                    .scaleEffect(y: isDetailExpanded && reduceMotion ? -1 : 1)
+                    .accessibilityHidden(true)
+                detailsLabel
+            }
+            .animation(labelMotion, value: isDetailExpanded)
+            .foregroundStyle(DesignTokens.Colors.secondaryAction)
+            .modifier(SheetActionSize())
+            .background(DesignTokens.Colors.secondaryActionFill, in: .capsule)
+            .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .goraGlass(.regular.interactive(), in: .capsule)
-        .accessibilityLabel(isDetailExpanded ? "Hide route details" : "Show route details")
+        .accessibilityLabel(isDetailExpanded ? Strings.showSummary : Strings.showDetails)
     }
 
-    private func useButton(option: RouteOption) -> some View {
-        Button {
+    /// One text whose glyphs morph into the new label. The full-width button keeps its size.
+    private var detailsLabel: some View {
+        Text(isDetailExpanded ? Strings.showSummary : Strings.showDetails)
+            .typeScale(.sheetActionLabel)
+            .multilineTextAlignment(.center)
+            .contentTransition(reduceMotion ? .opacity : .interpolate)
+            .accessibilityHidden(true)
+    }
+
+    private var labelMotion: Animation {
+        reduceMotion ? Layout.labelMotionReduced : Layout.labelMotion
+    }
+
+    private func useButton(option: RouteOption, status: ScheduleStatus?) -> some View {
+        let reason = status.flatMap { ScheduleCopy($0, uses24HourTime: use24HourTime).buttonReason }
+        let isOff = reason != nil
+        return Button {
             onUse(option)
         } label: {
-            Text("Use This Route")
-                .font(DesignTokens.TypeScale.controlLabel)
-                .foregroundStyle(Color.licorice)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .contentShape(.capsule)
+            VStack(spacing: 0) {
+                Text(Strings.useRoute)
+                    .typeScale(.sheetActionLabel)
+                if let reason {
+                    Text(reason)
+                        .typeScale(.subtitle)
+                        .lineLimit(Layout.reasonLines)
+                } else if status != nil, dynamicTypeSize.isAccessibilitySize {
+                    Text(" ")
+                        .typeScale(.subtitle)
+                        .lineLimit(Layout.reasonLines, reservesSpace: true)
+                        .accessibilityHidden(true)
+                }
+            }
+            .foregroundStyle(DesignTokens.Colors.onAction)
+            .modifier(SheetActionSize())
+            .goraGlass(.regular.interactive(), tint: DesignTokens.Colors.action, in: .capsule)
+            .contentShape(.capsule)
         }
         .buttonStyle(.plain)
-        .goraGlass(.regular.interactive(), tint: Color.tangerine, in: .capsule)
+        .opacity(isOff ? Layout.offOpacity : 1)
+        .disabled(isOff)
+        .accessibilityHint(reason ?? "")
+        .animation(reduceMotion ? nil : Layout.readyFade, value: isOff)
     }
 
     private var startHint: some View {
         HStack(spacing: DesignTokens.Space.xs) {
             Image(systemName: "location.slash")
-                .font(DesignTokens.TypeScale.subtitle)
+                .typeScale(.subtitle)
             Text("Go to the starting point to begin")
-                .font(DesignTokens.TypeScale.subtitle)
+                .typeScale(.subtitle)
         }
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity)
         .frame(height: 50)
+    }
+}
+
+// MARK: - Summary cache
+
+/// Holds the summary of the shown option. The sheet body runs on every map-panel frame, and
+/// building a summary scans every raw step of every leg. It rebuilds only when its inputs change.
+private final class SummaryCache {
+    private struct Key: Equatable {
+        let optionID: RouteOption.ID
+        let legIDs: [UUID]
+        let totalMinutes: Double
+        let uses24HourTime: Bool
+        let includesOtherModes: Bool
+        let graphVersion: String?
+    }
+
+    private var entry: (key: Key, summary: RouteCardSummary)?
+
+    func summary(for option: RouteOption, uses24HourTime: Bool, includesOtherModes: Bool,
+                 graphVersion: String?, build: () -> RouteCardSummary) -> RouteCardSummary {
+        let key = Key(optionID: option.id, legIDs: option.result.legs.map(\.id),
+                      totalMinutes: option.result.totalTimeMinutes, uses24HourTime: uses24HourTime,
+                      includesOtherModes: includesOtherModes, graphVersion: graphVersion)
+        if let entry, entry.key == key { return entry.summary }
+        let summary = build()
+        entry = (key, summary)
+        return summary
     }
 }
 
@@ -271,6 +401,7 @@ private struct RouteChoiceSheetPreview: View {
             RouteChoiceSheet(options: previewOptions(), selectedID: $selected,
                              isDetailExpanded: $expanded, canStartCommute: true,
                              onUse: { _ in }, legColor: { $0.mode.color })
+                .environment(RouteStore())
                 .padding(.horizontal, DesignTokens.Space.sm)
         }
     }
@@ -288,3 +419,19 @@ private struct RouteChoiceSheetPreview: View {
     RouteChoiceSheetPreview(expanded: false)
 }
 #endif
+
+/// Size shared by the two sheet action buttons. The height scales with the same text style as the label.
+private struct SheetActionSize: ViewModifier {
+    private enum Layout {
+        static let height: CGFloat = 53
+        static let horizontalPadding: CGFloat = 20
+    }
+
+    @ScaledMetric(relativeTo: .body) private var height = Layout.height
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, Layout.horizontalPadding)
+            .frame(maxWidth: .infinity, minHeight: height)
+    }
+}

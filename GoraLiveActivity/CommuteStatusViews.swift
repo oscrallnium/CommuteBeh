@@ -31,7 +31,7 @@ struct CommuteETATimer: View {
     }
 }
 
-/// Footer line: Live dot and update time on the left, trip summary on the right.
+/// Footer line: Live dot on the left, trip summary on the right.
 struct CommuteStatusLine: View {
     struct Style {
         var text: Color
@@ -64,13 +64,11 @@ struct CommuteStatusLine: View {
         if state.phase == .arrived {
             Text("Trip ended")
         } else if isStale {
-            Text("Last known location · \(Text(state.lastFixAt, style: .relative)) ago")
+            Text("Last known location")
         } else {
             HStack(spacing: 6) {
                 Circle().fill(style.strong).frame(width: 6, height: 6)
                 Text("Live").fontWeight(.semibold).foregroundStyle(style.strong)
-                Text("·")
-                Text("Updated \(Text(state.lastFixAt, style: .relative)) ago")
             }
         }
     }

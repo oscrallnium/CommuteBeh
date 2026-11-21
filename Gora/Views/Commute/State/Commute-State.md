@@ -16,16 +16,32 @@ cards, or modifiers. (`RouteStore` itself, the tab's main view model, lives in
   The merged list holds address completions only. It adds station matches only when
   `NetworkStatus.isOnline` is `false`, and it re-merges when connectivity changes.
 
+## RouteStore+Endpoints.swift
+
+- **`RouteStore` extension** — the search-field actions: `clear(_:)`, `swapEndpoints()`,
+  `select(_:for:)`, and `closeResults()`. Each method changes model state only. The views set
+  the focus and move the camera. `select(_:for:)` returns `false` when an address does not
+  resolve, so the view leaves the focus where it is.
+
 ## RouteDrawAnimator.swift
 
-- **`RouteDrawAnimator`** — ticks `revealedFraction` from 0 to 1 whenever a new route
-  replaces the one on screen. `RouteGeometry.revealedCoordinates` in
-  `../Views/RoutePolylineRendering.swift` trims each leg's polyline to that fraction, so
-  `ContentView` draws the route on progressively from origin to destination.
-  `RouteGeometry.cut(leg:gridIndex:step:)` in the same file cuts the current walking leg on a fixed ground grid
-  for Commute Mode.
-  A second `RouteDrawAnimator` in `ContentView` redraws the newly selected route from origin
-  to destination when the passenger picks another option. Alternates stay fully drawn.
+- **`RouteDrawAnimator`** — a `@MainActor` object that draws a route on from origin to
+  destination. A `CADisplayLink` runs for `duration` (0.9 s) and applies an ease-out curve
+  (cubic). Each frame it stores `fraction` and calls `onFrame`, which `CommuteMapCoordinator`
+  sets. The coordinator maps the fraction to a `strokeEnd` for each route renderer and calls
+  `setNeedsDisplay()`. No frame builds an overlay or changes the scene.
+  `RouteGeometry.revealSpan(leg:points:)` in `../Views/RoutePolylineRendering.swift` gives the
+  part of the route that one overlay covers, from the leg start offset and the leg length.
+- **`prepareForNewRoute()`** — sets `fraction` to 0 before a search, so the new route is
+  empty when it arrives. **`start()`** runs the draw-on. `fitToRouteIfSuccessful` calls it after
+  the camera fit, and `CommuteMapCoordinator.apply(_:)` calls it when the selected route changes to another route on the map, before the overlay diff, so every route
+  redraws from origin to destination. A renderer that the map creates during a draw-on starts
+  at the current `fraction`.
+- **Draw-on timing** — `RouteStore.geometryPhase` is `.refining` while walk and zone-ride
+  refinement runs, and `.final` after. `fitToRouteIfSuccessful` waits for `.final`, for at most
+  `DesignTokens.Motion.geometryWaitCap` (1.5 s), then fits the camera and draws on. The traffic
+  step changes times only, so it does not delay the draw. If a line gets new points while a
+  draw-on runs, the coordinator restarts it. After the draw-on ends, new points do not replay it.
 
 ## RouteChoiceState.swift
 
@@ -41,15 +57,15 @@ cards, or modifiers. (`RouteStore` itself, the tab's main view model, lives in
   placement cancels the older one and ends with every revealed callout shown. `ContentView.placeRouteBubble()` calls it when the camera
   settles, when the selection changes, when `visibleTop` or `visibleBottom` changes, and after
   `sync`. The wait merges these calls into one.
-- **Selection tween** — `select(_:)` runs a 0.3 s, 30 Hz tween. The new route rises from
-  opacity 0.26 and width 5 to opacity 1 and width 7. The old route falls back. `frame(...)`
-  marks every route flat while the tween runs, because MapKit does not interpolate strokes.
-- **`frame(options:revealedFraction:selectedRevealedFraction:)`** — builds a `RouteChoiceFrame`: all routes,
-  alternates first and the selected route last. Call it from `body`, not from the map content
-  closure, so the reads register with the view's observation scope.
+- **Selection tween** — `select(_:)` runs a 0.3 s, 30 Hz tween. The new route rises from the
+  alternate strength 0.3 to 1. The old route falls back. Only the core color of each route line
+  changes. The scene diff restyles the renderers in place, so no overlay is built again.
+- **`frame(options:)`** — builds a `RouteChoiceFrame`: all routes,
+  alternates first and the selected route last. Call it from a view `body`, as
+  `CommuteMapLayer` does, so the reads register with the view's observation scope.
 - **`zoomScale`** — one scale from the settled `cameraDistance`: 1 at 1500 m or closer, down
   to 0.35, in steps of 0.05. `RouteChoiceFrame.zoomScale` carries it. A frame with no routes
-  carries 1, so `body` does not read `cameraDistance` in Commute Mode.
+  carries 1, so the map layer does not read `cameraDistance` in Commute Mode.
   Callouts and the destination pin use it with a floor of 0.6.
 - **`selectFromAnnotation(_:)`** — sets a short window during which `handleRouteTap` ignores
   the map tap that arrives with a callout or marker tap.

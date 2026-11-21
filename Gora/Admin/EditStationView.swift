@@ -82,7 +82,7 @@ struct EditStationView: View {
                             Annotation(point.name, coordinate: CLLocationCoordinate2D(
                                 latitude: point.coordinates.lat, longitude: point.coordinates.lng)) {
                                 Image(systemName: point.kind.symbol)
-                                    .font(.caption.weight(.bold))
+                                    .font(.system(.caption, weight: .bold))
                                     .foregroundStyle(.white)
                                     .padding(5)
                                     .background(Circle().fill(point.directionTint))
@@ -121,16 +121,16 @@ struct EditStationView: View {
                 // Header
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(station.name).font(.headline)
+                        Text(station.name).font(.system(.headline, weight: .semibold))
                         if selectedTab == .location {
                             Text(String(format: "%.6f,  %.6f",
                                         centerCoordinate.latitude,
                                         centerCoordinate.longitude))
-                                .font(.caption.monospacedDigit())
+                                .font(.system(.caption).monospacedDigit())
                                 .foregroundStyle(.secondary)
                         } else {
                             Text(station.line)
-                                .font(.caption)
+                                .font(.system(.caption))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -154,7 +154,7 @@ struct EditStationView: View {
                 // Error
                 if let error = errorMessage {
                     Text(error)
-                        .font(.caption)
+                        .font(.system(.caption))
                         .foregroundStyle(Color.vermilion)
                         .padding(8)
                         .background(.regularMaterial)
@@ -196,6 +196,8 @@ struct EditStationView: View {
                         }
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.Colors.action)
+                    .foregroundStyle(DesignTokens.Colors.onAction)
                     .frame(maxWidth: .infinity)
                     .disabled(isSaving)
                 }
@@ -215,7 +217,7 @@ struct EditStationView: View {
             Section {
                 if accessPoints.isEmpty {
                     Text("No access points. The station's own coordinate is used for every walk to or from it.")
-                        .font(.caption)
+                        .font(.system(.caption))
                         .foregroundStyle(.secondary)
                 }
                 ForEach($accessPoints) { $point in
@@ -226,7 +228,7 @@ struct EditStationView: View {
                             get: { point.name },
                             set: { point = point.settingName($0) }
                         ))
-                        .font(.subheadline.weight(.semibold))
+                        .font(.system(.subheadline, weight: .semibold))
 
                         Picker("Kind", selection: Binding(
                             get: { point.kind },
@@ -254,7 +256,7 @@ struct EditStationView: View {
                         HStack {
                             Text(String(format: "%.6f,  %.6f",
                                         point.coordinates.lat, point.coordinates.lng))
-                                .font(.caption2.monospacedDigit())
+                                .font(.system(.caption2).monospacedDigit())
                                 .foregroundStyle(.secondary)
                             Spacer()
                             Button("Place on map") {
@@ -266,7 +268,7 @@ struct EditStationView: View {
                                         longitude: point.coordinates.lng),
                                     distance: 300, heading: 0, pitch: 0))
                             }
-                            .font(.caption.weight(.semibold))
+                            .font(.system(.caption, weight: .semibold))
                             .buttonStyle(.borderless)
                         }
                     }
@@ -327,6 +329,8 @@ struct EditStationView: View {
                 editingAccessPointID = nil
             }
             .buttonStyle(.borderedProminent)
+            .tint(DesignTokens.Colors.action)
+            .foregroundStyle(DesignTokens.Colors.onAction)
             .frame(maxWidth: .infinity)
         }
     }
@@ -347,6 +351,7 @@ struct EditStationView: View {
                 Picker("Boarding", selection: $boarding) {
                     Text("Pick-up and drop-off").tag(Station.Boarding.both)
                     Text("Drop-off only").tag(Station.Boarding.alightOnly)
+                    Text("Pick-up only").tag(Station.Boarding.boardOnly)
                 }
                 .pickerStyle(.segmented)
             }

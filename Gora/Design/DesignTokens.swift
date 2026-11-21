@@ -12,40 +12,110 @@ import SwiftUI
 
 enum DesignTokens {
 
-    // MARK: Type scale — Dynamic Type text styles only, never fixed point sizes
+    // MARK: Type scale — SF Pro at explicit sizes that scale with Dynamic Type. Apply with `.typeScale(_:)`.
     enum TypeScale {
         /// Largest figure on a card, such as the trip duration.
-        static let display: Font = .largeTitle.bold()
+        case display
         /// Stat value, such as a fare or an arrival time.
-        static let statValue: Font = .title2.bold()
+        case statValue
         /// Arrival time on the commute card.
-        static let eta: Font = .title2.weight(.semibold)
+        case eta
         /// Unit beside a display figure.
-        static let instruction: Font = .title3.weight(.semibold)
+        case instruction
         /// Title of a compact card.
-        static let instructionCompact: Font = .headline
+        case instructionCompact
         /// Label of a control, and the route time bubble text.
-        static let controlLabel: Font = .callout.weight(.semibold)
+        case controlLabel
+        /// Label of the primary and secondary buttons in the route sheet.
+        case sheetActionLabel
         /// Row title and chip title.
-        static let rowTitle: Font = .subheadline.weight(.semibold)
+        case rowTitle
         /// Title of the current row.
-        static let rowTitleCurrent: Font = .subheadline.bold()
+        case rowTitleCurrent
         /// Subtitle and stat label.
-        static let subtitle: Font = .footnote
+        case subtitle
         /// Badge and chip text.
-        static let subtitleEmphasis: Font = .footnote.weight(.semibold)
+        case subtitleEmphasis
         /// Field text, suggestion names.
-        static let body: Font = .subheadline
+        case body
         /// Arrival time on the commute card header.
-        static let etaLarge: Font = .title.weight(.semibold)
+        case etaLarge
         /// Subtitle of the commute card header.
-        static let bodyLarge: Font = .body
+        case bodyLarge
         /// Leg title on the commute card.
-        static let rowTitleLarge: Font = .body.weight(.semibold)
+        case rowTitleLarge
         /// Title of the current leg on the commute card.
-        static let rowTitleLargeCurrent: Font = .body.bold()
+        case rowTitleLargeCurrent
         /// Timestamps, line labels, stop counts.
-        static let meta: Font = .caption
+        case meta
+
+        /// Point size at the default Dynamic Type setting.
+        var size: CGFloat {
+            switch self {
+            case .display: 34
+            case .statValue: 22
+            case .eta: 22
+            case .instruction: 20
+            case .instructionCompact: 17
+            case .controlLabel: 20
+            case .sheetActionLabel: 17
+            case .rowTitle: 15
+            case .rowTitleCurrent: 15
+            case .subtitle: 13
+            case .subtitleEmphasis: 13
+            case .body: 15
+            case .etaLarge: 28
+            case .bodyLarge: 17
+            case .rowTitleLarge: 17
+            case .rowTitleLargeCurrent: 17
+            case .meta: 12
+            }
+        }
+
+        var weight: Font.Weight {
+            switch self {
+            case .display: .bold
+            case .statValue: .bold
+            case .eta: .semibold
+            case .instruction: .semibold
+            case .instructionCompact: .semibold
+            case .controlLabel: .medium
+            case .sheetActionLabel: .semibold
+            case .rowTitle: .semibold
+            case .rowTitleCurrent: .bold
+            case .subtitle: .regular
+            case .subtitleEmphasis: .bold
+            case .body: .regular
+            case .etaLarge: .semibold
+            case .bodyLarge: .regular
+            case .rowTitleLarge: .semibold
+            case .rowTitleLargeCurrent: .bold
+            case .meta: .regular
+            }
+        }
+
+        /// Text style whose scaling curve the size follows.
+        var relativeTo: Font.TextStyle {
+            switch self {
+            case .display: .largeTitle
+            case .statValue: .title2
+            case .eta: .title2
+            case .instruction: .title3
+            case .instructionCompact: .headline
+            case .controlLabel: .title
+            case .sheetActionLabel: .body
+            case .rowTitle: .subheadline
+            case .rowTitleCurrent: .subheadline
+            case .subtitle: .footnote
+            case .subtitleEmphasis: .footnote
+            case .body: .subheadline
+            case .etaLarge: .title
+            case .bodyLarge: .body
+            case .rowTitleLarge: .body
+            case .rowTitleLargeCurrent: .body
+            case .meta: .caption
+            }
+        }
     }
 
     // MARK: Spacing scale
@@ -84,12 +154,25 @@ enum DesignTokens {
 
     // MARK: Semantic colors
     enum Colors {
-        /// Primary action: the one thing to tap on a surface. A Tangerine fill takes
-        /// Licorice text, never white, because white on Tangerine is about 2.4:1.
-        static let action = Color.tangerine
+        /// Primary action: the one thing to tap on a surface. A Cobalt fill takes white text.
+        static let action = Color.cobalt
+        /// Text and symbols on an `action` fill.
+        static let onAction = Color.white
+        /// Text and symbol of a secondary button: the same blue as the primary action.
+        static let secondaryAction = action
+        /// Fill of a secondary button.
+        static let secondaryActionFill = Color.haze
 
         /// Halo around the position puck: `Color.tangerine` at 22 %.
         static let positionHalo = Color.tangerine.opacity(0.22)
+
+        /// Dimming layer under the route choice sheet's glass. The glass shows the dimmed map.
+        /// Black at 55 % in dark mode and white at 35 % in light mode, so the text keeps its contrast.
+        static let sheetDim = Color(UIColor { @Sendable traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor.black.withAlphaComponent(0.55)
+                : UIColor.white.withAlphaComponent(0.35)
+        })
     }
 
     // MARK: Materials
@@ -97,7 +180,9 @@ enum DesignTokens {
         /// Glass of a card over the map: frosted and tinted with `systemGray5`, a charcoal gray in dark
         /// mode and a light gray in light mode. A black tint makes the card near-black and opaque.
 //        static let cardGlass = Glass.regular.tint(Color(.systemGray5).opacity(0.4))
-        static let cardGlass = Glass.regular.tint(Color(.clear))
+        static let cardGlass = Glass.regular/*.tint(Color.graphite.opacity(0.35))*/
+        /// Glass of the route choice sheet: frosted, so the map behind it shows only as blur and color.
+        static let routeSheetGlass = Glass.regular
 
     }
 
@@ -111,6 +196,9 @@ enum DesignTokens {
         /// `Animation` does not expose its duration and the heading loop must gate itself for
         /// exactly this long. See `ContentView.isCameraTransitioning`.
         static let cameraFitDuration: TimeInterval = 0.5
+        /// motion.geometryWaitCap — longest wait, in seconds, for walk and zone-ride paths
+        /// before the camera fits and the route draws with the paths it has.
+        static let geometryWaitCap: TimeInterval = 1.5
         /// motion.cameraPoseDuration — length of a 2D/3D switch or a follow re-attach, in seconds.
         static let cameraPoseDuration: TimeInterval = 0.7
         /// motion.cameraFit — map camera glide to a route's bounds.
@@ -138,11 +226,21 @@ enum DesignTokens {
         /// time to follow that. A stiffer spring settles inside ~200 ms, which
         /// reads as a cut rather than a transition.
         static let morph: Animation = .spring(response: 0.55, dampingFraction: 0.86)
+        /// motion.routeDetail — the route sheet's expand/collapse: `disclose` under Reduce Motion, else `morph`.
+        static func routeDetail(reduceMotion: Bool) -> Animation { reduceMotion ? disclose : morph }
+        /// motion.locationStateDuration — length of every Location-off animation, in seconds.
+        static let locationStateDuration: TimeInterval = 0.3
+        /// motion.locationState — banner, step change, row state, map leg and live-guidance switch.
+        static let locationState: Animation = .easeInOut(duration: locationStateDuration)
+        /// motion.locationBanner — the banner enters and leaves from `edge`. Reduce Motion uses a crossfade.
+        static func locationBanner(from edge: Edge, reduceMotion: Bool) -> AnyTransition {
+            reduceMotion ? .opacity : .move(edge: edge).combined(with: .opacity)
+        }
         /// motion.controlMorph — the map control circles merging into one and splitting again.
         static let controlMorph: Animation = .spring()
         // The passenger dot's motion between GPS fixes is deliberately not a token here.
-        // It is `UserAnnotation`, which MapKit animates with the same puck animator Maps
-        // uses — the pacing is Apple's, and there is nothing for us to specify.
+        // It is MapKit's own user-location view, which MapKit animates with the same puck animator
+        // Maps uses — the pacing is Apple's, and there is nothing for us to specify.
         /// motion.locationPulse — the passenger dot's idle breathe while standing still.
         /// The one respect in which the dot's motion is ours rather than MapKit's: see
         /// `PassengerPuck`.
@@ -193,30 +291,36 @@ extension TransportMode {
     var color: Color {
         switch self {
         case .train:    return .orchid
-        case .bus:      return .purple // default in-case color from backend is not used
+        case .bus:      return .plum
         case .jeepney:  return .amethyst
+        case .modernJeepney: return .lagoon
         case .uvExpress: return .amethyst
         case .tricycle: return .chartreuse
         case .walk:     return .cocoa
         }
     }
 
-    /// Jeepney shares bus.fill because car.fill reads as a private car.
-    /// Jeepney amethyst and bus cobalt keep the two distinguishable.
-    var icon: String {
+    /// The jeepney, the modern jeepney, and the tricycle use the custom `jeepney.fill`, `jeepney.modern.fill`, and `tricycle.fill`
+    /// symbols in Assets.xcassets. The other modes use system symbols.
+    var iconImage: Image {
         switch self {
-        case .train:    return "tram.fill"
-        case .bus:      return "bus.fill"
-        case .jeepney:  return "bus.fill"
-        case .uvExpress: return "car.side.fill"
-        case .tricycle: return "bicycle"
-        case .walk:     return "figure.walk"
+        case .train:    return Image(systemName: "tram.fill")
+        case .bus:      return Image(systemName: "bus.fill")
+        case .jeepney:  return Image(.jeepneyFill)
+        case .modernJeepney: return Image(.jeepneyModernFill)
+        case .uvExpress: return Image(systemName: "car.side.fill")
+        case .tricycle: return Image(.tricycleFill)
+        case .walk:     return Image(systemName: "figure.walk")
         }
     }
 
     /// Name shown in mode pickers.
     var displayName: String {
-        self == .uvExpress ? "UV Express" : rawValue.capitalized
+        switch self {
+        case .uvExpress: "UV Express"
+        case .modernJeepney: "Modern Jeepney"
+        default: rawValue.capitalized
+        }
     }
 }
 
@@ -231,20 +335,15 @@ enum RouteLine {
     static let casing: CGFloat = 2
     /// Solid width of a walk leg.
     static let walkWidth: CGFloat = 4
-    /// Dot diameter of the walk connector.
-    static let connectorDot: CGFloat = 5
-    /// Distance between dot centers of the walk connector.
-    static let connectorDotPitch: CGFloat = 9
+    /// Core width of the walk leg the passenger is on when position is unknown.
+    static let currentWalkWidth: CGFloat = 5
+    /// Opacity of a finished leg when position is unknown.
+    static let doneOpacity: Double = 0.35
 
     /// Solid stroke of a walk leg.
     static let walkStyle = solidStyle(width: walkWidth)
-    /// Thin solid stroke of a station access connector.
+    /// Thin solid stroke of a station access connector and of the walk connector.
     static let connectorStyle = StrokeStyle(lineWidth: 1.5, lineCap: .round)
-
-    /// Round dots of the walk connector. The dash is near zero so each round cap draws a full circle.
-    static let connectorDotStyle = StrokeStyle(
-        lineWidth: connectorDot, lineCap: .round, lineJoin: .round,
-        dash: [0.01, connectorDotPitch - 0.01])
 
     /// Round-capped casing stroke under a leg core of `mode`. A walk leg cases its thinner core.
     static func casingStyle(for mode: TransportMode) -> StrokeStyle {

@@ -122,7 +122,12 @@ final class AdminEdgesViewModel {
             version: graph.version, stations: graph.stations, edges: edges,
             peakHourMultipliers: graph.peakHourMultipliers,
             transportModes: graph.transportModes, paymentMethods: graph.paymentMethods,
-            lines: graph.lines, enforceOperatingHours: graph.enforceOperatingHours
+            lines: graph.lines, enforceOperatingHours: graph.enforceOperatingHours,
+            serviceAreas: graph.serviceAreas,
+            scheduledMaxWaitMinutes: graph.scheduledMaxWaitMinutes,
+            serviceSchedules: graph.serviceSchedules,
+            serviceScheduleExceptions: graph.serviceScheduleExceptions,
+            tollPlazas: graph.tollPlazas, tollFares: graph.tollFares
         )
         try? await GraphStore.shared.replace(newGraph)
         NotificationCenter.default.post(name: Notification.Name("TransitDataDidUpdate"), object: nil)
@@ -145,9 +150,9 @@ struct AdminEdgesView: View {
                 List(vm.lineGroups) { group in
                     NavigationLink(destination: EdgeListView(group: group, vm: vm)) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(group.id).font(.headline)
+                            Text(group.id).font(.system(.headline, weight: .semibold))
                             Text("\(group.edges.count) edges")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.system(.caption)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 2)
                     }
@@ -188,7 +193,7 @@ private struct EdgeListView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(Color.ember)
                             Text("Some segments are one-way and others two-way. A two-way segment inside a one-way route lets the app route riders backwards along it.")
-                                .font(.caption)
+                                .font(.system(.caption))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         HStack(spacing: 10) {
@@ -196,6 +201,8 @@ private struct EdgeListView: View {
                                 Task { await vm.setBidirectionalForLine(group.id, to: false) }
                             }
                             .buttonStyle(.borderedProminent)
+                            .tint(DesignTokens.Colors.action)
+                            .foregroundStyle(DesignTokens.Colors.onAction)
                             .controlSize(.small)
                             Button("Make all two-way") {
                                 Task { await vm.setBidirectionalForLine(group.id, to: true) }
@@ -208,7 +215,7 @@ private struct EdgeListView: View {
                 }
             }
             if let error = vm.bulkUpdateError {
-                Section { Text(error).font(.caption).foregroundStyle(Color.vermilion) }
+                Section { Text(error).font(.system(.caption)).foregroundStyle(Color.vermilion) }
             }
             Section {
                 ForEach(currentEdges) { edge in
@@ -261,11 +268,11 @@ private struct EdgeRow: View {
         VStack(alignment: .leading, spacing: 3) {
             HStack(spacing: 6) {
                 Text("\(fromName) → \(toName)")
-                    .font(.headline)
+                    .font(.system(.headline, weight: .semibold))
                     .lineLimit(1)
                 if let dir = edge.direction {
                     Text(dir.capitalized)
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(Color.onyx.opacity(0.12))
                         .foregroundStyle(Color.onyx)
@@ -277,13 +284,13 @@ private struct EdgeRow: View {
                 // it belongs on the row: it's the difference between a rider being sent
                 // to the correct side of the road and the opposite one.
                 Text(edge.bidirectional ? "Two-way" : "One-way")
-                    .font(.caption2.bold())
+                    .font(.system(.caption2, weight: .bold))
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(edge.bidirectional ? Color.ember.opacity(0.14) : Color.jade.opacity(0.14))
                     .foregroundStyle(edge.bidirectional ? Color.ember : Color.jade)
                     .clipShape(Capsule())
                 Text("\(edge.polylineCoordinates.count) waypoints")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.system(.caption)).foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 2)
@@ -356,7 +363,7 @@ private struct EditEdgePolylineView: View {
                                 .overlay(Circle().stroke(.white, lineWidth: 2))
                                 .shadow(color: .black.opacity(0.3), radius: 3)
                             Text("\(i + 1)")
-                                .font(.caption2.bold())
+                                .font(.system(.caption2, weight: .bold))
                                 .foregroundStyle(Color.canvas)
                         }
                         .onTapGesture {
@@ -396,10 +403,10 @@ private struct EditEdgePolylineView: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(fromName) → \(toName)")
-                            .font(.headline)
+                            .font(.system(.headline, weight: .semibold))
                             .lineLimit(1)
                         Text(edge.line)
-                            .font(.caption)
+                            .font(.system(.caption))
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -419,9 +426,9 @@ private struct EditEdgePolylineView: View {
                     // usually corrected in the same sitting.
                     Toggle(isOn: $isOneWay) {
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("One-way").font(.subheadline)
+                            Text("One-way").font(.system(.subheadline))
                             Text(directionalityCaption)
-                                .font(.caption2)
+                                .font(.system(.caption2))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -433,12 +440,12 @@ private struct EditEdgePolylineView: View {
                     // Coordinate of map center
                     Text(String(format: "%.6f,  %.6f",
                                 centerCoordinate.latitude, centerCoordinate.longitude))
-                        .font(.caption.monospacedDigit())
+                        .font(.system(.caption).monospacedDigit())
                         .foregroundStyle(.secondary)
 
                     if waypoints.isEmpty {
                         Text("No waypoints — add one using the button below.")
-                            .font(.caption)
+                            .font(.system(.caption))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     } else {
@@ -456,7 +463,7 @@ private struct EditEdgePolylineView: View {
 
                             Spacer()
                             Text("Point \(selectedIndex + 1) of \(waypoints.count)")
-                                .font(.subheadline.bold())
+                                .font(.system(.subheadline, weight: .bold))
                             Spacer()
 
                             Button {
@@ -540,7 +547,7 @@ private struct EditEdgePolylineView: View {
 
                     if let error = errorMessage {
                         Text(error)
-                            .font(.caption)
+                            .font(.system(.caption))
                             .foregroundStyle(Color.vermilion)
                     }
 
@@ -559,6 +566,8 @@ private struct EditEdgePolylineView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.Colors.action)
+                        .foregroundStyle(DesignTokens.Colors.onAction)
                         .frame(maxWidth: .infinity)
                         .disabled(isSaving || waypoints.count < 2)
                     }

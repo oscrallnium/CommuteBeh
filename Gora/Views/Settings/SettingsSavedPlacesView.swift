@@ -32,11 +32,11 @@ struct SettingsSavedPlacesView: View {
 
     private func row(for place: SavedPlace) -> some View {
         HStack(spacing: DesignTokens.Space.m) {
-            SettingsRowIcon(systemImage: place.icon.systemImage, tint: .vermilion)
+            SettingsRowIcon(systemImage: place.icon.outlineSystemImage)
             VStack(alignment: .leading) {
                 Text(place.name)
                 Text(place.addressLabel)
-                    .font(.subheadline)
+                    .font(.system(.subheadline))
                     .foregroundStyle(.secondary)
             }
         }

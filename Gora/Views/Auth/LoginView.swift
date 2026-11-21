@@ -26,9 +26,9 @@ struct LoginView: View {
                     .font(.system(size: 52))
                     .foregroundStyle(Color.ember)
                 Text("Gora")
-                    .font(.largeTitle.bold())
+                    .font(.system(.largeTitle, weight: .bold))
                 Text("Metro Manila Transit Navigator")
-                    .font(.subheadline)
+                    .font(.system(.subheadline))
                     .foregroundStyle(.secondary)
             }
             .padding(.bottom, 16)
@@ -58,7 +58,7 @@ struct LoginView: View {
 
             if let error = errorMessage {
                 Text(error)
-                    .font(.caption)
+                    .font(.system(.caption))
                     .foregroundStyle(Color.vermilion)
                     .multilineTextAlignment(.center)
             }
@@ -73,18 +73,38 @@ struct LoginView: View {
                             .tint(.white)
                     } else {
                         Text("Sign In")
-                            .fontWeight(.semibold)
+                            .font(.system(.body, weight: .semibold))
                     }
                 }
+                .foregroundStyle(DesignTokens.Colors.onAction)
                 .frame(maxWidth: .infinity)
                 .padding()
             }
             .buttonStyle(.borderedProminent)
+            .tint(DesignTokens.Colors.action)
             .disabled(isLoading || email.isEmpty || password.isEmpty)
 
             Spacer()
         }
         .padding(24)
+        .overlay(alignment: .topTrailing) { closeButton }
+    }
+
+    private var closeButton: some View {
+        Button {
+            focusedField = nil
+            session.dismissLogin()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(.body, weight: .semibold))
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
+        .disabled(isLoading)
+        .accessibilityLabel("Close")
+        .padding(.trailing, 16)
+        .padding(.top, 8)
     }
 
     private func signIn() async {

@@ -13,10 +13,10 @@ import os
 enum RoadTraffic {
     static let factorRange = 1.0...4.0
 
-    /// True for a bus, jeepney, UV Express, or tricycle leg that is not a walk between platforms.
+    /// True for a bus, jeepney, modern jeepney, UV Express, or tricycle leg that is not a walk between platforms.
     static func isRoadLeg(_ leg: RouteLeg) -> Bool {
         guard leg.line != "INTERCHANGE", leg.line != "ACCESS_WALK" else { return false }
-        return [TransportMode.bus, .jeepney, .uvExpress, .tricycle].contains(leg.mode)
+        return [TransportMode.bus, .jeepney, .modernJeepney, .uvExpress, .tricycle].contains(leg.mode)
     }
 
     /// Sum of the free-flow minutes of every edge in the leg.
@@ -120,7 +120,7 @@ extension RouteStore {
         var rebuilt: [RouteOption] = []
         for option in snapshot {
             let result = await retimed(option.result, cache: &cache)
-            rebuilt.append(RouteOption(result: result, label: option.label, id: option.id))
+            rebuilt.append(option.replacing(result: result))
             if Task.isCancelled { return }
         }
         let shown = shownIndex.map { rebuilt[$0] }
@@ -129,7 +129,7 @@ extension RouteStore {
             if routeOptions.isEmpty, let shown { routeResult = shown.result }
             return
         }
-        routeOptions = rebuilt.sortedByDuration()
+        routeOptions = rebuilt.sortedByDuration().labeledByResult()
         routeResult = shown?.result ?? routeOptions.first?.result
     }
 

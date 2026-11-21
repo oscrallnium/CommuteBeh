@@ -63,17 +63,17 @@ struct WalkARTestView: View {
     private var bottomPanel: some View {
         VStack(spacing: DesignTokens.Space.s) {
             Text(summary)
-                .font(DesignTokens.TypeScale.rowTitle)
+                .typeScale(.rowTitle)
                 .multilineTextAlignment(.center)
             surveyPicker
             Button("Start AR") {
                 picker.stop()
                 isShowingAR = true
             }
-                .font(DesignTokens.TypeScale.controlLabel)
+                .typeScale(.controlLabel)
                 .buttonStyle(.borderedProminent)
                 .tint(DesignTokens.Colors.action)
-                .foregroundStyle(Color.licorice)
+                .foregroundStyle(DesignTokens.Colors.onAction)
                 .disabled(picker.route == nil)
         }
         .padding(DesignTokens.Space.l)
@@ -90,7 +90,7 @@ struct WalkARTestView: View {
             }
         }
         .pickerStyle(.menu)
-        .font(DesignTokens.TypeScale.controlLabel)
+        .typeScale(.controlLabel)
     }
 
     private func loadSurveys() async {

@@ -16,6 +16,14 @@ struct AddPlaceSheet: View {
     @State private var model: AddPlaceViewModel
     /// Height of the sheet content. The only detent follows it, so the sheet fits its content.
     @State private var contentHeight: CGFloat = 520
+    /// Top edge of the keyboard in screen points, or nil while the keyboard is hidden.
+    @State private var keyboardTop: CGFloat?
+
+    private enum Layout {
+        /// Share of the space above the keyboard that the sheet may fill. iOS 26 blends a sheet
+        /// toward opaque as it nears full height, so the sheet stays well below it.
+        static let keyboardHeightShare: CGFloat = 0.6
+    }
 
     private static let rowHeight: CGFloat = 52
     /// Suggestions shown under the address field. The sheet grows by one row for each.
@@ -24,14 +32,28 @@ struct AddPlaceSheet: View {
     init(routeStore: RouteStore, editing: SavedPlace? = nil, onSave: @escaping (SavedPlace) -> Void) {
         self.routeStore = routeStore
         self.onSave = onSave
-        _model = State(initialValue: AddPlaceViewModel(stations: routeStore.allStations,
-                                                       userLocation: routeStore.userLocation,
+        _model = State(initialValue: AddPlaceViewModel(userLocation: routeStore.userLocation,
                                                        editing: editing))
     }
 
     /// The sheet keeps the system Liquid Glass background. A second glass layer here would draw
     /// an inner edge above the home indicator and a touch glow while the sheet is dragged.
     var body: some View {
+        ScrollView {
+            content
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                    withAnimation(DesignTokens.Motion.suggestEnter) { contentHeight = height }
+                }
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .presentationDragIndicator(.visible)
+        .presentationDetents([.height(detentHeight)])
+        .task { await model.loadCurrentAddress() }
+        .task { await trackKeyboardFrames() }
+        .task { await trackKeyboardHides() }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.l) {
             header
             nameSection
@@ -43,12 +65,27 @@ struct AddPlaceSheet: View {
         .padding(.horizontal, DesignTokens.Space.l)
         .padding(.top, DesignTokens.Space.m)
         .padding(.bottom, DesignTokens.Space.m)
-        .fixedSize(horizontal: false, vertical: true)
-        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .presentationDragIndicator(.visible)
-        .presentationDetents([.height(contentHeight)])
-        .task { await model.loadCurrentAddress() }
+    }
+
+    /// The content height, capped to the space above the keyboard so the sheet stays partial.
+    private var detentHeight: CGFloat {
+        guard let keyboardTop else { return contentHeight }
+        return min(contentHeight, keyboardTop * Layout.keyboardHeightShare)
+    }
+
+    /// Records the top edge of the keyboard each time its frame changes.
+    private func trackKeyboardFrames() async {
+        for await note in NotificationCenter.default.notifications(named: UIResponder.keyboardWillChangeFrameNotification) {
+            guard let frame = note.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { continue }
+            withAnimation(DesignTokens.Motion.cardEnter) { keyboardTop = frame.minY }
+        }
+    }
+
+    /// Clears the keyboard edge when the keyboard hides, so the sheet returns to its content height.
+    private func trackKeyboardHides() async {
+        for await _ in NotificationCenter.default.notifications(named: UIResponder.keyboardWillHideNotification) {
+            withAnimation(DesignTokens.Motion.cardEnter) { keyboardTop = nil }
+        }
     }
 
     // MARK: Header
@@ -56,7 +93,7 @@ struct AddPlaceSheet: View {
     private var header: some View {
         ZStack {
             Text(model.editing == nil ? "Add Place" : "Edit Place")
-                .font(DesignTokens.TypeScale.instructionCompact)
+                .typeScale(.instructionCompact)
             HStack {
                 Button { dismiss() } label: {
                     Image(systemName: "xmark")
@@ -77,12 +114,12 @@ struct AddPlaceSheet: View {
     private var nameSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.xs) {
             TextField("Name", text: $model.name)
-                .font(.body)
+                .font(.system(.body))
                 .padding(.horizontal, DesignTokens.Space.xl)
                 .frame(height: Self.rowHeight)
                 .background(Capsule().fill(Self.fieldFill))
             Text("Shown in your saved places.")
-                .font(DesignTokens.TypeScale.subtitle)
+                .typeScale(.subtitle)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, DesignTokens.Space.xl)
         }
@@ -93,7 +130,7 @@ struct AddPlaceSheet: View {
     private var iconSection: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.s) {
             Text("Icon")
-                .font(DesignTokens.TypeScale.subtitleEmphasis)
+                .typeScale(.subtitleEmphasis)
                 .foregroundStyle(.secondary)
             HStack(spacing: DesignTokens.Space.xs) {
                 ForEach(SavedPlaceIcon.allCases) { icon in
@@ -127,7 +164,7 @@ struct AddPlaceSheet: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
                 TextField("Search address", text: $model.query)
-                    .font(.body)
+                    .font(.system(.body))
                     .autocorrectionDisabled()
                     .onChange(of: model.query) { _, text in model.queryChanged(text) }
                 if model.isResolving {
@@ -147,9 +184,10 @@ struct AddPlaceSheet: View {
                 )
                 .background(.regularMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .animation(DesignTokens.Motion.suggestEnter, value: model.suggestions.isEmpty)
+        .animation(DesignTokens.Motion.suggestEnter, value: model.suggestions.count)
     }
 
     // MARK: Use current location
@@ -165,10 +203,10 @@ struct AddPlaceSheet: View {
                     .background(Circle().fill(Self.accent))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Use Current Location")
-                        .font(DesignTokens.TypeScale.rowTitle)
+                        .typeScale(.rowTitle)
                         .foregroundStyle(.primary)
                     Text(model.currentLocationSubtitle)
-                        .font(DesignTokens.TypeScale.subtitle)
+                        .typeScale(.subtitle)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -196,11 +234,11 @@ struct AddPlaceSheet: View {
             dismiss()
         } label: {
             Text(model.editing == nil ? "Save Place" : "Save Changes")
-                .font(DesignTokens.TypeScale.controlLabel)
-                .foregroundStyle(model.canSave ? Color.licorice : Color.secondary.opacity(0.6))
+                .typeScale(.controlLabel)
+                .foregroundStyle(model.canSave ? DesignTokens.Colors.onAction : Color.secondary.opacity(0.6))
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(Capsule().fill(model.canSave ? Color.tangerine : Color(.tertiarySystemFill)))
+                .background(Capsule().fill(model.canSave ? DesignTokens.Colors.action : Color(.tertiarySystemFill)))
         }
         .buttonStyle(.plain)
         .disabled(!model.canSave)

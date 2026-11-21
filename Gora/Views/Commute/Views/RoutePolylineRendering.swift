@@ -28,7 +28,7 @@ struct RouteGeometry {
     let maxLng: CLLocationDegrees
 
     /// Cumulative distance (metres) to each point in a leg's polyline, `[0, …, legLength]`.
-    /// Backs `revealedCoordinates`, which walks this to find where a fraction lands.
+    /// Backs `revealSpan`, which turns it into the share of the route a polyline covers.
     let legCumulativeDistances: [RouteLeg.ID: [Double]]
     /// Distance (metres) along the whole route, in leg order, at which each leg starts.
     private let legStartOffsets: [RouteLeg.ID: Double]
@@ -42,8 +42,8 @@ struct RouteGeometry {
     ///
     /// Two overlays occupying near-identical screen space compete for the same pixels on
     /// every render pass, with no guaranteed winner — visible as a flicker with zero data
-    /// ever changing. `sharedHintPolyline` in this file draws a shared stretch differently
-    /// for exactly this reason; see its doc comment.
+    /// ever changing. `RouteLineBuilder` draws a shared stretch as an offset dashed hint for
+    /// exactly this reason.
     private let sharedWithNextMask: [RouteLeg.ID: [Bool]]
     private static let overlapThresholdMeters: CLLocationDistance = 10
 
@@ -138,9 +138,8 @@ struct RouteGeometry {
         }
     }
 
-    /// See `sharedWithNextMask`'s doc comment. Only meaningful for `coords` exactly equal to
-    /// `polylines[legID]` — the full, untrimmed polyline this was measured against; callers
-    /// with a partial (still-revealing) array should not use this.
+    /// See `sharedWithNextMask`'s doc comment. Only meaningful for `polylines[legID]`, the full,
+    /// untrimmed polyline this was measured against.
     func sharedWithNextMask(leg legID: RouteLeg.ID) -> [Bool]? {
         sharedWithNextMask[legID]
     }
@@ -164,34 +163,25 @@ struct RouteGeometry {
         return best
     }
 
-    /// `leg`'s polyline truncated to the leading `fraction` of the whole route's length,
-    /// measured cumulatively across every leg in origin-to-destination order. Draws the
-    /// route on progressively: empty before the reveal reaches this leg, the full
-    /// polyline once it has passed, and an interpolated partial segment in between.
-    func revealedCoordinates(leg legID: RouteLeg.ID, fraction: Double) -> [CLLocationCoordinate2D] {
-        guard let coords = polylines[legID], coords.count >= 2, totalLength > 0 else {
-            return polylines[legID] ?? []
+    /// The route fraction, 0...1, at which `leg` starts. Nil when the route has no length.
+    func startFraction(of legID: RouteLeg.ID) -> Double? {
+        guard totalLength > 0, let start = legStartOffsets[legID] else { return nil }
+        return start / totalLength
+    }
+
+    /// The share of the whole route's length, measured across every leg in origin-to-destination
+    /// order, that `leg`'s points in `points` cover. `points` defaults to the whole leg.
+    /// Nil when the route or the leg has no length, which draws in full.
+    func revealSpan(leg legID: RouteLeg.ID, points: ClosedRange<Int>? = nil) -> RevealSpan? {
+        guard totalLength > 0, let cumulative = legCumulativeDistances[legID], cumulative.count >= 2 else {
+            return nil
         }
-        let cumulative = legCumulativeDistances[legID] ?? []
-        let legLength = cumulative.last ?? 0
+        let range = points ?? 0...(cumulative.count - 1)
+        guard cumulative.indices.contains(range.lowerBound), cumulative.indices.contains(range.upperBound)
+        else { return nil }
         let start = legStartOffsets[legID] ?? 0
-        let revealed = max(0, min(totalLength, fraction * totalLength)) - start
-
-        if revealed <= 0 { return [] }
-        if revealed >= legLength { return coords }
-
-        for i in 0..<(cumulative.count - 1) {
-            guard cumulative[i + 1] >= revealed else { continue }
-            let segStart = cumulative[i]
-            let segLength = cumulative[i + 1] - segStart
-            let t = segLength > 0 ? (revealed - segStart) / segLength : 0
-            let a = coords[i], b = coords[i + 1]
-            let point = CLLocationCoordinate2D(
-                latitude: a.latitude + t * (b.latitude - a.latitude),
-                longitude: a.longitude + t * (b.longitude - a.longitude))
-            return Array(coords[0...i]) + [point]
-        }
-        return coords
+        return RevealSpan(start: (start + cumulative[range.lowerBound]) / totalLength,
+                          end: (start + cumulative[range.upperBound]) / totalLength)
     }
 }
 
@@ -259,66 +249,27 @@ func routeHeading(
     return bearingDegrees(from: ahead[0], to: target)
 }
 
-/// A single flat stroke, core color only — no casing. Every polyline whose coordinates can
-/// change from one `body` evaluation to the next must draw this way, not via
-/// `casedRoutePolyline`: `MapPolyline` wraps an immutable `MKPolyline`, so a coordinate
-/// change swaps the whole `MKOverlay` rather than moving a point in place, and each swap
-/// redraws asynchronously on its own schedule. Two overlays sharing a coordinate source that
-/// changes every frame race each other's redraw and visibly desync mid-animation — the wider
-/// casing trailing or leading the narrower core, or (with several legs animating at once,
-/// each pair racing independently) one leg's line flickering where it runs near another's. A
-/// single overlay has nothing to race.
-@MapContentBuilder
-private func flatRoutePolyline(
-    coordinates: [CLLocationCoordinate2D], mode: TransportMode,
-    width: CGFloat = RouteLine.coreWidth, color: Color? = nil
-) -> some MapContent {
-    MapPolyline(coordinates: coordinates)
-        .stroke(color ?? mode.color, style: routeCoreStyle(mode: mode, width: width))
-}
-
-/// Walking legs draw as a solid line of `RouteLine.walkWidth` and every other mode as a solid line of `width`.
-private func routeCoreStyle(mode: TransportMode, width: CGFloat) -> StrokeStyle {
-    mode == .walk ? RouteLine.walkStyle : RouteLine.solidStyle(width: width)
-}
-
-/// Draws a casing beneath the core, from `color.routeCasing`, so the route stays legible over
-/// roads, water, and park fills. A walking leg cases its thinner core.
-///
-/// Only for a polyline whose coordinates are settled for this `body` evaluation and the ones
-/// immediately around it — see `flatRoutePolyline`'s doc comment for why an animating one
-/// must use that instead.
-@MapContentBuilder
-private func casedRoutePolyline(coordinates: [CLLocationCoordinate2D], mode: TransportMode, color: Color) -> some MapContent {
-    MapPolyline(coordinates: coordinates)
-        .stroke(color.routeCasing, style: RouteLine.casingStyle(for: mode))
-    flatRoutePolyline(coordinates: coordinates, mode: mode, color: color)
-}
-
-/// Splits `coords` into contiguous runs classified by the parallel `mask` (`true`/`false`
-/// must alternate at the same indices in both), each run including the point just past its
-/// end so adjacent runs still join without a gap — the same technique `splitPolyline` uses
-/// for its behind/ahead halves.
-private func splitByMask(
-    _ coords: [CLLocationCoordinate2D], mask: [Bool]
-) -> [(isShared: Bool, coords: [CLLocationCoordinate2D])] {
-    guard coords.count == mask.count, coords.count >= 2 else {
-        return coords.count >= 2 ? [(false, coords)] : []
-    }
-    var runs: [(isShared: Bool, coords: [CLLocationCoordinate2D])] = []
+/// Splits a polyline of `count` points into contiguous runs classified by the parallel `mask`
+/// (`true`/`false` must alternate at the same indices in both). Each run includes the point
+/// just past its end so adjacent runs still join without a gap, the same technique
+/// `splitPolyline` uses for its behind/ahead halves. A `mask` of another length gives one run.
+func splitByMask(count: Int, mask: [Bool]) -> [(isShared: Bool, range: ClosedRange<Int>)] {
+    guard count >= 2 else { return [] }
+    guard count == mask.count else { return [(false, 0...(count - 1))] }
+    var runs: [(isShared: Bool, range: ClosedRange<Int>)] = []
     var runStart = 0
-    for i in 1..<coords.count where mask[i] != mask[i - 1] {
-        runs.append((mask[i - 1], Array(coords[runStart...i])))
+    for i in 1..<count where mask[i] != mask[i - 1] {
+        runs.append((mask[i - 1], runStart...i))
         runStart = i
     }
-    runs.append((mask[runStart], Array(coords[runStart...])))
+    runs.append((mask[runStart], runStart...(count - 1)))
     return runs
 }
 
 /// Shifts each point of `coords` `meters` to the right of the local direction of travel,
-/// in flat lat/lng space — accurate enough over the few metres `sharedHintPolyline` needs.
+/// in flat lat/lng space — accurate enough over the few metres a shared-segment hint needs.
 /// Same latitude-scale correction `arcCoordinates` uses for its own perpendicular offset.
-private func offsetCoordinates(
+func offsetCoordinates(
     _ coords: [CLLocationCoordinate2D], metersToTheRight meters: Double
 ) -> [CLLocationCoordinate2D] {
     let metersPerDegreeLat = 111_320.0
@@ -333,110 +284,5 @@ private func offsetCoordinates(
         return CLLocationCoordinate2D(
             latitude: coords[i].latitude - (dLng / len) * meters / metersPerDegreeLat,
             longitude: coords[i].longitude + (dLat / len) * meters / metersPerDegreeLng)
-    }
-}
-
-/// A thin dashed line in the leg color, offset a few metres to the side of `coordinates`,
-/// for a stretch where this leg's own path isn't drawn because the next leg's polyline
-/// already occupies the same space (see `RouteGeometry.sharedWithNextMask`). Offsetting
-/// keeps it from re-creating the exact near-coincident-overlay conflict this exists to
-/// avoid, while still showing the passenger that a leg continues alongside the one on top.
-private let sharedHintOffsetMeters: Double = 5
-
-@MapContentBuilder
-private func sharedHintPolyline(coordinates: [CLLocationCoordinate2D], color: Color) -> some MapContent {
-    MapPolyline(coordinates: offsetCoordinates(coordinates, metersToTheRight: sharedHintOffsetMeters))
-        .stroke(color.mapOpacity(0.6), style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [4, 4]))
-}
-
-/// `casedRoutePolyline`, except a stretch marked `true` in `mask` draws as
-/// `sharedHintPolyline` instead — see `RouteGeometry.sharedWithNextMask`'s doc comment for
-/// why. `mask` must be `nil` or the same length as `coordinates`; anything else falls back
-/// to drawing the whole polyline cased, unsplit.
-@MapContentBuilder
-private func maskedRoutePolyline(
-    coordinates: [CLLocationCoordinate2D], mask: [Bool]?, mode: TransportMode, color: Color
-) -> some MapContent {
-    if let mask, mask.count == coordinates.count {
-        ForEach(Array(splitByMask(coordinates, mask: mask).enumerated()), id: \.offset) { _, run in
-            if run.isShared {
-                sharedHintPolyline(coordinates: run.coords, color: color)
-            } else {
-                casedRoutePolyline(coordinates: run.coords, mode: mode, color: color)
-            }
-        }
-    } else {
-        casedRoutePolyline(coordinates: coordinates, mode: mode, color: color)
-    }
-}
-
-/// One leg's polyline exactly as `RouteGeometry` computed it — the non-commuting route
-/// preview, and every leg still ahead of the passenger in Commute Mode. A leg
-/// MKDirections couldn't route has no geometry and draws nothing on purpose; never
-/// fall back to connecting its endpoints here (`currentLegPolylineContent` below is
-/// where that rule is different, and why).
-///
-/// `isAnimating` is true only for the pre-commute reveal, while this leg's own coordinates
-/// are still growing toward their full length (`ContentView` compares the revealed count
-/// against the full count, since legs finish revealing at different times). True draws a
-/// single flat stroke instead of the cased one — see `flatRoutePolyline`'s doc comment.
-///
-/// `sharedMask` is `RouteGeometry.sharedWithNextMask(leg:)`, only meaningful (and only ever
-/// passed) once `coords` is the full, untrimmed polyline it was measured against.
-@MapContentBuilder
-func routePolylineContent(
-    leg: RouteLeg, coords: [CLLocationCoordinate2D], isAnimating: Bool, color: Color, sharedMask: [Bool]?
-) -> some MapContent {
-    if coords.count < 2 {
-        EmptyMapContent()
-    } else if isAnimating {
-        flatRoutePolyline(coordinates: coords, mode: leg.mode, color: color)
-    } else {
-        maskedRoutePolyline(coordinates: coords, mask: sharedMask, mode: leg.mode, color: color)
-    }
-}
-
-/// A straight dotted line from `passenger` to `start`, the first point of the walk line drawn
-/// ahead. Draws nothing when the two points are less than 2 m apart.
-@MapContentBuilder
-private func walkConnector(
-    from passenger: CLLocationCoordinate2D, to start: CLLocationCoordinate2D?, color: Color
-) -> some MapContent {
-    if let start,
-       CLLocation(latitude: passenger.latitude, longitude: passenger.longitude)
-        .distance(from: CLLocation(latitude: start.latitude, longitude: start.longitude)) >= 2 {
-        MapPolyline(coordinates: [passenger, start])
-            .stroke(color, style: RouteLine.connectorDotStyle)
-    }
-}
-
-/// A leg the passenger already finished, drawn in the faint color. Flat, with no casing.
-@MapContentBuilder
-func completedLegPolylineContent(leg: RouteLeg, coords: [CLLocationCoordinate2D]) -> some MapContent {
-    if coords.count >= 2 {
-        flatRoutePolyline(coordinates: coords, mode: leg.mode, color: .faint)
-    }
-}
-
-/// The leg the passenger is currently on. Only the portion still ahead is drawn. Falls back
-/// to a straight guide line when the leg has no real geometry.
-///
-/// Always flat: the cut follows the live passenger position. See `Commute-Views.md`.
-@MapContentBuilder
-func currentLegPolylineContent(
-    leg: RouteLeg, coords: [CLLocationCoordinate2D], passenger: CLLocationCoordinate2D?,
-    color: Color
-) -> some MapContent {
-    let hasRealGeometry = coords.count >= 2
-    let baseCoords: [CLLocationCoordinate2D] = hasRealGeometry ? coords : [
-        CLLocationCoordinate2D(latitude: leg.fromStation.coordinates.lat, longitude: leg.fromStation.coordinates.lng),
-        CLLocationCoordinate2D(latitude: leg.toStation.coordinates.lat, longitude: leg.toStation.coordinates.lng)
-    ]
-    let ahead = splitPolyline(baseCoords, at: passenger).ahead
-    if ahead.count >= 2 {
-        flatRoutePolyline(coordinates: ahead, mode: leg.mode, width: RouteLine.currentWidth, color: color)
-    }
-    if leg.mode == .walk, hasRealGeometry, let passenger {
-        walkConnector(from: passenger, to: ahead.first, color: color)
     }
 }

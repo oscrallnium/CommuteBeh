@@ -78,7 +78,7 @@ struct ARSurveyView: View {
 
     private func messageBanner(_ text: String) -> some View {
         Text(text)
-            .font(DesignTokens.TypeScale.subtitle)
+            .typeScale(.subtitle)
             .padding(DesignTokens.Space.m)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
     }
@@ -109,7 +109,7 @@ struct ARSurveyView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(DesignTokens.Colors.action)
-            .foregroundStyle(Color.licorice)
+            .foregroundStyle(DesignTokens.Colors.onAction)
             .disabled(!vm.canSave)
         }
         .controlSize(.large)

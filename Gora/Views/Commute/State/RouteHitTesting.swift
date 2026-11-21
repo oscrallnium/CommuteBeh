@@ -9,7 +9,7 @@ import CoreGraphics
 
 // MARK: - Route Hit Testing
 
-/// Finds which route a tap on the map lands on. `MapPolyline` is not selectable, so the
+/// Finds which route a tap on the map lands on. A route overlay is not selectable, so the
 /// map view projects each route to screen points and this type measures the distance.
 enum RouteHitTesting {
 

@@ -56,8 +56,11 @@ nonisolated enum EngineScaleValidation {
     // MARK: - Equality check
 
     private static func transfersMatchReference(_ graph: TransitGraph) -> Bool {
-        let grid = TransferPolicy.edges(stations: graph.stations, existing: graph.edges, walkModeID: "walk")
-        let reference = referenceTransfers(stations: graph.stations, existing: graph.edges, walkModeID: "walk")
+        let terminalIDs = Set(graph.stations.filter(\.isTerminal).map(\.id))
+        let grid = TransferPolicy.edges(
+            stations: graph.stations, existing: graph.edges, walkModeID: "walk", zoneTerminalIDs: terminalIDs)
+        let reference = referenceTransfers(
+            stations: graph.stations, existing: graph.edges, walkModeID: "walk", zoneTerminalIDs: terminalIDs)
         guard grid.count == reference.count else { return false }
         return zip(grid, reference).allSatisfy {
             $0.id == $1.id && $0.distanceKm == $1.distanceKm && $0.travelTimeMinutes == $1.travelTimeMinutes
@@ -67,7 +70,7 @@ nonisolated enum EngineScaleValidation {
     /// Nested loop over all pairs. A latitude test drops pairs that are far apart before the
     /// distance call, so the 400-line graph finishes in seconds.
     private static func referenceTransfers(
-        stations: [Station], existing: [TransitEdge], walkModeID: String
+        stations: [Station], existing: [TransitEdge], walkModeID: String, zoneTerminalIDs: Set<StationID>
     ) -> [TransitEdge] {
         let linked = Set(existing.filter { $0.line == "INTERCHANGE" }.flatMap {
             ["\($0.from)|\($0.to)", "\($0.to)|\($0.from)"]
@@ -76,7 +79,7 @@ nonisolated enum EngineScaleValidation {
             ($0, CLLocation(latitude: $0.coordinates.lat, longitude: $0.coordinates.lng))
         }
         let keys = stations.map(StationChain.key(of:))
-        let latitudeLimit = TransferPolicy.maxKm / 100
+        let latitudeLimit = TransferPolicy.terminalMaxKm / 100
 
         var result: [TransitEdge] = []
         for (i, (a, locationA)) in located.enumerated() {
@@ -86,7 +89,9 @@ nonisolated enum EngineScaleValidation {
                       keys[i] != keys[j],
                       !linked.contains("\(a.id)|\(b.id)") else { continue }
                 let km = locationA.distance(from: locationB) / 1000
-                guard km <= TransferPolicy.maxKm else { continue }
+                let limitKm = zoneTerminalIDs.contains(a.id) || zoneTerminalIDs.contains(b.id)
+                    ? TransferPolicy.terminalMaxKm : TransferPolicy.maxKm
+                guard km <= limitKm else { continue }
                 result.append(referenceTransfer(from: a, to: b, km: km, walkModeID: walkModeID))
                 result.append(referenceTransfer(from: b, to: a, km: km, walkModeID: walkModeID))
             }

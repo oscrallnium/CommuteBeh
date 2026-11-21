@@ -17,7 +17,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
-        Analytics.setAnalyticsCollectionEnabled(UserDefaults.standard.bool(forKey: SettingsKey.shareUsageData))
+        Analytics.setAnalyticsCollectionEnabled(SettingsKey.isShareUsageDataEnabled)
         return true
     }
 }

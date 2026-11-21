@@ -24,7 +24,7 @@ struct GoraApp: App {
                 .environment(savedPlaces)
                 .task { await savedPlaces.load() }
                 .fullScreenCover(isPresented: Binding(
-                    get: { !session.isLoggedIn },
+                    get: { session.isLoginPresented },
                     set: { _ in }
                 )) {
                     LoginView()

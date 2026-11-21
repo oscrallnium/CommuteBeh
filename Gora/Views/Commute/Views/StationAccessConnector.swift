@@ -47,30 +47,25 @@ func bearingDegrees(from a: CLLocationCoordinate2D, to b: CLLocationCoordinate2D
     return degrees < 0 ? degrees + 360 : degrees
 }
 
-/// Thin solid curved connector from a station's nearest access point to its routing
-/// centroid, arrowed toward the centroid. Draws nothing when the access point and centroid
-/// share the same coordinate — there is nothing to connect.
-@MapContentBuilder
-func stationAccessConnector(station: Station, nearestTo other: Coordinates) -> some MapContent {
+/// The thin solid curved connector from a station's nearest access point to its routing
+/// centroid, with an arrow tip at the centroid. Nil when the access point and centroid share
+/// the same coordinate, because there is nothing to connect.
+private func stationAccessConnector(
+    station: Station, nearestTo other: Coordinates
+) -> (line: RouteLineDescriptor, tip: MapAnnotationDescriptor)? {
     let access = station.accessPoint(kind: .both, direction: nil, nearestTo: other)
     let centroid = station.coordinates
-    if abs(access.lat - centroid.lat) > 1e-7 || abs(access.lng - centroid.lng) > 1e-7 {
-        let arc = arcCoordinates(from: access, to: centroid)
-        MapPolyline(coordinates: arc)
-            .stroke(.black, style: RouteLine.connectorStyle)
-        if arc.count >= 2 {
-            let tip = arc[arc.count - 1]
-            let bearing = bearingDegrees(from: arc[arc.count - 2], to: tip)
-            Annotation("", coordinate: tip, anchor: .center) {
-                Image(systemName: "arrowtriangle.up.fill")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.black)
-                    .rotationEffect(.degrees(bearing))
-            }
-        }
-    } else {
-        EmptyMapContent()
-    }
+    guard abs(access.lat - centroid.lat) > 1e-7 || abs(access.lng - centroid.lng) > 1e-7 else { return nil }
+    let arc = arcCoordinates(from: access, to: centroid)
+    guard arc.count >= 2 else { return nil }
+    let tip = arc[arc.count - 1]
+    return (
+        RouteLineDescriptor(
+            id: "connector-\(station.id)", coordinates: arc,
+            stroke: LineStroke(color: .black, style: RouteLine.connectorStyle)),
+        MapAnnotationDescriptor(
+            id: "connector-tip-\(station.id)", coordinate: tip, title: nil,
+            content: .connectorTip(bearing: bearingDegrees(from: arc[arc.count - 2], to: tip))))
 }
 
 /// One end of a leg: a station and the coordinate its access point is chosen nearest to.
@@ -89,10 +84,12 @@ private func uniqueConnectorEnds(_ legs: ArraySlice<RouteLeg>) -> [ConnectorEnd]
     }.filter { seen.insert($0.id).inserted }
 }
 
-/// `stationAccessConnector` once per station across `legs`.
-@MapContentBuilder
-func stationAccessConnectors(legs: ArraySlice<RouteLeg>) -> some MapContent {
-    ForEach(uniqueConnectorEnds(legs)) { end in
-        stationAccessConnector(station: end.station, nearestTo: end.other)
+/// The connector of each station across `legs`, once per station.
+func stationAccessConnectors(
+    legs: ArraySlice<RouteLeg>
+) -> (lines: [RouteLineDescriptor], tips: [MapAnnotationDescriptor]) {
+    let connectors = uniqueConnectorEnds(legs).compactMap {
+        stationAccessConnector(station: $0.station, nearestTo: $0.other)
     }
+    return (connectors.map(\.line), connectors.map(\.tip))
 }

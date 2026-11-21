@@ -32,9 +32,9 @@ struct ARSurveySelectionPanel: View {
         if let node = vm.selectedNode {
             VStack(spacing: DesignTokens.Space.xxs) {
                 Label(node.label, systemImage: node.kind.symbolName)
-                    .font(DesignTokens.TypeScale.subtitleEmphasis)
+                    .typeScale(.subtitleEmphasis)
                 Text("\(node.kind.displayName) · \(angleText)")
-                    .font(DesignTokens.TypeScale.subtitle)
+                    .typeScale(.subtitle)
                     .foregroundStyle(.secondary)
             }
         }
@@ -71,7 +71,7 @@ struct ARSurveySelectionPanel: View {
             Button("Done") { vm.clearSelection() }
                 .buttonStyle(.borderedProminent)
                 .tint(DesignTokens.Colors.action)
-                .foregroundStyle(Color.licorice)
+                .foregroundStyle(DesignTokens.Colors.onAction)
         }
     }
 }

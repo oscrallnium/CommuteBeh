@@ -22,7 +22,7 @@ struct WalkARCoachingCard: View {
                     WalkARSignThumbnail(surveyID: survey.id, fileName: first.fileName, side: 72)
                 }
                 VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
-                    Text(title).font(DesignTokens.TypeScale.instructionCompact)
+                    Text(title).typeScale(.instructionCompact)
                     if let captureLine { captionText(captureLine) }
                 }
                 Spacer(minLength: 0)
@@ -49,7 +49,7 @@ struct WalkARCoachingCard: View {
 
     private func captionText(_ text: String) -> some View {
         Text(text)
-            .font(DesignTokens.TypeScale.subtitle)
+            .typeScale(.subtitle)
             .foregroundStyle(.white.opacity(0.7))
     }
 
@@ -60,7 +60,7 @@ struct WalkARCoachingCard: View {
                     VStack(spacing: DesignTokens.Space.xxs) {
                         WalkARSignThumbnail(surveyID: survey.id, fileName: anchor.fileName, side: 48)
                         Text(anchor.name)
-                            .font(DesignTokens.TypeScale.meta)
+                            .typeScale(.meta)
                             .lineLimit(1)
                             .frame(maxWidth: 64)
                     }

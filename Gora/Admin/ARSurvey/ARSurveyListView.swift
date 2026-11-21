@@ -70,15 +70,15 @@ private struct ARSurveyRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Space.xxs) {
             HStack {
-                Text(survey.metadata.name).font(DesignTokens.TypeScale.rowTitle)
+                Text(survey.metadata.name).typeScale(.rowTitle)
                 Spacer()
                 if !survey.errors.isEmpty || !survey.warnings.isEmpty { warningBadge }
             }
             Text(survey.metadata.zoneName)
-                .font(DesignTokens.TypeScale.subtitle)
+                .typeScale(.subtitle)
                 .foregroundStyle(.secondary)
             Text(detail)
-                .font(DesignTokens.TypeScale.meta)
+                .typeScale(.meta)
                 .foregroundStyle(.secondary)
         }
         .contentShape(Rectangle())
@@ -93,7 +93,7 @@ private struct ARSurveyRow: View {
 
     private var warningBadge: some View {
         Label(survey.errors.isEmpty ? "Warning" : "Check scan", systemImage: "exclamationmark.triangle.fill")
-            .font(DesignTokens.TypeScale.meta.weight(.semibold))
+            .font(.system(.caption, weight: .semibold))
             .foregroundStyle(survey.errors.isEmpty ? Color.ember : Color.vermilion)
             .accessibilityHint((survey.errors + survey.warnings).joined(separator: " "))
     }

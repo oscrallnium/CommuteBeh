@@ -19,11 +19,12 @@ extension ContentView {
                 result: result,
                 engine: engine,
                 routeStore: routeStore,
-                destinationText: destinationText,
+                destinationText: routeStore.destinationText,
                 arrivedAt: arrivedAt,
                 cardState: cardState,
                 showEndAlert: showEndAlert,
-                onEndCommute: { endCommute(reason: .user) }
+                onEndCommute: { endCommute(reason: .user) },
+                onArrive: arriveByTap
             )
         }
     }

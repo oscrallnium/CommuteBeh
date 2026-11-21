@@ -36,7 +36,7 @@ struct WalkARHUD: View {
 
     private var instructionCard: some View {
         Text(state.instruction)
-            .font(DesignTokens.TypeScale.instruction)
+            .typeScale(.instruction)
             .foregroundStyle(.white)
             .multilineTextAlignment(.center)
             .padding(DesignTokens.Space.m)
@@ -57,17 +57,17 @@ struct WalkARHUD: View {
 
     private func warningBanner(_ text: String) -> some View {
         Text(text)
-            .font(DesignTokens.TypeScale.subtitleEmphasis)
-            .foregroundStyle(Color.licorice)
+            .typeScale(.subtitleEmphasis)
+            .foregroundStyle(Color.cocoa)
             .multilineTextAlignment(.center)
             .padding(DesignTokens.Space.sm)
             .frame(maxWidth: .infinity)
-            .background(DesignTokens.Colors.action, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
+            .background(Color.tangerine, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
     }
 
     private func surveyBanner(_ text: String) -> some View {
         Text(text)
-            .font(DesignTokens.TypeScale.subtitleEmphasis)
+            .typeScale(.subtitleEmphasis)
             .foregroundStyle(.white)
             .multilineTextAlignment(.center)
             .padding(DesignTokens.Space.sm)
@@ -94,7 +94,7 @@ struct WalkARHUD: View {
             Spacer()
             Text(value).foregroundStyle(.white)
         }
-        .font(DesignTokens.TypeScale.subtitleEmphasis)
+        .typeScale(.subtitleEmphasis)
     }
 
     private var closeButton: some View {

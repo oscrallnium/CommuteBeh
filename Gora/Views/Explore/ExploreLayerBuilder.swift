@@ -217,6 +217,7 @@ nonisolated enum ExploreLayerBuilder {
         case "train":    return 6
         case "bus":      return 5
         case "jeepney":  return 4
+        case "modern_jeepney": return 4
         case "uv_express": return 4
         case "tricycle": return 3
         default:         return 3
@@ -228,6 +229,7 @@ nonisolated enum ExploreLayerBuilder {
         case "train":    return 13
         case "bus":      return 10
         case "jeepney":  return 9
+        case "modern_jeepney": return 9
         case "uv_express": return 9
         case "tricycle": return 8
         default:         return 8
@@ -235,6 +237,6 @@ nonisolated enum ExploreLayerBuilder {
     }
 
     static func modeOrder(_ mode: String) -> Int {
-        ["train": 0, "bus": 1, "jeepney": 2, "uv_express": 3, "tricycle": 4][mode] ?? 5
+        ["train": 0, "bus": 1, "jeepney": 2, "modern_jeepney": 3, "uv_express": 4, "tricycle": 5][mode] ?? 6
     }
 }

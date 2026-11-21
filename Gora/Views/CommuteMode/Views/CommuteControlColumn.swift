@@ -9,7 +9,8 @@ import SwiftUI
 
 /// The vertical map controls above the commute sheet. Apart, they are three glass circles.
 /// Merged, the 2D/3D and Track circles melt into the ellipsis circle, whose menu holds all
-/// five actions.
+/// five actions. With Location off the Track circle shows `location.slash` and opens the
+/// Turn On Location alert, and the menu adds Turn On Location.
 struct CommuteControlColumn: View {
     @Binding var cameraMode: CommuteCameraMode
     /// While true the follow loop rewrites the camera, so the map cannot be panned.
@@ -19,6 +20,7 @@ struct CommuteControlColumn: View {
     let onTripDetails: () -> Void
     let onEndCommute: () -> Void
 
+    @Environment(RouteStore.self) private var routeStore
     @Namespace private var glassNS
 
     private let circleSize: CGFloat = 52
@@ -41,27 +43,39 @@ struct CommuteControlColumn: View {
     private var cameraButton: some View {
         Button(action: toggleCamera) {
             Text(cameraMode == .twoD ? "3D" : "2D")
-                .font(DesignTokens.TypeScale.rowTitleCurrent)
+                .typeScale(.rowTitleCurrent)
                 .foregroundStyle(.primary)
                 .frame(width: circleSize, height: circleSize)
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .goraGlass(.clear.interactive(), in: .circle)
+        .goraGlass(.regular.interactive(), in: .circle)
         .accessibilityLabel(cameraMode == .twoD ? "Switch to 3D" : "Switch to 2D")
+    }
+
+    private var isLocationOff: Bool { routeStore.locationAccess == .off }
+
+    private var trackSymbol: String {
+        if isLocationOff { return "location.slash" }
+        return isFollowing ? "location.fill" : "location"
+    }
+
+    private var trackLabel: String {
+        if isLocationOff { return "Location is off. Turn on Location." }
+        return isFollowing ? "Stop following your location" : "Follow your location"
     }
 
     private var trackButton: some View {
         Button(action: toggleTracking) {
-            Image(systemName: isFollowing ? "location.fill" : "location")
+            Image(systemName: trackSymbol)
                 .font(.title3)
-                .foregroundStyle(Color.ember)
+                .foregroundStyle(.primary)
                 .frame(width: circleSize, height: circleSize)
                 .contentShape(.circle)
         }
         .buttonStyle(.plain)
-        .goraGlass(.clear.interactive(), in: .circle)
-        .accessibilityLabel(isFollowing ? "Stop following your location" : "Follow your location")
+        .goraGlass(.regular.interactive(), in: .circle)
+        .accessibilityLabel(trackLabel)
     }
 
     private var moreMenu: some View {
@@ -71,9 +85,11 @@ struct CommuteControlColumn: View {
                     Button(action: toggleCamera) {
                         Label(cameraMode == .twoD ? "3D View" : "2D View", systemImage: "view.3d")
                     }
-                    Button(action: toggleTracking) {
-                        Label(isFollowing ? "Untrack" : "Track",
-                              systemImage: isFollowing ? "location.slash" : "location")
+                    if !isLocationOff {
+                        Button(action: toggleTracking) {
+                            Label(isFollowing ? "Untrack" : "Track",
+                                  systemImage: isFollowing ? "location.slash" : "location")
+                        }
                     }
                 }
             }
@@ -83,6 +99,11 @@ struct CommuteControlColumn: View {
                 }
                 Button(action: onTripDetails) {
                     Label("Trip Details", systemImage: "list.bullet")
+                }
+                if isLocationOff {
+                    Button(action: turnOnLocation) {
+                        Label("Turn On Location", systemImage: "location.slash")
+                    }
                 }
                 Button(role: .destructive, action: onEndCommute) {
                     Label("End Commute", systemImage: "xmark.circle")
@@ -98,7 +119,7 @@ struct CommuteControlColumn: View {
         .menuStyle(.button)
         .menuOrder(.fixed)
         .buttonStyle(.plain)
-        .goraGlass(.clear.interactive(), in: .circle)
+        .goraGlass(.regular.interactive(), in: .circle)
         .accessibilityLabel("More")
     }
 
@@ -109,7 +130,15 @@ struct CommuteControlColumn: View {
     }
 
     private func toggleTracking() {
-        isFollowing.toggle()
+        if isLocationOff {
+            turnOnLocation()
+        } else {
+            isFollowing.toggle()
+        }
+    }
+
+    private func turnOnLocation() {
+        routeStore.isTurnOnLocationAlertPresented = true
     }
 }
 
@@ -134,6 +163,7 @@ private struct CommuteControlColumnPreview: View {
             }
             .padding(DesignTokens.Space.l)
         }
+        .environment(RouteStore())
     }
 }
 

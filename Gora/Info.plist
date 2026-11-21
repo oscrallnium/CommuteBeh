@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>FIREBASE_ANALYTICS_COLLECTION_ENABLED</key>
+	<true/>
+	<key>GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED</key>
 	<false/>
 	<key>UIBackgroundModes</key>
 	<array>

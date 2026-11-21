@@ -16,6 +16,7 @@ enum CommuteCardState {
     case collapsed
     case expanded
 
+    /// The live-guidance height of this state. The Location-off card adds its measured blocks in `CommuteSheetCard`.
     var height: CGFloat { self == .collapsed ? CommuteSheetHeight.collapsed : CommuteSheetHeight.expanded }
 }
 
@@ -25,8 +26,6 @@ enum CommuteSheetHeight {
     static var collapsed: CGFloat { scaled(86) }
     /// Height of the header, the hairline and the leg list.
     static var expanded: CGFloat { scaled(298.5) }
-    /// Halfway between the two states. A taller card shows its leg list fully during a drag.
-    static var midpoint: CGFloat { (collapsed + expanded) / 2 }
 
     private static func scaled(_ value: CGFloat) -> CGFloat {
         UIFontMetrics(forTextStyle: .body).scaledValue(for: value)

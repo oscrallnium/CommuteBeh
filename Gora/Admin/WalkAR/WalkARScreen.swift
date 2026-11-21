@@ -46,7 +46,7 @@ struct WalkARScreen: View {
 
     private var unsupportedNotice: some View {
         Text("AR is not available on this device.")
-            .font(DesignTokens.TypeScale.instruction)
+            .typeScale(.instruction)
             .foregroundStyle(.white)
             .multilineTextAlignment(.center)
             .padding(DesignTokens.Space.l)

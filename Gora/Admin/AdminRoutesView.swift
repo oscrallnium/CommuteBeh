@@ -28,7 +28,7 @@ struct AdminRoutesView: View {
                         if let error = vm.deleteRouteError {
                             Section {
                                 Text(error)
-                                    .font(.caption)
+                                    .font(.system(.caption))
                                     .foregroundStyle(Color.vermilion)
                             }
                         }
@@ -42,7 +42,7 @@ struct AdminRoutesView: View {
                                         Text("Enforce Operating Hours")
                                         if let err = vm.settingsError {
                                             Text(err)
-                                                .font(.caption)
+                                                .font(.system(.caption))
                                                 .foregroundStyle(Color.vermilion)
                                         }
                                     }
@@ -72,9 +72,9 @@ struct AdminRoutesView: View {
                                 NavigationLink(destination: StationListView(group: group, vm: vm)) {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(group.id)
-                                            .font(.headline)
+                                            .font(.system(.headline, weight: .semibold))
                                         Text("\(group.stations.count) stations")
-                                            .font(.caption)
+                                            .font(.system(.caption))
                                             .foregroundStyle(.secondary)
                                     }
                                     .padding(.vertical, 2)

@@ -17,5 +17,7 @@
   merges as soon as the live card top rises 4 pt above its settled collapsed top, and splits when
   the top returns. A change of more than 24 pt between two measures is a snap. The column then
   animates to the new top with `DesignTokens.Motion.cardEnter` instead of a jump.
+- **Location off** — the card is taller. `CommuteSheetCard` measures the step row and the step button with
+  `onGeometryChange` and adds them to `CommuteSheetHeight`, so the card fits at every text size. See `CommuteMode-Cards.md`.
 - **State** — the modifier owns the card state, the merge flag and the End Commute alert flag.
   Both flags pass into the card content.

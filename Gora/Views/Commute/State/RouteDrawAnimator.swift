@@ -5,50 +5,61 @@
 //  Created by Oscar Allen Brioso on 9/23/26.
 //
 
-import Foundation
+import UIKit
 
-/// Reveals a freshly computed route's polylines progressively from origin to destination.
-/// Ticks at the same cadence as `PuckGlideInterpolator` so both animations read as one
-/// motion language. See `Commute-State.md`.
-@Observable
-final class RouteDrawAnimator {
+/// Draws a freshly computed route on from origin to destination. A `CADisplayLink` drives an
+/// ease-out curve and reports the route fraction each frame to `onFrame`, which sets
+/// `strokeEnd` on the route renderers. See `Commute-State.md`.
+@MainActor
+final class RouteDrawAnimator: NSObject {
 
-    /// Fraction of the route's total length revealed so far, 0...1. Callers trim each
-    /// leg's polyline to this fraction via `RouteGeometry.revealedCoordinates`.
-    private(set) var revealedFraction: Double = 1
+    /// Share of the route length drawn now, 0...1. A renderer created mid-draw starts here.
+    private(set) var fraction: Double = 1
 
-    /// Identifies the newest draw-on. A superseded loop compares its copy and stops, so
-    /// back-to-back routes can't leave two loops writing against each other.
-    private var token = 0
-    private var task: Task<Void, Never>?
+    /// Receives the eased fraction on each frame. `CommuteMapCoordinator` sets it.
+    var onFrame: ((Double) -> Void)?
 
     static let duration: TimeInterval = 0.9
+    private static let easeOutExponent = 3.0
 
-    /// Hides the route until `start()` runs. Call before a search begins, so the first frame
-    /// of the new route already draws empty and nothing shows during the camera glide.
+    /// True while a draw-on runs, between `start()` and the last frame.
+    var isDrawing: Bool { displayLink != nil }
+
+    private var displayLink: CADisplayLink?
+    private var startedAt: CFTimeInterval = 0
+
+    /// Hides the route until `start()` runs. Call before a search begins, so the new route
+    /// is empty when it arrives and nothing shows during the camera glide.
     func prepareForNewRoute() {
-        token += 1
-        task?.cancel()
-        task = nil
-        revealedFraction = 0
+        stop()
+        publish(0)
     }
 
-    /// Ticks the draw-on from empty to full. Call once the camera has finished fitting the
-    /// route, so the line draws inside an already-settled frame rather than racing it.
+    /// Draws the route from empty to full. Call once the camera has finished fitting the
+    /// route, so the line draws inside an already-settled frame.
     func start() {
-        token += 1
-        let current = token
-        task?.cancel()
-        revealedFraction = 0
-        task = Task { [weak self] in
-            let startedAt = Date()
-            while !Task.isCancelled {
-                guard let self, self.token == current else { return }
-                let fraction = min(1, Date().timeIntervalSince(startedAt) / Self.duration)
-                self.revealedFraction = fraction
-                if fraction >= 1 { return }
-                try? await Task.sleep(for: .seconds(DesignTokens.Motion.headingTickInterval))
-            }
-        }
+        stop()
+        publish(0)
+        startedAt = CACurrentMediaTime()
+        let link = CADisplayLink(target: self, selector: #selector(tick(_:)))
+        link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+    }
+
+    @objc private func tick(_ link: CADisplayLink) {
+        let progress = min(1, (CACurrentMediaTime() - startedAt) / Self.duration)
+        publish(1 - pow(1 - progress, Self.easeOutExponent))
+        if progress >= 1 { stop() }
+    }
+
+    private func stop() {
+        displayLink?.invalidate()
+        displayLink = nil
+    }
+
+    private func publish(_ value: Double) {
+        fraction = value
+        onFrame?(value)
     }
 }

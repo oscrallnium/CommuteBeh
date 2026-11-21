@@ -16,7 +16,7 @@ struct SettingsDocumentView: View {
             Section {
                 ForEach(document.sections) { section in
                     VStack(alignment: .leading, spacing: DesignTokens.Space.xs) {
-                        Text(section.heading).font(.headline)
+                        Text(section.heading).font(.system(.headline, weight: .semibold))
                         Text(section.body).foregroundStyle(.secondary)
                     }
                     .padding(.vertical, DesignTokens.Space.xxs)

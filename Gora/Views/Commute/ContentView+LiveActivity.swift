@@ -22,7 +22,7 @@ extension ContentView {
         ArrivalAlerts.shared.reset()
         guard SettingsKey.isLiveActivitiesEnabled, let engine = commuteEngine else { return }
         CommuteLiveActivityController.shared.start(
-            result: engine.result, engine: engine, destinationName: destinationText,
+            result: engine.result, engine: engine, destinationName: routeStore.destinationText,
             now: startedAt, lineName: routeStore.lineDisplayName,
             legColor: routeStore.legColor)
     }
@@ -34,16 +34,26 @@ extension ContentView {
         CommuteLiveActivityController.shared.end()
     }
 
+    /// Ends the Live Activity as arrived and shows the arrived card. Runs on the last step's tap with Location off.
+    func arriveByTap() {
+        guard isCommuting, arrivedAt == nil else { return }
+        let now = Date()
+        CommuteLiveActivityController.shared.endArrived(now: now)
+        markArrived(at: now)
+    }
+
     func noteLiveActivityFix(at date: Date) {
         CommuteLiveActivityController.shared.noteFix(at: date)
     }
 
     /// Pushes progress to the Live Activity. Shows the arrived card when the passenger reaches the end.
+    /// With Location off, only a tap on the last step arrives (`arriveByTap()`).
     func tickLiveActivity(now: Date) {
         guard isCommuting, arrivedAt == nil, let engine = commuteEngine else { return }
-        ArrivalAlerts.shared.update(engine: engine, destinationName: destinationText)
+        ArrivalAlerts.shared.update(engine: engine, destinationName: routeStore.destinationText)
         let isOnLastLeg = engine.currentLegIndex == engine.result.legs.count - 1
-        if isOnLastLeg, engine.metersRemainingOnCurrentLeg <= Self.arrivalRadiusMeters {
+        if isOnLastLeg, routeStore.locationAccess != .off,
+           engine.metersRemainingOnCurrentLeg <= Self.arrivalRadiusMeters {
             CommuteLiveActivityController.shared.endArrived(now: now)
             markArrived(at: now)
             return

@@ -37,15 +37,15 @@ struct SuggestionList: View {
         switch suggestion {
         case .station(let station):
             HStack(spacing: 12) {
-                Image(systemName: mode(of: station)?.icon ?? "figure.walk")
+                (mode(of: station) ?? .walk).iconImage
                     .foregroundStyle(lineColor(station.line) ?? mode(of: station)?.color ?? Color(.systemGray))
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(station.name)
-                        .font(DesignTokens.TypeScale.body)
+                        .typeScale(.body)
                         .foregroundStyle(.primary)
                     Text(lineLabel(for: station))
-                        .font(DesignTokens.TypeScale.meta)
+                        .typeScale(.meta)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -59,12 +59,12 @@ struct SuggestionList: View {
                     .frame(width: 22)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(completion.title)
-                        .font(DesignTokens.TypeScale.body)
+                        .typeScale(.body)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     if !completion.subtitle.isEmpty {
                         Text(completion.subtitle)
-                            .font(DesignTokens.TypeScale.meta)
+                            .typeScale(.meta)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }

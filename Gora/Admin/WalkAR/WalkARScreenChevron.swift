@@ -65,7 +65,7 @@ struct WalkARScreenChevronLayer: View {
         VStack(spacing: DesignTokens.Space.xxs) {
             ChevronMark(angle: guide.angle, size: 30)
             Text(guide.title)
-                .font(DesignTokens.TypeScale.controlLabel)
+                .typeScale(.controlLabel)
                 .foregroundStyle(.white)
                 .padding(.horizontal, DesignTokens.Space.s)
                 .padding(.vertical, DesignTokens.Space.xxs)
@@ -102,11 +102,11 @@ private struct WalkARCenterChevron: View {
             ChevronMark(angle: guide.angle, size: 110)
                 .scaleEffect(isPulsed ? 1.06 : 1)
             Text(guide.title)
-                .font(DesignTokens.TypeScale.instruction)
+                .typeScale(.instruction)
                 .foregroundStyle(.white)
             if let secondary {
                 Text(secondary)
-                    .font(DesignTokens.TypeScale.subtitleEmphasis)
+                    .typeScale(.subtitleEmphasis)
                     .foregroundStyle(.white.opacity(0.8))
             }
         }

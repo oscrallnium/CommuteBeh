@@ -36,6 +36,7 @@ extension ContentView {
             // see `autoSetOriginText`'s and `wasBackgrounded`'s doc comments.
             .onChange(of: scenePhase) { _, new in
                 updateVisualLoops(for: new)
+                if new == .active { routeStore.refreshLocationAccess() }
                 if new == .background {
                     wasBackgrounded = true
                     saveCommute()
@@ -44,7 +45,7 @@ extension ContentView {
                 guard new == .active, wasBackgrounded, !isCommuting else { return }
                 wasBackgrounded = false
                 refreshAutoSetOrigin()
-                if hasAutoSetOrigin, originText == autoSetOriginText {
+                if hasAutoSetOrigin, routeStore.originText == autoSetOriginText {
                     hasAutoSetOrigin = false
                 }
             }
@@ -59,7 +60,7 @@ extension ContentView {
             }
             // Live leg progress, active only during Commute Mode. See `Commute.md`.
             .onChange(of: routeStore.userLocation) { _, newValue in
-                guard isCommuting, let newValue else { return }
+                guard isCommuting, routeStore.locationAccess != .off, let newValue else { return }
                 let now = Date()
                 positionResolver.recordFix(newValue, speed: routeStore.userSpeed, at: now)
                 noteLiveActivityFix(at: now)
@@ -68,6 +69,10 @@ extension ContentView {
                 print("[CameraDebug] userLocation fix following=\(isFollowingPassenger) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
                 #endif
                 evaluateReroute(at: newValue, now: now)
+            }
+            // Location turning off hands the commute to manual steps. Turning on returns it to live guidance.
+            .onChange(of: routeStore.locationAccess) { _, access in
+                switchCommuteGuidance(for: access)
             }
             // Every new snap target starts the puck's own glide toward it. See `Commute.md`.
             .onChange(of: commuteEngine?.snappedLocation) { _, newValue in
@@ -79,6 +84,28 @@ extension ContentView {
             }
     }
 
+    /// Switches the running commute between live guidance and manual steps. The first fix after
+    /// Location returns re-snaps the engine, so live guidance resumes from the current step.
+    private func switchCommuteGuidance(for access: LocationAccess) {
+        guard isCommuting, let engine = commuteEngine else { return }
+        positionResolver.reset()
+        puckInterpolator.reset()
+        withAnimation(DesignTokens.Motion.locationState) {
+            switch access {
+            case .off:
+                rerouteMonitor.reset()
+                engine.setCurrentLeg(engine.currentLegIndex)
+                isFollowingPassenger = false
+                fitMap(to: engine.result)
+            case .allowed:
+                isResumingLiveGuidance = !isFollowingPassenger
+                isFollowingPassenger = true
+            case .undetermined:
+                break
+            }
+        }
+    }
+
     private func autoSetOrigin(from newValue: Coordinates?) {
         guard !hasAutoSetOrigin,
               let newValue,
@@ -87,7 +114,7 @@ extension ContentView {
         hasAutoSetOrigin = true
         routeStore.setOriginCoordinate(newValue)
         routeStore.confirmedOriginLabel = "My Location"
-        originText = "My Location"
+        routeStore.originText = "My Location"
         autoSetOriginText = "My Location"
         // Recentres on this fix — see `Commute.md` for when this actually matters.
         recenterHome()
@@ -102,7 +129,7 @@ extension ContentView {
             let address = item.address?.shortAddress ?? item.address?.fullAddress
             guard let address else { return }
             routeStore.confirmedOriginLabel = address
-            originText = address
+            routeStore.originText = address
             autoSetOriginText = address
         }
     }
@@ -110,7 +137,7 @@ extension ContentView {
     /// Moves the auto-filled origin to the live fix. Leaves an origin the passenger chose alone.
     func refreshAutoSetOrigin() {
         guard autoSetOriginText != nil,
-              originText == autoSetOriginText,
+              routeStore.originText == autoSetOriginText,
               routeStore.originID == RouteRequest.virtualOriginID,
               let location = routeStore.userLocation else { return }
         routeStore.originCoordinate = location
@@ -148,6 +175,7 @@ extension ContentView {
             let now = Date.now
             tickLiveActivity(now: now)
             guard isCommuting else { return }
+            guard routeStore.locationAccess != .off else { continue }
             positionResolver.tick(context: commuteEngine?.currentLegProjectionContext, now: now)
             guard positionResolver.isDeadReckoned,
                   let projected = positionResolver.resolvedCoordinate else { continue }
@@ -250,7 +278,10 @@ extension ContentView {
                     cancelCameraTransition()
                     return
                 }
-                beginCameraTransition(.followPassenger)
+                let duration = isResumingLiveGuidance
+                    ? DesignTokens.Motion.locationStateDuration : DesignTokens.Motion.cameraPoseDuration
+                isResumingLiveGuidance = false
+                beginCameraTransition(.followPassenger, duration: duration)
             }
     }
 
@@ -266,8 +297,7 @@ extension ContentView {
             // Route choice: per-option map data, the active route, and the camera refit
             // after the sheet changes height. See `ContentView+RouteChoice.swift`.
             .onChange(of: routeChoiceKey, initial: true) { _, _ in syncRouteChoice() }
-            .onChange(of: routeChoice.selectedID) { old, new in
-                redrawSelectedRoute(from: old, to: new)
+            .onChange(of: routeChoice.selectedID) { _, _ in
                 previewSelectedRoute()
                 placeRouteBubble()
             }
@@ -281,7 +311,7 @@ extension ContentView {
     private func screenLifecycle(_ content: some View) -> some View {
         content
             // Live position for as long as the map is on screen — for the resting camera
-            // and the search fields. The dot is MapKit's own (see `passengerContent`)
+            // and the search fields. The dot is MapKit's own (see `addPassenger`)
             // and does not come from here.
             .onAppear {
                 routeStore.startTrackingUserLocation()
@@ -324,8 +354,8 @@ extension ContentView {
                 let seeded = await DebugRouteSeed.apply(to: routeStore)
                 // Assigned after confirming on the view model, so the fields' onChange
                 // reads these as a programmatic echo rather than a user edit.
-                if let origin = seeded.origin { originText = origin }
-                if let destination = seeded.destination { destinationText = destination }
+                if let origin = seeded.origin { routeStore.originText = origin }
+                if let destination = seeded.destination { routeStore.destinationText = destination }
                 routeDrawAnimator.prepareForNewRoute()
                 await DebugRouteSeed.searchIfRequested(on: routeStore)
                 await fitToRouteIfSuccessful()

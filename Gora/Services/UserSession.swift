@@ -12,12 +12,16 @@ import Foundation
 final class UserSession {
     var isLoggedIn = false
     var currentUser: UserProfile?
+    private(set) var isLoginDismissed = false
 
+    var isLoginPresented: Bool { !isLoggedIn && !isLoginDismissed }
     var isAdmin: Bool { currentUser?.role == "admin" }
 
     private static let profileKey = "com.banaueinc.gora.userProfile"
+    private static let loginDismissedKey = "com.banaueinc.gora.loginDismissed"
 
     init() {
+        isLoginDismissed = UserDefaults.standard.bool(forKey: Self.loginDismissedKey)
         // Restore cached session if a token still exists in Keychain
         if Keychain.load() != nil,
            let data = UserDefaults.standard.data(forKey: Self.profileKey),
@@ -42,6 +46,15 @@ final class UserSession {
         currentUser = user
         isLoggedIn = true
         persist(user)
+        setLoginDismissed(false)
+    }
+
+    func dismissLogin() {
+        setLoginDismissed(true)
+    }
+
+    func requestLogin() {
+        setLoginDismissed(false)
     }
 
     func logout() async {
@@ -79,6 +92,11 @@ final class UserSession {
         }
     }
 
+    private func setLoginDismissed(_ value: Bool) {
+        isLoginDismissed = value
+        UserDefaults.standard.set(value, forKey: Self.loginDismissedKey)
+    }
+
     private func persist(_ user: UserProfile) {
         guard let data = try? JSONEncoder().encode(user) else { return }
         UserDefaults.standard.set(data, forKey: Self.profileKey)
@@ -89,6 +107,7 @@ final class UserSession {
     /// `login(user:)` call overwrites the cached profile with the fresh one.
     private func expireSession() {
         Keychain.delete()
+        if isLoggedIn { setLoginDismissed(false) }
         isLoggedIn = false
     }
 
@@ -99,5 +118,6 @@ final class UserSession {
         UserDefaults.standard.removeObject(forKey: Self.profileKey)
         currentUser = nil
         isLoggedIn = false
+        setLoginDismissed(false)
     }
 }

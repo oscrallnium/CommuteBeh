@@ -22,13 +22,30 @@ struct TransferNode: View {
     }
 }
 
+// MARK: - Step Start Node
+
+/// Hollow circle, a canvas fill with an ink ring, marking where the current step starts when Location is off.
+struct StepStartNode: View {
+    private enum Layout {
+        static let diameter: CGFloat = 12
+        static let ringWidth: CGFloat = 3
+    }
+
+    var body: some View {
+        Circle()
+            .fill(Color.canvas)
+            .overlay(Circle().strokeBorder(Color.onyx, lineWidth: Layout.ringWidth))
+            .frame(width: Layout.diameter, height: Layout.diameter)
+    }
+}
+
 // MARK: - Passenger Puck
 
-/// Content for the passenger's `UserAnnotation`. MapKit owns the position; this supplies the
+/// Content for the passenger's user-location view and snapped puck. The map owns the position; this supplies the
 /// orange look and one behaviour — an idle breathe while the passenger stands still, which
 /// stops as soon as `speed` reports movement.
 struct PassengerPuck: View {
-    /// `userLocation.location?.speed`, handed down by the `UserAnnotation` closure. `nil`
+    /// `userLocation.location?.speed`, handed down by the annotation view. `nil`
     /// before MapKit has a fix.
     let speed: CLLocationSpeed?
 
@@ -38,9 +55,9 @@ struct PassengerPuck: View {
     @State private var pendingStill = true
     @State private var breathe = false
 
-    private static let haloSize: CGFloat = 32
-    private static let dotSize: CGFloat = 14
-    private static let ringWidth: CGFloat = 3
+    private static let haloSize: CGFloat = 48
+    private static let dotSize: CGFloat = 21
+    private static let ringWidth: CGFloat = 4.5
 
     /// Below this, the passenger reads as stopped rather than mid-stride — comfortably
     /// under even a slow walk (~1.2 m/s), so nothing anyone would call moving triggers it.

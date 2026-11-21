@@ -41,7 +41,7 @@ struct LabelBadge: View {
     var body: some View {
         if let (text, symbol) = content {
             Label(text, systemImage: symbol)
-                .font(isCompact ? .caption2.weight(.heavy) : .subheadline.weight(.heavy))
+                .font(isCompact ? .system(.caption2, weight: .heavy) : .system(.subheadline, weight: .heavy))
                 .kerning(0.5)
                 .foregroundStyle(Color.canvas)
                 .lineLimit(1)
@@ -89,7 +89,7 @@ struct JustifiedLabel: UIViewRepresentable {
         // adjustsFontForContentSizeCategory keeps tracking the system Dynamic Type
         // setting after this initial assignment, the same way the preferred-font APIs do.
         let base = UIFont.systemFont(ofSize: UIFont.preferredFont(forTextStyle: textStyle).pointSize,
-                                      weight: weight)
+                                     weight: weight)
         label.font = UIFontMetrics(forTextStyle: textStyle).scaledFont(for: base)
         label.text = text
         label.numberOfLines = lineLimit

@@ -55,8 +55,8 @@ struct SettingsProfileView: View {
         Section {
             VStack(spacing: DesignTokens.Space.s) {
                 SettingsAvatar(name: session.currentUser?.displayName ?? "", diameter: 96,
-                               font: .largeTitle.bold())
-                Text(session.currentUser?.displayName ?? "").font(.title2.bold())
+                               font: .system(.largeTitle, weight: .bold))
+                Text(session.currentUser?.displayName ?? "").font(.system(.title2, weight: .bold))
                 Text(session.currentUser?.email ?? "").foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)

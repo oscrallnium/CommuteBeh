@@ -12,6 +12,10 @@
 - **Menu** — the More circle is a `Menu`. Apart, it holds Route Overview, Trip Details and End
   Commute. Merged, it adds a first section with the 2D/3D toggle and Track or Untrack.
 
+With Location off, the Track circle shows `location.slash`, and a tap opens the Turn On Location alert.
+Its VoiceOver label is "Location is off. Turn on Location." The More menu adds "Turn On Location" above End
+Commute, and the merged menu drops Track. The column reads `RouteStore.locationAccess` from the environment.
+
 Track uses `Ember`. More uses `.primary`, as the 2D/3D label does, because text on glass keeps
 system vibrancy.
 

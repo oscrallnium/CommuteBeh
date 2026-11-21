@@ -180,6 +180,25 @@ let searchMinutes = edge.line == "ACCESS_WALK"
 Without that weight, A\* will walk 1.2 km to a stop to shave two riding minutes — which no
 passenger actually does.
 
+### Transfer penalty
+
+A transfer boarding is a ride edge that starts a boarding after the path already holds a ride.
+The origin access walk does not count. The search adds `TransferPolicy.searchPenaltyMinutes` (5)
+plus `TransferPolicy.expectedWaitMinutes(for:)` to the search cost only. Shown times and fares
+do not change. A timetable line adds no expected wait, because its timetable wait already counts.
+
+| Mode | Expected wait (min) |
+|---|---|
+| `bus`, `uvExpress` | 5 |
+| `jeepney` | 3 |
+| `train` | 2.5 |
+| `tricycle` | 2 |
+| `walk` | 0 |
+
+Example: Banaue Street to Avida Towers Asten. Stay on `STA_CRUZ_BUENDIA` one more stop costs
+5.0 + 6.2 × 1.6 = 14.9. Transfer at MRT Magallanes Stop costs 3.1 + 6.25 + 2.9 × 1.6 = 14.0, so
+the transfer won. With the penalty the transfer costs 14.0 + 5 + 5 = 24.0, so the search stays on the bus.
+
 ### Peak-hour multipliers
 
 Three windows from the graph — `morningPeak`, `eveningPeak`, `trainPeak` — each with a start

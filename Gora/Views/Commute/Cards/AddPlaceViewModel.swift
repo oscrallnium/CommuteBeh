@@ -35,14 +35,12 @@ final class AddPlaceViewModel {
     /// The place the sheet edits, or nil when the sheet adds a new place.
     let editing: SavedPlace?
 
-    private let stations: [Station]
     private let search = AddressSearchService()
     private var debounce: Task<Void, Never>?
     private var programmaticQuery: String?
     private var pickToken = 0
 
-    init(stations: [Station], userLocation: Coordinates?, editing: SavedPlace? = nil) {
-        self.stations = stations
+    init(userLocation: Coordinates?, editing: SavedPlace? = nil) {
         self.userLocation = userLocation
         self.editing = editing
         if let editing {
@@ -158,16 +156,7 @@ final class AddPlaceViewModel {
 
     private func mergeSuggestions() {
         guard !query.isEmpty else { return }
-        let q = query.lowercased()
-        let stationMatches = stations.filter {
-            $0.name.lowercased().contains(q) || $0.shortName.lowercased().contains(q)
-        }
-        let stationNames = Set(stationMatches.map { $0.name.lowercased() })
-        let addressMatches = search.completions.filter {
-            !($0.subtitle.isEmpty && stationNames.contains($0.title.lowercased()))
-        }
-        suggestions = stationMatches.prefix(5).map(LocationSuggestion.station)
-            + addressMatches.prefix(5).map(LocationSuggestion.address)
+        suggestions = search.completions.prefix(5).map(LocationSuggestion.address)
     }
 
     private static func coordinateText(_ coordinates: Coordinates) -> String {

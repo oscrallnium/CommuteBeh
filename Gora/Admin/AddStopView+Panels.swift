@@ -20,7 +20,7 @@ extension AddStopView {
             Image(systemName: "hand.tap")
             Text("Tap the route to place the stop")
         }
-        .font(.caption)
+        .font(.system(.caption))
         .foregroundStyle(.secondary)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
@@ -104,7 +104,7 @@ extension AddStopView {
             .fixedSize(horizontal: false, vertical: true)
 
             if let error = errorMessage {
-                Text(error).font(.caption).foregroundStyle(Color.vermilion)
+                Text(error).font(.system(.caption)).foregroundStyle(Color.vermilion)
             }
 
             Button {
@@ -122,6 +122,8 @@ extension AddStopView {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .tint(DesignTokens.Colors.action)
+            .foregroundStyle(DesignTokens.Colors.onAction)
             // Disabled while the road route is in flight: saving mid-fetch would take the
             // "no geometry" path and ask the admin to override something that is seconds
             // from arriving. Also disabled while a direction choice is unresolved — saving
@@ -153,7 +155,7 @@ extension AddStopView {
                     Image(systemName: "arrow.left.arrow.right")
                     Text("This road carries the route both ways here. Which stop is this for?")
                 }
-                .font(.caption)
+                .font(.system(.caption))
                 .foregroundStyle(Color.ember)
 
                 Picker("Direction", selection: directionChoiceSelection) {
@@ -188,7 +190,7 @@ extension AddStopView {
                     .foregroundStyle(placedCoordinate == nil ? Color.secondary : Color.onyx)
                 Text(placedCoordinate.map { String(format: "%.6f,  %.6f", $0.latitude, $0.longitude) }
                      ?? "No location placed yet")
-                    .font(.caption.monospacedDigit())
+                    .font(.system(.caption).monospacedDigit())
                     .foregroundStyle(placedCoordinate == nil ? Color.secondary : Color.primary)
                 Spacer()
             }
@@ -198,7 +200,7 @@ extension AddStopView {
                     Image(systemName: "exclamationmark.circle")
                         .foregroundStyle(Color.ember)
                     Text("Tap is far from every stop on this chain — choose the reference stop by hand.")
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .foregroundStyle(Color.ember)
                     Spacer()
                 }
@@ -207,7 +209,7 @@ extension AddStopView {
                     Image(systemName: "point.3.filled.connected.trianglepath.dotted")
                         .foregroundStyle(Color.jade)
                     Text(String(format: "Snapped %.1f m onto a polyline point", distance))
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .foregroundStyle(Color.jade)
                     Spacer()
                 }
@@ -218,7 +220,7 @@ extension AddStopView {
                     Text(snapEnabled
                          ? "No polyline point within \(Int(Self.snapRadiusMeters)) m — using the exact tap."
                          : "Snapping off — using the exact tap.")
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .foregroundStyle(.secondary)
                     Spacer()
                 }
@@ -226,7 +228,7 @@ extension AddStopView {
 
             Toggle(isOn: $snapEnabled) {
                 Text("Snap to polyline points")
-                    .font(.caption)
+                    .font(.system(.caption))
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
@@ -244,7 +246,7 @@ extension AddStopView {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text("Polylines created")
-                        .font(.caption.bold())
+                        .font(.system(.caption, weight: .bold))
                     Spacer()
                     Text(preview.newStationID)
                         .font(.caption2.monospaced())
@@ -254,7 +256,7 @@ extension AddStopView {
                 if let replaced = preview.replacedEdge {
                     Text("Replaces \(replaced.id) · \(replaced.coordinates.count) pts"
                          + (preview.splitVertexIndex.map { " · split at point \($0 + 1)" } ?? ""))
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .foregroundStyle(.secondary)
                 }
 
@@ -267,7 +269,7 @@ extension AddStopView {
                         Image(systemName: "exclamationmark.triangle.fill")
                         Text(warning)
                     }
-                    .font(.caption2)
+                    .font(.system(.caption2))
                     .foregroundStyle(Color.ember)
                 }
             }
@@ -279,11 +281,11 @@ extension AddStopView {
                 Image(systemName: "exclamationmark.triangle.fill")
                 Text(warning)
             }
-            .font(.caption2)
+            .font(.system(.caption2))
             .foregroundStyle(Color.ember)
         } else if placedCoordinate != nil {
             Text("No polyline preview for this position — the backend may reject inserting here.")
-                .font(.caption2)
+                .font(.system(.caption2))
                 .foregroundStyle(Color.ember)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -300,17 +302,17 @@ extension AddStopView {
                         .frame(width: 14, height: 3)
                     VStack(alignment: .leading, spacing: 1) {
                         Text("\(poly.fromName) → \(poly.toName)")
-                            .font(.caption)
+                            .font(.system(.caption))
                             .lineLimit(1)
                         Text("\(poly.id) · \(poly.coordinates.count) pts · "
                              + String(format: "%.2f km", poly.lengthKm)
                              + (poly.isFetched ? " · road route" : " · sliced"))
-                            .font(.caption2)
+                            .font(.system(.caption2))
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
                     Image(systemName: expandedPolylineID == poly.id ? "chevron.up" : "chevron.down")
-                        .font(.caption2)
+                        .font(.system(.caption2))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -389,11 +391,11 @@ extension AddStopView {
         return VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("Stop order")
-                    .font(.caption.bold())
+                    .font(.system(.caption, weight: .bold))
                 Spacer()
                 if isCollapsible {
                     Button(showAllStops ? "Show fewer" : "Show all \(rows.count)") { showAllStops.toggle() }
-                        .font(.caption2)
+                        .font(.system(.caption2))
                 }
             }
             ForEach(visible) { stopOrderRow($0) }
@@ -412,7 +414,7 @@ extension AddStopView {
                     Image(systemName: "arrow.uturn.backward")
                 }
             }
-            .font(.caption2.monospacedDigit())
+            .font(.system(.caption2).monospacedDigit())
             .foregroundStyle(.secondary)
             .frame(width: 22, alignment: .trailing)
 
@@ -422,13 +424,13 @@ extension AddStopView {
                 .frame(width: 9, height: 9)
 
             Text(row.name)
-                .font(row.kind == .new || row.kind == .reference ? .caption.bold() : .caption)
+                .font(row.kind == .new || row.kind == .reference ? .system(.caption, weight: .bold) : .system(.caption))
                 .foregroundStyle(row.kind == .loopBack ? Color.secondary : .primary)
                 .lineLimit(1)
 
             if row.kind == .reference {
                 Text("Reference")
-                    .font(.caption2)
+                    .font(.system(.caption2))
                     .foregroundStyle(Color.onyx)
             }
             Spacer()

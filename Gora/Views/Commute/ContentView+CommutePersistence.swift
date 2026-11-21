@@ -53,8 +53,8 @@ extension ContentView {
         guard isCommuting, arrivedAt == nil, !isSimulatingCommute,
               let engine = commuteEngine, let startedAt = commuteStartedAt else { return }
         ActiveCommuteStore.save(SavedCommute(result: engine.result, startedAt: startedAt,
-                                             originText: originText, destinationText: destinationText,
-                                             savedAt: .now))
+                                             originText: routeStore.originText, destinationText: routeStore.destinationText,
+                                             savedAt: .now, legIndex: engine.currentLegIndex))
     }
 
     /// Resumes the saved commute with its first start time and reattaches its Live Activity.
@@ -70,9 +70,10 @@ extension ContentView {
             await CommuteLiveActivityController.shared.endOrphans()
             return
         }
-        originText = saved.originText
-        destinationText = saved.destinationText
-        enterCommuteMode(with: RouteOption(result: saved.result, label: .fastest), startedAt: saved.startedAt)
+        routeStore.originText = saved.originText
+        routeStore.destinationText = saved.destinationText
+        enterCommuteMode(with: RouteOption(result: saved.result, label: .fastest), startedAt: saved.startedAt,
+                         legIndex: saved.restoredLegIndex)
         routeStore.setBackgroundLocationUpdates(true)
         guard let engine = commuteEngine else { return }
         CommuteLiveActivityController.shared.reattach(

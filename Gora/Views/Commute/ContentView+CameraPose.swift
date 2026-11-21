@@ -117,10 +117,10 @@ extension ContentView {
 
     /// Stores the camera the map shows after a pan or a zoom, so a later transition starts
     /// from it. Our own writes already update the stored camera.
-    func recordObservedCamera(_ camera: MapCamera) {
+    func recordObservedCamera(_ camera: MKMapCamera) {
         guard isCommuting, !isFollowingPassenger, !isCameraTransitioning else { return }
         lastCommuteCameraCenter = camera.centerCoordinate
-        lastCommuteCameraDistance = camera.distance
+        lastCommuteCameraDistance = camera.centerCoordinateDistance
         lastCommuteCameraPitch = camera.pitch
         lastCommuteCameraHeading = camera.heading
     }
@@ -136,8 +136,8 @@ extension ContentView {
     // MARK: Transition
 
     /// Glides the camera from the pose on screen to the current mode's pose over
-    /// `cameraPoseDuration`. The target is read again every tick, so it follows the moving puck.
-    func beginCameraTransition(_ kind: CameraTransitionKind) {
+    /// `duration`. The target is read again every tick, so it follows the moving puck.
+    func beginCameraTransition(_ kind: CameraTransitionKind, duration: TimeInterval = DesignTokens.Motion.cameraPoseDuration) {
         cameraTransitionToken += 1
         let token = cameraTransitionToken
         guard isCommuting, let start = currentCameraPose else {
@@ -150,7 +150,6 @@ extension ContentView {
         #endif
         Task {
             let startedAt = Date()
-            let duration = DesignTokens.Motion.cameraPoseDuration
             while cameraTransitionToken == token, isCommuting {
                 if kind == .followPassenger, !isFollowingPassenger { break }
                 let fraction = puckInterpolator.isSuspended
@@ -158,7 +157,7 @@ extension ContentView {
                 if var goal = targetPose(commuteCameraMode) {
                     if kind == .keepCenter { goal.center = start.center }
                     writeCamera(Self.pose(from: start, to: goal, progress: Self.smoothstep(fraction)),
-                                animation: nil)
+                                duration: nil)
                 }
                 if fraction >= 1 { break }
                 try? await Task.sleep(for: .seconds(DesignTokens.Motion.headingTickInterval))

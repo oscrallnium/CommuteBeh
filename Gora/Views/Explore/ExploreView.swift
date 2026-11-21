@@ -174,7 +174,7 @@ struct ExploreView: View {
                 Image(systemName: "xmark")
                     .font(.caption.bold())
                     .foregroundStyle(Color.ember)
-                Text(layer.displayName).font(.subheadline.bold())
+                Text(layer.displayName).font(.system(.subheadline, weight: .bold))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
@@ -194,7 +194,7 @@ struct ExploreView: View {
             if vm.isLoading {
                 statusPill {
                     ProgressView()
-                    Text("Loading routes…").font(.caption)
+                    Text("Loading routes…").font(.system(.caption))
                 }
             }
             if vm.isFetchingRoads {
@@ -205,26 +205,26 @@ struct ExploreView: View {
                         .frame(width: 80)
                         .tint(Color.ember)
                     Text("Plotting roads \(vm.fetchProgress)/\(vm.fetchTotal)")
-                        .font(.caption)
+                        .font(.system(.caption))
                         .foregroundStyle(.secondary)
                 }
             }
             if vm.isDeletingLayer {
                 statusPill {
                     ProgressView()
-                    Text("Deleting route…").font(.caption)
+                    Text("Deleting route…").font(.system(.caption))
                 }
             }
             if let err = vm.errorMessage {
                 statusPill {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
-                    Text(err).font(.caption).foregroundStyle(Color.vermilion)
+                    Text(err).font(.system(.caption)).foregroundStyle(Color.vermilion)
                 }
             }
             if let err = vm.deleteError {
                 statusPill {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.vermilion)
-                    Text(err).font(.caption).foregroundStyle(Color.vermilion)
+                    Text(err).font(.system(.caption)).foregroundStyle(Color.vermilion)
                     Button {
                         vm.deleteError = nil
                     } label: {
@@ -259,15 +259,15 @@ struct ExploreView: View {
                 .padding(.bottom, 2)
 
             HStack {
-                Text("Routes").font(.headline)
+                Text("Routes").font(.system(.headline, weight: .semibold))
                 Spacer()
                 if panelExpanded {
                     HStack(spacing: 0) {
                         Button("Show All") { withAnimation { vm.showAll() } }
-                            .font(.caption.bold()).disabled(vm.allVisible)
-                        Text(" · ").font(.caption).foregroundStyle(.secondary)
+                            .font(.system(.caption, weight: .bold)).disabled(vm.allVisible)
+                        Text(" · ").font(.system(.caption)).foregroundStyle(.secondary)
                         Button("Hide All") { withAnimation { vm.hideAll() } }
-                            .font(.caption.bold()).disabled(vm.noneVisible)
+                            .font(.system(.caption, weight: .bold)).disabled(vm.noneVisible)
                     }
                     .padding(.trailing, 6)
                 }
@@ -277,7 +277,7 @@ struct ExploreView: View {
                 if session.isAdmin {
                     Button { showCreateLoop = true } label: {
                         Image(systemName: "plus.circle")
-                            .font(.subheadline.bold())
+                            .font(.system(.subheadline, weight: .bold))
                             .foregroundStyle(Color.ember)
                             .frame(width: 30, height: 30)
                             .background(Color.haze)
@@ -291,7 +291,7 @@ struct ExploreView: View {
                     }
                 } label: {
                     Image(systemName: panelExpanded ? "chevron.down" : "chevron.up")
-                        .font(.subheadline.bold())
+                        .font(.system(.subheadline, weight: .bold))
                         .foregroundStyle(.secondary)
                         .frame(width: 30, height: 30)
                         .background(Color.haze)
@@ -329,10 +329,10 @@ struct ExploreView: View {
                             }
                         } header: {
                             HStack(spacing: 6) {
-                                Image(systemName: ExploreViewModel.modeIcon(group.mode))
-                                    .font(.caption2.bold())
+                                (TransportMode(rawValue: group.mode)?.iconImage ?? TransportMode.walk.iconImage)
+                                    .font(.system(.caption2, weight: .bold))
                                 Text(group.mode.uppercased())
-                                    .font(.caption2.bold()).kerning(0.5)
+                                    .font(.system(.caption2, weight: .bold)).kerning(0.5)
                             }
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 4)
@@ -382,14 +382,14 @@ struct ExploreView: View {
             .clipShape(RoundedRectangle(cornerRadius: 8))
 
             Text(layer.displayName)
-                .font(.subheadline)
+                .font(.system(.subheadline))
                 .foregroundStyle(layer.isVisible ? .primary : .secondary)
 
             Spacer()
 
             Button { vm.toggle(layer.id) } label: {
                 Image(systemName: layer.isVisible ? "eye.fill" : "eye.slash")
-                    .font(.subheadline)
+                    .font(.system(.subheadline))
                     .foregroundStyle(layer.isVisible ? layer.color : Color.faint)
                     .frame(width: 36, height: 36)
                     .background(layer.isVisible ? layer.color.opacity(0.12) : Color.haze)
@@ -406,7 +406,7 @@ struct ExploreView: View {
     }
 
     private var modeGroups: [(mode: String, layers: [RouteLayer])] {
-        ["train", "bus", "jeepney", "uv_express", "tricycle"].compactMap { mode in
+        ["train", "bus", "jeepney", "modern_jeepney", "uv_express", "tricycle"].compactMap { mode in
             let subset = vm.layers.filter { $0.mode == mode }
             return subset.isEmpty ? nil : (mode: mode, layers: subset)
         }

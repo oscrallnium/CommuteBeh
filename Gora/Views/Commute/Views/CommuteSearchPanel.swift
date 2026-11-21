@@ -15,22 +15,16 @@ enum SearchField { case origin, destination }
 
 /// The origin and destination entry surface at the top of the Commute tab. Collapses to a
 /// pill while a search runs or results show, and expands to the full card otherwise.
-/// It owns the layout only; every action arrives from `ContentView` as a closure.
+/// Field edits and selections call `RouteStore` directly. Only back and search, which move
+/// the map camera, arrive from `ContentView` as closures.
 struct CommuteSearchPanel: View {
-    let routeStore: RouteStore
-    @Binding var originText: String
-    @Binding var destinationText: String
+    @Bindable var routeStore: RouteStore
     @FocusState.Binding var focusedField: SearchField?
     let namespace: Namespace.ID
     let showSearchProgress: Bool
 
-    let onReset: () -> Void
+    let onBack: () -> Void
     let onSearch: () -> Void
-    let onSwap: () -> Void
-    let onClearOrigin: () -> Void
-    let onClearDestination: () -> Void
-    let onSelectOrigin: (LocationSuggestion) -> Void
-    let onSelectDestination: (LocationSuggestion) -> Void
 
     // MARK: Design constants
 
@@ -38,258 +32,469 @@ struct CommuteSearchPanel: View {
     /// so the published edge describes the panel's outer boundary, not the card within it.
     static let panelPadding: CGFloat = 16
 
-    private var isSearchCollapsed: Bool {
-        routeStore.isLoading || !routeStore.routeOptions.isEmpty
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var swapPhase: SwapPhase = .idle
+    @State private var rowDistance: CGFloat = 0
+    /// Measured sizes of the card and the pill. The surface takes its frame from these, so the
+    /// frame animates between them instead of following content that is fading in or out.
+    @State private var cardHeight: CGFloat = Layout.initialCardHeight
+    @State private var pillSize: CGSize = .zero
+    /// Frames of the markers and texts in the card and in the pill, keyed by `SearchGeometryID`.
+    /// The moving layer travels between the two sets.
+    @State private var cardFrames: [String: CGRect] = [:]
+    @State private var pillFrames: [String: CGRect] = [:]
+    /// The mode whose surface has stopped moving. It trails `mode` by `Motion.settleDuration`.
+    @State private var settledMode: SearchPanelMode = .expanded
+
+    private var mode: SearchPanelMode {
+        routeStore.isLoading || !routeStore.routeOptions.isEmpty ? .collapsed : .expanded
+    }
+
+    /// Content fades out at once and fades in after the surface has grown, so it never shows
+    /// on a surface that is still small.
+    private var contentTransition: AnyTransition {
+        guard !reduceMotion else { return .opacity }
+        return .asymmetric(
+            insertion: .opacity.animation(
+                .easeOut(duration: Motion.fadeDuration).delay(Motion.revealDelay)
+            ),
+            removal: .opacity.animation(.easeOut(duration: Motion.fadeDuration))
+        )
+    }
+
+    private var backTransition: AnyTransition {
+        reduceMotion ? .opacity : .scale.combined(with: .opacity)
     }
 
     var body: some View {
-        Group {
-            if isSearchCollapsed {
-                collapsedSearchPill
-                    .transition(.opacity)
-            } else {
-                expandedSearchCard
-                    .transition(.opacity)
+        VStack(spacing: Layout.cardStackSpacing) {
+            surfaceRow
+            switch mode {
+            case .expanded:
+                expandedExtras
+                    .transition(contentTransition)
+            case .collapsed:
+                EmptyView()
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: isSearchCollapsed)
+        .background(alignment: .topLeading) { pillSizer }
+        .task(id: mode) {
+            guard (try? await Task.sleep(for: .seconds(Motion.settleDuration))) != nil else { return }
+            settledMode = mode
+        }
+        .animation(DesignTokens.Motion.suggestEnter, value: suggestionsVisible)
+        .animation(
+            .spring(response: Motion.springResponse, dampingFraction: Motion.springDamping),
+            value: mode
+        )
     }
 
-    // MARK: Collapsed pill (shown while loading / showing results)
+    // MARK: Surface (card and pill)
 
-    private var collapsedSearchPill: some View {
-        GlassEffectContainer(spacing: DesignTokens.Space.sm) {
-            HStack(spacing: DesignTokens.Space.sm) {
-                Button(action: onReset) {
-                    Image(systemName: "chevron.left")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.primary)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.plain)
-                .goraGlass(.regular.interactive(), in: .circle)
-                .accessibilityLabel("Back")
-
-                routePill
-
-                Spacer()
+    private var surfaceRow: some View {
+        HStack(spacing: DesignTokens.Space.sm) {
+            switch mode {
+            case .expanded:
+                EmptyView()
+            case .collapsed:
+                backButton
+                    .transition(backTransition)
             }
+            surface
         }
-        .measuresVisibleTop(outerPadding: Self.panelPadding)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var routePill: some View {
-        HStack(spacing: DesignTokens.Space.xs) {
-            Circle()
-                .strokeBorder(Color.onyx, lineWidth: 2.5)
-                .frame(width: 10, height: 10)
-                .matchedGeometryEffect(id: "origin-dot", in: namespace, properties: .position)
-
-            Text(originText)
-                .font(DesignTokens.TypeScale.rowTitle)
-                .lineLimit(1)
-                .frame(maxWidth: 120, alignment: .leading)
-                .matchedGeometryEffect(id: "origin-text", in: namespace, properties: .position)
-
-            Image(systemName: "arrow.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.tangerine)
-                .frame(width: 8, height: 8)
-                .matchedGeometryEffect(id: "dest-dot", in: namespace, properties: .position)
-
-            Text(destinationText)
-                .font(DesignTokens.TypeScale.rowTitle)
-                .lineLimit(1)
-                .frame(maxWidth: 120, alignment: .leading)
-                .matchedGeometryEffect(id: "dest-text", in: namespace, properties: .position)
+    private var backButton: some View {
+        Button(action: onBack) {
+            Image(systemName: Symbol.back)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.primary)
+                .frame(width: Layout.controlSize, height: Layout.controlSize)
         }
-        .padding(.horizontal, DesignTokens.Space.l)
-        .frame(height: 44)
-        .goraGlass(.regular.interactive(), in: .capsule)
+        .buttonStyle(.plain)
+        .goraGlass(.regular.interactive(), in: .circle)
+        .accessibilityLabel(Strings.back)
+    }
+
+    /// One surface serves both states. Its frame comes from the measured card or pill size, and
+    /// the content sits in an overlay, so a transition that keeps both contents cannot size it.
+    /// Reduce Motion replaces it through `id`, which cross-fades. See `Commute-Views.md`.
+    private var surface: some View {
+        let shape = RoundedRectangle(cornerRadius: mode.surfaceRadius, style: .continuous)
+        return Color.clear
+            .frame(maxWidth: surfaceMaxWidth)
+            .frame(height: surfaceHeight)
+            .overlay(alignment: .topLeading) {
+                surfaceContent
+                    .clipShape(shape)
+            }
+            .overlay(alignment: .topLeading) {
+                SearchMovingLayer(
+                    mode: mode,
+                    originText: routeStore.originText,
+                    destinationText: routeStore.destinationText,
+                    cardFrames: cardFrames,
+                    pillFrames: pillFrames,
+                    movesContent: movesContent
+                )
+            }
+            .goraGlass(DesignTokens.Materials.cardGlass, in: shape)
+            .background(Color.charcoal.opacity(mode.tintOpacity), in: shape)
+            .measuresVisibleTop(outerPadding: Self.panelPadding)
+            .id(reduceMotion && mode == .collapsed)
+            .transition(reduceMotion ? .opacity : .identity)
+    }
+
+    private var surfaceMaxWidth: CGFloat? {
+        switch mode {
+        case .expanded: .infinity
+        case .collapsed: pillSize.width > 0 ? pillSize.width : nil
+        }
+    }
+
+    private var surfaceHeight: CGFloat {
+        switch mode {
+        case .expanded: cardHeight
+        case .collapsed: CommuteRoutePill.height
+        }
+    }
+
+    @ViewBuilder
+    private var surfaceContent: some View {
+        switch mode {
+        case .expanded:
+            searchCard
+                .fixedSize(horizontal: false, vertical: true)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
+                .transition(contentTransition)
+        case .collapsed:
+            CommuteRoutePill(
+                originText: routeStore.originText,
+                destinationText: routeStore.destinationText,
+                hidesMovingContent: movesContent,
+                frames: .constant([:])
+            )
+            .fixedSize()
+            .transition(contentTransition)
+        }
+    }
+
+    /// An invisible pill that measures the collapsed size before the first collapse.
+    private var pillSizer: some View {
+        CommuteRoutePill(
+            originText: routeStore.originText,
+            destinationText: routeStore.destinationText,
+            hidesMovingContent: false,
+            frames: $pillFrames
+        )
+        .fixedSize()
+        .hidden()
+        .accessibilityHidden(true)
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { pillSize = $0 }
+    }
+
+    private var originMarker: some View {
+        cardMarker(.origin, id: SearchGeometryID.originDot)
+    }
+
+    private var destinationMarker: some View {
+        cardMarker(.destination, id: SearchGeometryID.destinationDot)
+    }
+
+    private func cardMarker(_ kind: SearchMarker.Kind, id: String) -> some View {
+        SearchMarker(kind: kind)
+            .reportsFrame(id, in: CoordinateSpaces.card, to: $cardFrames)
+            .snapsOpacity(!movesContent)
+    }
+
+    /// True from the start of a mode change until the card settles. The layer draws the markers
+    /// and texts then, and the card and the pill hide theirs. Reduce Motion keeps the cross-fade.
+    private var movesContent: Bool {
+        !reduceMotion && !(mode == .expanded && settledMode == .expanded)
     }
 
     // MARK: Expanded card (default search state)
 
-    private var expandedSearchCard: some View {
-        VStack(spacing: 6) {
-            VStack(spacing: 0) {
-                // Origin field
-                HStack(spacing: 14) {
-                    Circle()
-                        .strokeBorder(Color.onyx, lineWidth: 2.5)
-                        .frame(width: 10, height: 10)
-                        .matchedGeometryEffect(id: "origin-dot", in: namespace, properties: .position)
-                    ZStack(alignment: .leading) {
-                        // Invisible anchor for the origin name — used only for geometry matching
-                        Text(originText)
-                            .font(.system(.body, weight: .semibold))
-                            .opacity(0)
-                            .matchedGeometryEffect(id: "origin-text", in: namespace, properties: .position)
-                            .allowsHitTesting(false)
-                        TextField("Start", text: $originText)
-                            .font(.system(.body, weight: .semibold))
-                            .autocorrectionDisabled()
-                            .focused($focusedField, equals: .origin)
-                            .onChange(of: originText) { _, val in routeStore.updateOriginSuggestions(val) }
-                    }
-                    trailingAccessory(isResolving: routeStore.isResolvingOrigin, hasText: !originText.isEmpty, onClear: onClearOrigin)
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 15)
-
-                dashedDivider.padding(.horizontal, 18)
-
-                // Destination field
-                HStack(spacing: 14) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.tangerine)
-                        .frame(width: 10, height: 10)
-                        .matchedGeometryEffect(id: "dest-dot", in: namespace, properties: .position)
-                    ZStack(alignment: .leading) {
-                        // Invisible anchor for the destination name — geometry matching only
-                        Text(destinationText)
-                            .font(.system(.body, weight: .semibold))
-                            .opacity(0)
-                            .matchedGeometryEffect(id: "dest-text", in: namespace, properties: .position)
-                            .allowsHitTesting(false)
-                        TextField("Destination", text: $destinationText)
-                            .font(.system(.body, weight: .semibold))
-                            .autocorrectionDisabled()
-                            .focused($focusedField, equals: .destination)
-                            .onChange(of: destinationText) { _, val in routeStore.updateDestSuggestions(val) }
-                    }
-                    trailingAccessory(isResolving: routeStore.isResolvingDestination, hasText: !destinationText.isEmpty, onClear: onClearDestination)
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 15)
-
-                // Action row
-                HStack(spacing: 12) {
-                    Button(action: onSearch) {
-                        Text("SEARCH ROUTE")
-                            .font(.system(.subheadline, weight: .bold))
-                            .kerning(1.2)
-                            .opacity(showSearchProgress ? 0 : 1)
-                            .overlay {
-                                if showSearchProgress {
-                                    ProgressView().tint(Color.licorice)
-                                }
-                            }
-                        .foregroundStyle(Color.licorice)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 15)
-                        .background(Capsule().fill(Color.tangerine))
-                    }
-                    .disabled(!routeStore.canCalculate || routeStore.isLoading)
-                    .opacity(!routeStore.canCalculate ? 0.55 : 1)
-
-                    Button(action: onSwap) {
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.primary)
-                            .frame(width: 46, height: 46)
-                            .background(Circle().stroke(Color.primary.opacity(0.2), lineWidth: 1.5))
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 14)
-                .padding(.top, 4)
-                .padding(.bottom, 14)
-            }
-            .goraGlass(DesignTokens.Materials.cardGlass, in: .rect(cornerRadius: DesignTokens.Radius.card))
-            // Measure the card, not the enclosing VStack. The suggestion list is a sibling in
-            // that stack, so measuring the stack moves the strip edge whenever the list opens
-            // or changes, and the camera tasks keyed on that edge re-frame the map per keystroke.
-            .measuresVisibleTop(outerPadding: Self.panelPadding)
-
-            if let error = routeStore.errorMessage {
-                Text(error)
-                    .font(DesignTokens.TypeScale.meta)
-                    .foregroundStyle(Color.vermilion)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 18)
-            }
-
-            if !suggestionsVisible {
-                SavedPlacesRow(
-                    routeStore: routeStore,
-                    destinationText: $destinationText,
-                    focusedField: $focusedField,
-                    onClearDestination: onClearDestination,
-                    onSearch: onSearch
-                )
-                .padding(.top, 6)
-                .transition(.opacity)
-            }
-
-            // Suggestions — outside the card so they aren't cut off
-            if routeStore.showOriginSuggestions && !routeStore.originSuggestions.isEmpty {
-                SuggestionList(
-                    suggestions: Array(routeStore.originSuggestions.prefix(5)),
-                    lineName: routeStore.lineDisplayName,
-                    lineColor: routeStore.lineColor
-                ) { suggestion in
-                    onSelectOrigin(suggestion)
-                }
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
-                .cardShadow(y: 4)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            } else if routeStore.showDestSuggestions && !routeStore.destSuggestions.isEmpty {
-                SuggestionList(
-                    suggestions: Array(routeStore.destSuggestions.prefix(5)),
-                    lineName: routeStore.lineDisplayName,
-                    lineColor: routeStore.lineColor
-                ) { suggestion in
-                    onSelectDestination(suggestion)
-                }
-                .background(.regularMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
-                .cardShadow(y: 4)
-                .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-        }
-        .animation(DesignTokens.Motion.suggestEnter, value: suggestionsVisible)
-    }
-
-    /// Fixed-size slot so the field row height is the same while resolving, clearing, or empty.
-    /// The clear button keeps a 44 pt hit area through `contentShape`.
     @ViewBuilder
-    private func trailingAccessory(isResolving: Bool, hasText: Bool, onClear: @escaping () -> Void) -> some View {
-        Group {
-            if isResolving {
-                ProgressView().controlSize(.small)
-            } else if hasText {
-                Button(action: onClear) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 22, height: 22)
-                        .contentShape(Rectangle().inset(by: -11))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(width: 22, height: 22)
+    private var expandedExtras: some View {
+        errorMessage
+        savedPlaces
+        suggestionLists
     }
 
-    private var dashedDivider: some View {
-        GeometryReader { geo in
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: 0.5))
-                path.addLine(to: CGPoint(x: geo.size.width, y: 0.5))
-            }
-            .stroke(Color.primary.opacity(0.15),
-                    style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+    private var searchCard: some View {
+        VStack(spacing: 0) {
+            originRow
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                    rowDistance = $0 + SearchDashedDivider.height
+                }
+
+            SearchDashedDivider().padding(.horizontal, Layout.fieldHorizontalPadding)
+
+            destinationRow
+
+            actionRow
         }
-        .frame(height: 1)
+        .padding(.top, Layout.cardTopPadding)
+        .coordinateSpace(name: CoordinateSpaces.card)
+    }
+
+    private var originRow: some View {
+        fieldRow(
+            marker: originMarker,
+            placeholder: Strings.originPlaceholder,
+            text: $routeStore.originText,
+            textID: SearchGeometryID.originText,
+            field: .origin,
+            contentOffset: swapPhase == .sliding ? rowDistance : 0,
+            accessory: SearchFieldAccessory(
+                isResolving: routeStore.isResolvingOrigin,
+                hasText: !routeStore.originText.isEmpty,
+                onClear: { routeStore.clear(.origin) }
+            ),
+            onTextChange: { routeStore.updateOriginSuggestions($0) }
+        )
+    }
+
+    private var destinationRow: some View {
+        fieldRow(
+            marker: destinationMarker,
+            placeholder: Strings.destinationPlaceholder,
+            text: $routeStore.destinationText,
+            textID: SearchGeometryID.destinationText,
+            field: .destination,
+            contentOffset: swapPhase == .sliding ? -rowDistance : 0,
+            accessory: SearchFieldAccessory(
+                isResolving: routeStore.isResolvingDestination,
+                hasText: !routeStore.destinationText.isEmpty,
+                onClear: { routeStore.clear(.destination) }
+            ),
+            onTextChange: { routeStore.updateDestSuggestions($0) }
+        )
+    }
+
+    /// The field reports its frame under `textID`. While the moving layer draws the text, the
+    /// field hides its text unless it is empty, so the placeholder stays.
+    private func fieldRow(
+        marker: some View,
+        placeholder: LocalizedStringKey,
+        text: Binding<String>,
+        textID: String,
+        field: SearchField,
+        contentOffset: CGFloat,
+        accessory: some View,
+        onTextChange: @escaping (String) -> Void
+    ) -> some View {
+        HStack(spacing: Layout.fieldSpacing) {
+            marker
+                .frame(width: Layout.markerColumnWidth)
+            TextField(placeholder, text: text)
+                .font(.system(.body, weight: .semibold))
+                .autocorrectionDisabled()
+                .focused($focusedField, equals: field)
+                .onChange(of: text.wrappedValue) { _, val in onTextChange(val) }
+                .reportsFrame(textID, in: CoordinateSpaces.card, to: $cardFrames)
+                .snapsOpacity(!movesContent || text.wrappedValue.isEmpty)
+                .offset(y: contentOffset)
+                .opacity(swapPhase == .fading ? 0 : 1)
+            accessory
+        }
+        .padding(.horizontal, Layout.fieldHorizontalPadding)
+        .padding(.vertical, Layout.fieldVerticalPadding)
+    }
+
+    private var actionRow: some View {
+        HStack(spacing: Layout.actionRowSpacing) {
+            searchButton
+            swapButton
+        }
+        .padding(.horizontal, Layout.actionRowHorizontalPadding)
+        .padding(.top, Layout.actionRowTopPadding)
+        .padding(.bottom, Layout.actionRowBottomPadding)
+    }
+
+    private var searchButton: some View {
+        Button(action: onSearch) {
+            Text(Strings.searchRoute)
+                .typeScale(.controlLabel)
+                .opacity(showSearchProgress ? 0 : 1)
+                .overlay {
+                    if showSearchProgress {
+                        ProgressView().tint(Color.cocoa)
+                    }
+                }
+            .foregroundStyle(DesignTokens.Colors.onAction)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Layout.searchButtonVerticalPadding)
+//            .background(Capsule().fill(DesignTokens.Colors.action))
+        }
+        .buttonStyle(.glassProminent)
+        .tint(DesignTokens.Colors.action)
+        .disabled(!routeStore.canCalculate || routeStore.isLoading)
+        .opacity(!routeStore.canCalculate ? Layout.disabledOpacity : 1)
+        .animation(DesignTokens.Motion.disclose, value: routeStore.canCalculate)
+    }
+
+    private var swapButton: some View {
+        Button(action: swap) {
+            Image(systemName: Symbol.swap)
+                .font(.system(size: Layout.swapIconSize, weight: .medium))
+                .foregroundStyle(.primary)
+                .frame(width: Layout.swapButtonSize, height: Layout.swapButtonSize)
+                .background(
+                    Circle().stroke(Color.onyx, lineWidth: Layout.swapBorderWidth)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(!canSwap || swapPhase != .idle)
+        .opacity(canSwap ? 1 : Layout.disabledOpacity)
+    }
+
+    private var canSwap: Bool {
+        !routeStore.originText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !routeStore.destinationText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// Slides the two texts past each other, or fades them when Reduce Motion is on. The swap
+    /// runs once the animation ends, and the reset runs without animation so no reverse plays.
+    private func swap() {
+        guard swapPhase == .idle else { return }
+        // An unfocused field shows the start of a long text; a focused field scrolls to its end.
+        focusedField = nil
+        if reduceMotion {
+            withAnimation(.easeOut(duration: Motion.fadeDuration)) {
+                swapPhase = .fading
+            } completion: {
+                routeStore.swapEndpoints()
+                withAnimation(.easeIn(duration: Motion.fadeDuration)) { swapPhase = .idle }
+            }
+        } else {
+            withAnimation(.snappy(duration: Motion.swapDuration)) {
+                swapPhase = .sliding
+            } completion: {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    routeStore.swapEndpoints()
+                    swapPhase = .idle
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var errorMessage: some View {
+        if let error = routeStore.errorMessage {
+            Text(error)
+                .typeScale(.meta)
+                .foregroundStyle(Color.vermilion)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, Layout.errorHorizontalPadding)
+        }
+    }
+
+    @ViewBuilder
+    private var savedPlaces: some View {
+        if !suggestionsVisible {
+            SavedPlacesRow(
+                routeStore: routeStore,
+                focusedField: $focusedField
+            )
+            .padding(.top, Layout.savedPlacesTopPadding)
+            .transition(.opacity)
+        }
+    }
+
+    @ViewBuilder
+    private var suggestionLists: some View {
+        if routeStore.showOriginSuggestions && !routeStore.originSuggestions.isEmpty {
+            suggestionDropdown(routeStore.originSuggestions, field: .origin)
+        } else if routeStore.showDestSuggestions && !routeStore.destSuggestions.isEmpty {
+            suggestionDropdown(routeStore.destSuggestions, field: .destination)
+        }
+    }
+
+    private func suggestionDropdown(
+        _ suggestions: [LocationSuggestion],
+        field: SearchField
+    ) -> some View {
+        SearchSuggestionDropdown(
+            suggestions: suggestions,
+            lineName: routeStore.lineDisplayName,
+            lineColor: routeStore.lineColor
+        ) { suggestion in
+            select(suggestion, for: field)
+        }
+    }
+
+    /// Origin selection moves focus to the destination. Destination selection drops focus.
+    private func select(_ suggestion: LocationSuggestion, for field: SearchField) {
+        Task {
+            guard await routeStore.select(suggestion, for: field) else { return }
+            focusedField = field == .origin ? .destination : nil
+        }
     }
 
     private var suggestionsVisible: Bool {
         (routeStore.showOriginSuggestions && !routeStore.originSuggestions.isEmpty) ||
         (routeStore.showDestSuggestions && !routeStore.destSuggestions.isEmpty)
     }
+}
+
+// MARK: - Constants
+
+/// The swap button animation state: at rest, texts sliding past each other, or texts faded out.
+private enum SwapPhase { case idle, sliding, fading }
+
+private enum Motion {
+    static let swapDuration: Double = 0.35
+    static let fadeDuration: Double = 0.15
+    static let springResponse: Double = 0.45
+    static let springDamping: Double = 0.85
+    /// Time the spring needs to come to rest.
+    static let settleDuration: Double = springResponse * 1.5
+    /// Wait before inserted content fades in: about half the spring response, when the surface is nearly full size.
+    static let revealDelay: Double = springResponse * 0.55
+}
+
+private enum Layout {
+    static let controlSize: CGFloat = 44
+    /// Width of the marker column in a field row. It equals the larger marker, so both texts start at the same x.
+    static let markerColumnWidth: CGFloat = 11
+    /// Card height used until the first measurement replaces it.
+    static let initialCardHeight: CGFloat = 230
+    static let cardStackSpacing: CGFloat = 6
+    static let savedPlacesTopPadding: CGFloat = 6
+    static let fieldSpacing: CGFloat = 14
+    static let fieldHorizontalPadding: CGFloat = 18
+    static let fieldVerticalPadding: CGFloat = 15
+    static let cardTopPadding: CGFloat = 8
+    static let errorHorizontalPadding: CGFloat = 18
+    static let actionRowSpacing: CGFloat = 12
+    static let actionRowHorizontalPadding: CGFloat = 14
+    static let actionRowTopPadding: CGFloat = 4
+    static let actionRowBottomPadding: CGFloat = 14
+    static let searchButtonVerticalPadding: CGFloat = 15
+    static let disabledOpacity: Double = 0.55
+    static let swapButtonSize: CGFloat = 46
+    static let swapIconSize: CGFloat = 13
+    static let swapBorderWidth: CGFloat = 1.5
+}
+
+private enum Strings {
+    static let originPlaceholder: LocalizedStringKey = "Start"
+    static let destinationPlaceholder: LocalizedStringKey = "Destination"
+    static let searchRoute: LocalizedStringKey = "Search Route"
+    static let back: LocalizedStringKey = "Back"
+}
+
+private enum CoordinateSpaces {
+    static let card = "search-card"
+}
+
+private enum Symbol {
+    static let back = "chevron.left"
+    static let swap = "arrow.up.arrow.down"
 }

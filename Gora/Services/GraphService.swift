@@ -8,6 +8,12 @@
 import Foundation
 import OSLog
 
+enum GraphUpdateResult {
+    case updated
+    case alreadyLatest
+    case failed
+}
+
 final class GraphService {
     static let shared = GraphService()
     private let client = APIClient.shared
@@ -62,6 +68,29 @@ final class GraphService {
             return await download()
         } catch {
             return fail("version check failed: \(error.localizedDescription)")
+        }
+    }
+
+    // Downloads the graph only when the backend version is numerically higher than the loaded one.
+    // Non-integer versions count as newer when they differ.
+    func updateIfNewer(loadedVersion: String) async -> GraphUpdateResult {
+        do {
+            let remote = try await currentVersion()
+            let isNewer: Bool
+            if let remoteNumber = Int(remote.version), let loadedNumber = Int(loadedVersion) {
+                isNewer = remoteNumber > loadedNumber
+            } else {
+                isNewer = remote.version != loadedVersion
+            }
+            guard isNewer else {
+                lastSyncError = nil
+                return .alreadyLatest
+            }
+            log.info("Graph \(loadedVersion, privacy: .public) → \(remote.version, privacy: .public); downloading")
+            return await download() ? .updated : .failed
+        } catch {
+            _ = fail("version check failed: \(error.localizedDescription)")
+            return .failed
         }
     }
 

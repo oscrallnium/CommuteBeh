@@ -14,28 +14,29 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
   has any other way to notice that time has passed and the passenger may have moved.
 - **`cameraTransitionToken`** — identifies the transition `beginCameraTransition(_:)` most
   recently started. Changing it stops a running transition, which is how untracking cancels one.
-- **Map body — polylines per leg**: in Commute Mode the line only ever shows what's left —
+- **Map layer** — `mapLayer()` returns `CommuteMapLayer`, a view that builds a `CommuteMapScene`
+  in its own `body` and hands it to `CommuteMapView`, the `MKMapView` wrapper. See `Map/Commute-Map.md`.
+- **Map layer — polylines per leg**: in Commute Mode the line only ever shows what's left —
   nothing for a leg already ridden, the live-trimmed leg for the current one, the full leg for
   everything ahead. Outside Commute Mode every leg draws in full.
-- **Map body — route choice**: while `showsRouteChoice` is true the map draws every option
-  through `routeChoiceMapContent` and skips the single-route legs and pins below. The existing
-  long-press gesture sets the origin or destination. A `SpatialTapGesture` added with
-  `simultaneousGesture` selects the nearest route. Both gestures read the same `MapReader` proxy.
-- **Map body — update scope**: the `MapReader` closure holds only the `Map`, its gestures and the
-  proxy `onAppear`. The map content reads `displayedPuckCoordinate`, which changes about 30 times a
-  second, so the closure re-runs at that rate. The search panel, the route sheet, the commute
-  sheet and every other modifier sit outside the closure and stay idle. Keep them outside.
-  A custom `MapContent` type does not scope the read, because `MapContent` bodies do not track
-  observed reads.
-- **Map body — pins**: the map shows only the passenger's position and the destination. It
+- **Map layer — route choice**: while `showsRouteChoice` is true the scene holds every option's
+  lines, the selected route's stop markers, and every route's callout, and skips the single-route
+  legs and pins below. A long press on the map sets the origin or destination. A tap runs
+  `handleRouteTap(at:)`, which selects the nearest route.
+- **Map layer — update scope**: `CommuteMapLayer.body` reads `displayedPuckCoordinate`, which
+  changes about 30 times a second, so only that view re-evaluates at that rate. The search panel,
+  the route sheet, the commute sheet and every other modifier sit outside it and stay idle. Keep
+  every 30 Hz read inside `commuteMapScene()`, never in `ContentView.body`.
+- **Map layer — pins**: the map shows only the passenger's position and the destination. It
   draws no start pin.
-- **Map body — GPS accuracy circle**: hidden while commuting, because it centers on the raw
+- **Map layer — GPS accuracy circle**: hidden while commuting, because it centers on the raw
   fix while the puck shows the track/route-snapped position — the two visibly diverge, and a
   snapped point's uncertainty isn't a 2D radius in the first place.
-- **Map body — the passenger annotation**: outside commute, MapKit's own `UserAnnotation`
-  tracks the raw fix. During commute it swaps to a plain `Annotation` at the snapped position,
-  because the raw fix can sit off the polyline. The invisible `UserAnnotation` stays in the
-  tree regardless — removing it is the only way to stop MapKit's location feed.
+- **Map layer — the passenger**: outside commute, MapKit's own user-location view tracks the raw
+  fix and hosts `PassengerPuck`. During commute a `passengerPuck` annotation sits at the snapped
+  position, because the raw fix can sit off the polyline, and the user-location view draws
+  nothing. The user-location view stays on the map regardless — `showsUserLocation = false` is the
+  only way to stop MapKit's location feed, and it turns off only when the tab is off screen.
 - **Auto-set origin** (`onChange(of: routeStore.userLocation, initial: true)`) — fills the
   origin field with "My Location" on the first fix, then replaces it with the reverse-geocoded
   street address once `CLGeocoder` resolves. `hasAutoSetOrigin` stops later fixes from
@@ -77,12 +78,25 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
 - **`startCommute(with:)`** — seeds `positionResolver`/`commuteEngine` with the passenger's
   already-known location immediately, instead of waiting for the next GPS fix (which, at
   `distanceFilter`'s pace, can be several seconds away). Until `commuteEngine.snappedLocation`
-  holds a value, the Map draws MapKit's raw-GPS `UserAnnotation` instead of the tracked puck,
+  holds a value, the map draws MapKit's raw-GPS user-location view instead of the tracked puck,
   and the camera has nothing of the engine's to follow — both wait on this same value. The
   camera write itself is `.start` (see `ContentView+Camera.swift`), not
   `beginCameraTransition()`, because the jump from wherever the camera was resting to the
   ride's start can be arbitrarily large and must be a cut, not a pan.
 - **`beginCameraTransition(_:)`** — see `ContentView+CameraPose.swift` below.
+
+## Location off
+
+`RouteStore.locationAccess` is `off` when the rider did not allow Location. `ContentView` reacts in these ways.
+The route result shows the dismissible `LocationOffBanner` above the sheet, and "Use This Route" stays on.
+Commute Mode shows the banner under the status bar and moves by tap (`CommuteMode-Cards.md`). Both banners
+open the Turn On Location alert. `switchCommuteGuidance(for:)` runs when the value changes during a commute.
+Off: the engine keeps its step, the puck state clears, following stops, and the camera fits the route.
+Allowed: following resumes with a follow glide of `Motion.locationStateDuration`, and the first fix snaps the
+engine without moving it before the chosen step. A saved commute restores its step. A commute that starts with Location off
+fits the route and never starts the follow camera. No position dot, puck or accuracy circle shows while off.
+`arriveByTap()` ends the Live Activity and shows the arrived card. No view calls `fetchLocation(for:)` or
+`requestOnce()` today, so no search field waits on a fix.
 
 ## ContentView+LiveActivity.swift
 
@@ -134,9 +148,9 @@ Keeps the commute across backgrounding and app termination.
   never the raw GPS fix.
 - **`positionedInStrip(_:fraction:)`** — shifts the camera centre so the puck lands `fraction` of
   the way down the map strip, and at the horizontal middle of the screen. The strip runs from the
-  top safe-area inset to the top edge of the commute sheet. `MapProxy.convert(_:from:)`
+  top safe-area inset to the top edge of the commute sheet. `CommuteMapController.coordinate(at:)`
   gives the offset between the screen centre and the strip point under the camera the map shows
-  now. It returns the input unchanged when the strip is not measured, the proxy is nil, or a
+  now. It returns the input unchanged when the strip is not measured, the map is not attached, or a
   convert fails.
 - **Strip bottom** — the commute sheet measures its own top edge in window coordinates.
   `followSheetTop(_:)` stores it in `commuteStripBottom` and in `visibleBottom`.
@@ -146,12 +160,13 @@ Keeps the commute across backgrounding and app termination.
   write reads the eased value, so the puck offset follows the sheet with no jump.
 - **Follow writes** — `.followTick` and every transition tick write with no animation. Each runs its
   own 30 Hz interpolation, and an animated write restarts MapKit's animation every tick, which
-  makes the camera lag behind the puck. `.fit` and `.start` keep `cameraFit`.
+  makes the camera lag behind the puck. `.fit` and `.start` glide over `cameraFitDuration`
+  through `CommuteMapController.setCamera(_:duration:)`.
 
 ## ContentView+CameraPose.swift
 
 - **Poses** — `twoD` is north-up, flat, 800 m, puck at 0.5 of the strip. `threeD` faces the route
-  direction, pitch 50, 300 m, puck at 0.7 of the strip.
+  direction, pitch 65, 300 m, puck at 0.7 of the strip.
 - **Route heading** — `routeHeading(along:at:)` gives the bearing to the point 40 m ahead of the
   puck. `advanceSmoothedRouteHeading()` low-passes it once per 30 Hz follow tick and holds it
   while the puck stands still.
@@ -170,7 +185,7 @@ Keeps the commute across backgrounding and app termination.
 - **`previewSelectedRoute()`** — runs on every `selectedID` change and calls
   `routeStore.previewRoute`. The walk refiner finds the shown option through `routeResult`,
   so `routeResult` must always match the selected option.
-- **`handleRouteTap(at:proxy:)`** — projects each route with `proxy.convert`, then asks
+- **`handleRouteTap(at:)`** — projects each route with `CommuteMapController.point(for:)`, then asks
   `RouteHitTesting` for the nearest route. It ignores taps in Commute Mode.
 - **`refitForDetailToggle()`** — waits for the panel measurements to settle, then refits the
-  union of all routes from the new `visibleBottom` with `.smooth(duration: 0.5)`.
+  union of all routes from the new `visibleBottom` over `cameraFitDuration`.

@@ -80,7 +80,16 @@ final class AddressSearchService: NSObject, MKLocalSearchCompleterDelegate {
     /// Phase 2: resolves a tapped completion to a coordinate with a one-shot search.
     func resolve(_ completion: MKLocalSearchCompletion) async -> Coordinates? {
         let search = MKLocalSearch(request: MKLocalSearch.Request(completion: completion))
-        guard let item = try? await search.start().mapItems.first else { return nil }
+        guard let item = try? await search.start().mapItems.first else {
+            #if DEBUG
+            print("[Search] resolve title=\(completion.title) subtitle=\(completion.subtitle) result=none")
+            #endif
+            return nil
+        }
+        #if DEBUG
+        print("[Search] resolve title=\(completion.title) subtitle=\(completion.subtitle) item=\(item.name ?? "-") "
+              + "coord=\(item.placemark.coordinate.latitude),\(item.placemark.coordinate.longitude)")
+        #endif
         return Coordinates(lat: item.placemark.coordinate.latitude,
                             lng: item.placemark.coordinate.longitude)
     }

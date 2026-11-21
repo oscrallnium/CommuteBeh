@@ -78,13 +78,13 @@ struct StationListView: View {
                 } header: {
                     if chains.count > 1 {
                         Text(chain.prefix)
-                            .font(.caption2.bold())
+                            .font(.system(.caption2, weight: .bold))
                             .textCase(nil)
                     }
                 } footer: {
                     if searchQuery.isEmpty, let start = loopStart(of: chain.stations) {
                         Label("Returns to \(start.name)", systemImage: "arrow.uturn.backward")
-                            .font(.caption)
+                            .font(.system(.caption))
                     }
                 }
             }
@@ -188,7 +188,7 @@ private struct StationCoordRow: View {
         HStack(spacing: 12) {
             if let number {
                 Text("\(number)")
-                    .font(.subheadline.monospacedDigit().bold())
+                    .font(.system(.subheadline, weight: .bold).monospacedDigit())
                     .foregroundStyle(.secondary)
                     .frame(minWidth: 24, alignment: .trailing)
             }
@@ -199,16 +199,16 @@ private struct StationCoordRow: View {
     private var details: some View {
         VStack(alignment: .leading, spacing: 3) {
             HStack {
-                Text(station.name).font(.headline)
+                Text(station.name).font(.system(.headline, weight: .semibold))
                 if station.isInterchange {
                     Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.caption)
+                        .font(.system(.caption))
                         .foregroundStyle(Color.ember)
                 }
             }
             if showCoordinates {
                 Text(String(format: "%.6f,  %.6f", station.coordinates.lat, station.coordinates.lng))
-                    .font(.caption.monospacedDigit())
+                    .font(.system(.caption).monospacedDigit())
                     .foregroundStyle(.secondary)
             }
         }

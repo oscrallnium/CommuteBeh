@@ -173,7 +173,8 @@ final class CreateLoopViewModel {
     var baseFare: Double = 13
     var farePerKm: Double = 1.8
     var isAirConditioned = false
-    var selectedPayments: Set<String> = ["cash"]
+    var selectedPayments: Set<String> = []
+    private(set) var paymentOptions: [PaymentMethodConfig] = []
     var openTime = "05:00"
     var closeTime = "22:00"
     var crowdFactor: Double = 0.7
@@ -210,6 +211,16 @@ final class CreateLoopViewModel {
     struct ExistingLineInfo {
         let mode: String
         let directions: Set<String>
+    }
+
+    /// Lists the graph's payment methods by display name and selects the default ones.
+    /// Runs once, so later graph loads do not reset the admin's choices.
+    func loadPaymentOptions(from graph: TransitGraph) {
+        guard paymentOptions.isEmpty else { return }
+        paymentOptions = graph.paymentMethods.values.sorted {
+            ($0.displayName, $0.id) < ($1.displayName, $1.id)
+        }
+        selectedPayments = Set(paymentOptions.filter(\.isDefault).map(\.id))
     }
 
     var existingLineMatch: ExistingLineInfo? {
@@ -990,7 +1001,11 @@ struct CreateLoopView: View {
             }
             .navigationTitle(phaseTitle)
             .navigationBarTitleDisplayMode(.inline)
-            .task { _ = await GraphStore.shared.graph() }
+            .task {
+                if case .success(let graph) = await GraphStore.shared.graph() {
+                    vm.loadPaymentOptions(from: graph)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     if vm.phase != .output {
@@ -1027,10 +1042,10 @@ private struct DirectionPickerPhaseView: View {
                 .foregroundStyle(Color.ember)
             VStack(spacing: 8) {
                 Text("Does this route run in a specific direction?")
-                    .font(.title3.bold())
+                    .font(.system(.title3, weight: .bold))
                     .multilineTextAlignment(.center)
                 Text("Optional — pick Northbound or Southbound if the route follows a different path each way (e.g. one-way streets). Otherwise just draw a single path or loop.")
-                    .font(.callout)
+                    .font(.system(.callout))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
@@ -1043,6 +1058,8 @@ private struct DirectionPickerPhaseView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.Colors.action)
+                .foregroundStyle(DesignTokens.Colors.onAction)
 
                 HStack(spacing: 10) {
                     Button {
@@ -1079,10 +1096,10 @@ private struct OfferSecondPassView: View {
                 .foregroundStyle(Color.jade)
             VStack(spacing: 8) {
                 Text("\(vm.currentPassDirection?.capitalized ?? "") Drawn")
-                    .font(.title3.bold())
+                    .font(.system(.title3, weight: .bold))
                 if let remaining = vm.remainingDirection {
                     Text("Would you like to also draw \(remaining.capitalized) for this route? Optional — you can add it later by creating another route with the same Line ID.")
-                        .font(.callout)
+                        .font(.system(.callout))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
@@ -1096,6 +1113,8 @@ private struct OfferSecondPassView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.Colors.action)
+                .foregroundStyle(DesignTokens.Colors.onAction)
 
                 Button {
                     vm.skipSecondPass()
@@ -1136,7 +1155,7 @@ private struct RecordingPhaseView: View {
                 if let err = vm.roadFetchError {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(Color.ember)
-                        Text(err).font(.caption).foregroundStyle(Color.ember)
+                        Text(err).font(.system(.caption)).foregroundStyle(Color.ember)
                         Button {
                             vm.roadFetchError = nil
                         } label: {
@@ -1158,7 +1177,7 @@ private struct RecordingPhaseView: View {
                             .foregroundStyle(vm.isLoopClosed ? Color.jade : Color.secondary)
                     }
                     Text(statusText)
-                        .font(.subheadline)
+                        .font(.system(.subheadline))
                         .foregroundStyle(.primary)
                 }
                 .padding(.horizontal, 16)
@@ -1210,6 +1229,8 @@ private struct RecordingPhaseView: View {
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.Colors.action)
+                        .foregroundStyle(DesignTokens.Colors.onAction)
                         .disabled(vm.rawWaypoints.count < 3 || vm.isFetchingRoute)
                     }
                 }
@@ -1253,10 +1274,10 @@ private struct ReviewingPhaseView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {
                                 Text("Coordinate Precision")
-                                    .font(.subheadline.bold())
+                                    .font(.system(.subheadline, weight: .bold))
                                 if let direction = vm.currentPassDirection {
                                     Text(direction.capitalized)
-                                        .font(.caption2)
+                                        .font(.system(.caption2))
                                         .padding(.horizontal, 6).padding(.vertical, 2)
                                         .background(Color.ember.opacity(0.12))
                                         .foregroundStyle(Color.ember)
@@ -1264,17 +1285,17 @@ private struct ReviewingPhaseView: View {
                                 }
                             }
                             Text("Original: \(vm.roadPolylineCoords.count) pts  →  Simplified: \(vm.simplifiedWaypoints.count) pts")
-                                .font(.caption)
+                                .font(.system(.caption))
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
                     }
 
                     HStack(spacing: 10) {
-                        Text("Fewer").font(.caption2).foregroundStyle(.secondary)
+                        Text("Fewer").font(.system(.caption2)).foregroundStyle(.secondary)
                         Slider(value: $vm.epsilon, in: 0.00005...0.001, step: 0.00005)
                             .onChange(of: vm.epsilon) { _, _ in vm.applySimplification() }
-                        Text("More").font(.caption2).foregroundStyle(.secondary)
+                        Text("More").font(.system(.caption2)).foregroundStyle(.secondary)
                     }
 
                     HStack(spacing: 10) {
@@ -1293,6 +1314,8 @@ private struct ReviewingPhaseView: View {
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(DesignTokens.Colors.action)
+                        .foregroundStyle(DesignTokens.Colors.onAction)
                     }
                 }
                 .padding(16)
@@ -1334,12 +1357,12 @@ private struct DefiningStopsPhaseView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(Color.ember)
                             Text("This route passes the same road twice. Mark stops in travel order, and check the list below matches the order the vehicle serves them.")
-                                .font(.caption)
+                                .font(.system(.caption))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         Toggle(isOn: $vm.placeAnywhereAlongPath) {
                             Text("Place anywhere (ignore travel order)")
-                                .font(.caption2)
+                                .font(.system(.caption2))
                         }
                         .toggleStyle(.switch)
                         .controlSize(.mini)
@@ -1357,7 +1380,7 @@ private struct DefiningStopsPhaseView: View {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.vermilion)
                         Text(error)
-                            .font(.caption)
+                            .font(.system(.caption))
                             .fixedSize(horizontal: false, vertical: true)
                         Button {
                             vm.stopPlacementError = nil
@@ -1378,10 +1401,10 @@ private struct DefiningStopsPhaseView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "hand.tap")
                     Text("Tap anywhere along the route to add a stop")
-                        .font(.caption)
+                        .font(.system(.caption))
                     if let direction = vm.currentPassDirection {
                         Text("· \(direction.capitalized)")
-                            .font(.caption.bold())
+                            .font(.system(.caption, weight: .bold))
                             .foregroundStyle(Color.ember)
                     }
                 }
@@ -1406,7 +1429,7 @@ private struct DefiningStopsPhaseView: View {
                                         set: { vm.renameStop(id: stop.id, to: $0) }
                                     ))
                                     .textFieldStyle(.roundedBorder)
-                                    .font(.subheadline)
+                                    .font(.system(.subheadline))
                                     Button {
                                         vm.removeStop(id: stop.id)
                                     } label: {
@@ -1438,6 +1461,8 @@ private struct DefiningStopsPhaseView: View {
                         Label("Continue", systemImage: "chevron.right").frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(DesignTokens.Colors.action)
+                    .foregroundStyle(DesignTokens.Colors.onAction)
                     .disabled(!vm.canContinueFromStops)
                 }
                 .padding(.horizontal, 16)
@@ -1453,8 +1478,6 @@ private struct DefiningStopsPhaseView: View {
 private struct MetadataPhaseView: View {
     @Bindable var vm: CreateLoopViewModel
     @State private var showAppendConfirmation = false
-
-    private let paymentOptions = ["cash", "gcash", "maya", "beep_card", "card"]
 
     var body: some View {
         Form {
@@ -1475,14 +1498,14 @@ private struct MetadataPhaseView: View {
 
                 if let status = vm.lineIdStatus {
                     Text(status.message)
-                        .font(.caption)
+                        .font(.system(.caption))
                         .foregroundStyle(status.isBlocking ? Color.vermilion : Color.slate)
                 }
             }
 
             Section("Transport") {
                 Picker("Mode", selection: $vm.selectedMode) {
-                    ForEach([TransportMode.jeepney, .uvExpress, .bus, .tricycle, .train], id: \.self) { m in
+                    ForEach([TransportMode.jeepney, .modernJeepney, .uvExpress, .bus, .tricycle, .train], id: \.self) { m in
                         Text(m.displayName).tag(m)
                     }
                 }
@@ -1500,7 +1523,7 @@ private struct MetadataPhaseView: View {
                         Text(vm.isOneWay
                              ? "Stops are served in the recorded direction only. Correct for most jeepney and bus routes."
                              : "The same stops serve both directions. Only correct when riders board at the same spot going either way.")
-                            .font(.caption)
+                            .font(.system(.caption))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -1524,13 +1547,13 @@ private struct MetadataPhaseView: View {
             }
 
             Section("Accepted Payments") {
-                ForEach(paymentOptions, id: \.self) { p in
-                    Toggle(p.replacingOccurrences(of: "_", with: " ").capitalized,
+                ForEach(vm.paymentOptions, id: \.id) { p in
+                    Toggle(p.displayName,
                            isOn: Binding(
-                            get: { vm.selectedPayments.contains(p) },
+                            get: { vm.selectedPayments.contains(p.id) },
                             set: { on in
-                                if on { vm.selectedPayments.insert(p) }
-                                else  { vm.selectedPayments.remove(p) }
+                                if on { vm.selectedPayments.insert(p.id) }
+                                else  { vm.selectedPayments.remove(p.id) }
                             }
                            ))
                 }
@@ -1554,12 +1577,12 @@ private struct MetadataPhaseView: View {
             Section("Quality") {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Crowd Factor: \(String(format: "%.2f", vm.crowdFactor))")
-                        .font(.subheadline)
+                        .font(.system(.subheadline))
                     Slider(value: $vm.crowdFactor, in: 0...1, step: 0.05)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Reliability: \(String(format: "%.2f", vm.reliability))")
-                        .font(.subheadline)
+                        .font(.system(.subheadline))
                     Slider(value: $vm.reliability, in: 0...1, step: 0.05)
                 }
             }
@@ -1586,12 +1609,12 @@ private struct MetadataPhaseView: View {
                         }
                     } else {
                         Label("Save & Add Route", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(Color.licorice)
+                            .foregroundStyle(Color.cocoa)
                             .frame(maxWidth: .infinity)
                     }
                 }
-                .listRowBackground(vm.canSave ? Color.tangerine : Color.faint)
-                .foregroundStyle(Color.licorice)
+                .listRowBackground(vm.canSave ? Color.marmalade : Color.faint)
+                .foregroundStyle(Color.cocoa)
                 .disabled(!vm.canSave || vm.isSaving)
                 .confirmationDialog(
                     "Add to Existing Route?",
@@ -1609,7 +1632,7 @@ private struct MetadataPhaseView: View {
 
             if let err = vm.errorMessage {
                 Section {
-                    Text(err).foregroundStyle(Color.vermilion).font(.caption)
+                    Text(err).foregroundStyle(Color.vermilion).font(.system(.caption))
                 }
             }
         }
@@ -1632,20 +1655,20 @@ private struct OutputPhaseView: View {
 
             VStack(spacing: 8) {
                 Text("Route Added!")
-                    .font(.title2.bold())
+                    .font(.system(.title2, weight: .bold))
                 Text(vm.routeDisplayName)
-                    .font(.headline)
+                    .font(.system(.headline, weight: .semibold))
                     .foregroundStyle(.secondary)
                 if let result = vm.savedResult {
                     Text("\(result.stationsAdded) stops · \(result.edgesAdded) edges"
                          + (vm.completedPasses.count > 1 ? " · \(vm.completedPasses.count) directions" : ""))
-                        .font(.subheadline)
+                        .font(.system(.subheadline))
                         .foregroundStyle(.secondary)
                 }
             }
 
             Text("The route has been saved to the transit database.\nThe Explore tab will show it after reloading.")
-                .font(.callout)
+                .font(.system(.callout))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
@@ -1654,6 +1677,8 @@ private struct OutputPhaseView: View {
 
             Button("Done") { dismiss() }
                 .buttonStyle(.borderedProminent)
+                .tint(DesignTokens.Colors.action)
+                .foregroundStyle(DesignTokens.Colors.onAction)
                 .padding(.horizontal, 40)
                 .padding(.bottom, 40)
         }

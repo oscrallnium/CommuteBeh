@@ -371,15 +371,4 @@ final class ExploreViewModel {
     private static var modeColors: [String: Color] {
         Dictionary(uniqueKeysWithValues: TransportMode.allCases.map { ($0.rawValue, $0.color) })
     }
-
-    static func modeIcon(_ mode: String) -> String {
-        switch mode {
-        case "train":    return "tram.fill"
-        case "bus":      return "bus.fill"
-        case "jeepney":  return "car.fill"
-        case "uv_express": return "car.side.fill"
-        case "tricycle": return "bicycle"
-        default:         return "figure.walk"
-        }
-    }
 }

@@ -23,6 +23,9 @@ nonisolated enum SavedPlaceIcon: String, Codable, CaseIterable, Identifiable, Se
         case .mappin: "mappin"
         }
     }
+
+    /// Outline symbol for list rows. Each raw value is the name of an outline SF Symbol.
+    var outlineSystemImage: String { rawValue }
 }
 
 /// A place the passenger saved for one-tap destination entry. Encodes with `ARSurveyCoding`

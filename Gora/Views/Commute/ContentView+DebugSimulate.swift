@@ -58,8 +58,8 @@ extension ContentView {
             return
         }
         await debugTrainSimulator.start(routeStore: routeStore) { option in
-            self.originText = option.result.legs.first?.fromStation.name ?? ""
-            self.destinationText = option.result.legs.last?.toStation.name ?? ""
+            self.routeStore.originText = option.result.legs.first?.fromStation.name ?? ""
+            self.routeStore.destinationText = option.result.legs.last?.toStation.name ?? ""
             self.startCommute(with: option)
             self.isFollowingPassenger = false
             await self.frameDebugSimStart()

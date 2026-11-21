@@ -172,7 +172,12 @@ final class AdminRoutesViewModel {
             transportModes: graph.transportModes,
             paymentMethods: graph.paymentMethods,
             lines: graph.lines,
-            enforceOperatingHours: graph.enforceOperatingHours
+            enforceOperatingHours: graph.enforceOperatingHours,
+            serviceAreas: graph.serviceAreas,
+            scheduledMaxWaitMinutes: graph.scheduledMaxWaitMinutes,
+            serviceSchedules: graph.serviceSchedules,
+            serviceScheduleExceptions: graph.serviceScheduleExceptions,
+            tollPlazas: graph.tollPlazas, tollFares: graph.tollFares
         )
 
         try? await GraphStore.shared.replace(updated)
@@ -217,7 +222,12 @@ final class AdminRoutesViewModel {
             transportModes: updatedModes,
             paymentMethods: graph.paymentMethods,
             lines: graph.lines,
-            enforceOperatingHours: graph.enforceOperatingHours
+            enforceOperatingHours: graph.enforceOperatingHours,
+            serviceAreas: graph.serviceAreas,
+            scheduledMaxWaitMinutes: graph.scheduledMaxWaitMinutes,
+            serviceSchedules: graph.serviceSchedules,
+            serviceScheduleExceptions: graph.serviceScheduleExceptions,
+            tollPlazas: graph.tollPlazas, tollFares: graph.tollFares
         )
 
         try? await GraphStore.shared.replace(updated)

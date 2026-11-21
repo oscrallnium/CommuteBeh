@@ -22,8 +22,10 @@ extension ContentView {
     /// Starts the polyline draw-on only once that camera glide has landed — the same order
     /// Maps apps use: settle the frame first, then draw the route inside it.
     func fitToRouteIfSuccessful() async {
-        guard let result = routeStore.routeResult else { return }
+        guard routeStore.routeResult != nil else { return }
         await waitForPanelsToSettle()
+        await waitForFinalGeometry()
+        guard let result = routeStore.routeResult else { return }
         if let bounds = routeChoice.unionBounds {
             fitMap(bounds: bounds)
         } else {
@@ -33,6 +35,15 @@ extension ContentView {
         guard routeStore.routeResult != nil else { return }
         routeDrawAnimator.start()
         routeChoice.revealBubbles()
+    }
+
+    /// Returns once the search has its final walk and zone-ride paths, or after
+    /// `geometryWaitCap`, so a slow directions request never keeps the route hidden.
+    func waitForFinalGeometry() async {
+        let deadline = ContinuousClock.now + .seconds(DesignTokens.Motion.geometryWaitCap)
+        while routeStore.geometryPhase == .refining, ContinuousClock.now < deadline {
+            try? await Task.sleep(for: .milliseconds(50))
+        }
     }
 
     /// Returns once `visibleTop` and `visibleBottom` stop changing between two polls.
@@ -57,7 +68,7 @@ extension ContentView {
     }
 
     /// Fits the camera to `geo`, which may span several routes.
-    func fitMap(bounds geo: RouteBounds, animation: Animation = DesignTokens.Motion.cameraFit) {
+    func fitMap(bounds geo: RouteBounds, duration: TimeInterval = DesignTokens.Motion.cameraFitDuration) {
         var center = CLLocationCoordinate2D(
             latitude:  (geo.minLat + geo.maxLat) / 2,
             longitude: (geo.minLng + geo.maxLng) / 2
@@ -81,7 +92,7 @@ extension ContentView {
         moveCamera(to: MKCoordinateRegion(
             center: center,
             span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lngDelta)
-        ), animation: animation)
+        ), duration: duration)
     }
 
     /// Size of the screen that shows the app's window scene. Zero before a scene connects.
@@ -141,26 +152,16 @@ extension ContentView {
         moveCamera(to: MKCoordinateRegion(center: center, span: span))
     }
 
-    /// Animates the camera to `region`, writing back the same `MapCameraPosition` case that
-    /// `mapPosition` currently holds. `withAnimation` only glides within one case, and a
-    /// mismatched case drops the animation and snaps.
-    func moveCamera(to region: MKCoordinateRegion, animation: Animation = DesignTokens.Motion.cameraFit) {
-        let target: MapCameraPosition
-        if let proxy = mapProxy, mapPosition.region == nil {
-            target = .camera(proxy.camera(framing: region))
-        } else {
-            target = .region(region)
-        }
-        withAnimation(animation) {
-            mapPosition = target
-        }
+    /// Glides the camera to `region` over `duration`, flat and facing north.
+    func moveCamera(to region: MKCoordinateRegion, duration: TimeInterval = DesignTokens.Motion.cameraFitDuration) {
+        mapController.setRegion(region, duration: duration)
     }
 
     /// What triggered a `updateCommuteCamera` call — each source paces its glide
     /// differently, so the animation is picked here rather than left to a bool flag.
     enum CameraFollowTrigger {
         /// A route fit or a leg switch — infrequent, deliberate jumps that read
-        /// better eased with `cameraFit`.
+        /// better eased over `cameraFitDuration`.
         case fit
         /// Entering Commute Mode for the first time this session — glides from wherever
         /// the camera already sat, eased like `.fit`. See `Commute.md`.
@@ -194,8 +195,8 @@ extension ContentView {
         return livePassengerCoordinate
     }
 
-    /// Commute Mode's camera write for the current mode's pose. Writes `.camera(...)`
-    /// directly, because pitch and heading have no `.region` form. See `Commute.md`.
+    /// Commute Mode's camera write for the current mode's pose. Writes the pose directly,
+    /// because pitch and heading have no region form. See `Commute.md`.
     func updateCommuteCamera(_ trigger: CameraFollowTrigger = .fit) {
         guard isCommuting else {
             #if DEBUG
@@ -209,10 +210,10 @@ extension ContentView {
             #endif
             return
         }
-        let animation: Animation?
+        let duration: TimeInterval?
         switch trigger {
-        case .fit, .start: animation = DesignTokens.Motion.cameraFit
-        case .followTick: animation = nil
+        case .fit, .start: duration = DesignTokens.Motion.cameraFitDuration
+        case .followTick: duration = nil
         }
         // A follow tick otherwise keeps writing the same target every tick while the
         // passenger stands still. Restarting the animation each time never lets it
@@ -223,43 +224,32 @@ extension ContentView {
             #endif
             return
         }
-        // `withAnimation` only glides within one `MapCameraPosition` case, and entering
-        // Commute Mode starts from whatever the search screen left behind — usually a
-        // `.region` fit to the route. Re-express it as the equivalent `.camera` first, with
-        // no animation, so the write below glides from that position rather than a mismatched
-        // case dropping the animation and cutting straight to the destination.
-        if case .start = trigger, let region = mapPosition.region, let proxy = mapProxy {
-            mapPosition = .camera(proxy.camera(framing: region))
-        }
         #if DEBUG
-        print("[CameraDebug] write trigger=\(trigger) center=(\(pose.center.latitude),\(pose.center.longitude)) heading=\(pose.heading.rounded()) pitch=\(pose.pitch) distance=\(pose.distance) animation=\(animation == nil ? "none" : "\(animation!)") isFollowing=\(isFollowingPassenger) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
+        print("[CameraDebug] write trigger=\(trigger) center=(\(pose.center.latitude),\(pose.center.longitude)) heading=\(pose.heading.rounded()) pitch=\(pose.pitch) distance=\(pose.distance) duration=\(duration.map { "\($0)" } ?? "none") isFollowing=\(isFollowingPassenger) transitioning=\(isCameraTransitioning) t=\(Date().timeIntervalSince1970)")
         #endif
-        writeCamera(pose, animation: animation)
+        writeCamera(pose, duration: duration)
     }
 
-    /// Writes `pose` to the map and records it as the last camera this view wrote.
-    func writeCamera(_ pose: CommuteCameraPose, animation: Animation?) {
+    /// Writes `pose` to the map over `duration`, or at once when `duration` is nil, and records
+    /// it as the last camera this view wrote.
+    func writeCamera(_ pose: CommuteCameraPose, duration: TimeInterval?) {
         lastCommuteCameraCenter = pose.center
         lastCommuteCameraDistance = pose.distance
         lastCommuteCameraPitch = pose.pitch
         lastCommuteCameraHeading = pose.heading
-        let camera = MapCamera(centerCoordinate: pose.center, distance: pose.distance,
-                               heading: pose.heading, pitch: pose.pitch)
-        withAnimation(animation) {
-            mapPosition = .camera(camera)
-        }
+        mapController.setCamera(pose, duration: duration)
     }
 
     /// Shifts `coordinate` so the puck lands `fraction` of the way down the map strip between
     /// the status bar and the speed row, and at the horizontal middle of the screen. Measures
     /// the shift against the camera the map shows now. Returns `coordinate` unchanged until
-    /// the proxy and the strip are available.
+    /// the map and the strip are available.
     func positionedInStrip(_ coordinate: CLLocationCoordinate2D, fraction: CGFloat) -> CLLocationCoordinate2D {
         let now = Date()
         guard commuteStripBottom > 0 else { return coordinate }
         if stripBottomEase == nil { stripBottomEase = StripBottomEase(commuteStripBottom, now: now) }
         stripBottomEase?.retarget(commuteStripBottom, now: now)
-        guard let proxy = mapProxy,
+        guard mapController.isAttached,
               let bottom = stripBottomEase?.value(at: now) else { return coordinate }
         let screen = screenSize
         let top = UIApplication.shared.connectedScenes
@@ -267,8 +257,8 @@ extension ContentView {
         guard bottom > top else { return coordinate }
         let screenCentre = CGPoint(x: screen.width / 2, y: screen.height / 2)
         let stripPoint = CGPoint(x: screen.width / 2, y: top + (bottom - top) * fraction)
-        guard let screenCoordinate = proxy.convert(screenCentre, from: .local),
-              let stripCoordinate = proxy.convert(stripPoint, from: .local) else { return coordinate }
+        guard let screenCoordinate = mapController.coordinate(at: screenCentre),
+              let stripCoordinate = mapController.coordinate(at: stripPoint) else { return coordinate }
         return CLLocationCoordinate2D(
             latitude: coordinate.latitude + screenCoordinate.latitude - stripCoordinate.latitude,
             longitude: coordinate.longitude + screenCoordinate.longitude - stripCoordinate.longitude

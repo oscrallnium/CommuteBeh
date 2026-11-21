@@ -8,6 +8,15 @@
 import FirebaseAnalytics
 import SwiftUI
 
+private enum VersionCheck {
+    case idle
+    case checking
+}
+
+private enum VersionCheckStrings {
+    static let actionName = "Check for Data Update"
+}
+
 /// The Settings tab: profile, commute options, permissions, data, support and about.
 struct SettingsView: View {
     @Environment(UserSession.self) private var session
@@ -20,21 +29,28 @@ struct SettingsView: View {
     // Fare estimates do not use the fare discount yet.
     @AppStorage(SettingsKey.fareDiscount) private var fareDiscount: FareDiscount = .none
     @AppStorage(SettingsKey.liveActivitiesEnabled) private var liveActivitiesEnabled = true
+    @AppStorage(SettingsKey.showOtherModes) private var showOtherModes = true
     // Stored only; nothing reads it yet.
     @AppStorage(SettingsKey.saveTripHistory) private var saveTripHistory = true
-    @AppStorage(SettingsKey.shareUsageData) private var shareUsageData = false
+    @AppStorage(SettingsKey.shareUsageData) private var shareUsageData = true
     @AppStorage(SettingsKey.vibrateNearDestination) private var vibrateNearDestination = true
     @AppStorage(SettingsKey.vibrateStopBeforeExit) private var vibrateStopBeforeExit = true
     @AppStorage(SettingsKey.liquidGlassEnabled) private var liquidGlassEnabled = true
+    @AppStorage(SettingsKey.use24HourTime) private var use24HourTime = false
 
     @State private var permissions = SettingsPermissions()
     @State private var isLoggingOut = false
     @State private var showSignOutAlert = false
+    @State private var graphVersion: String?
+    @State private var versionCheck: VersionCheck = .idle
+    @State private var versionHapticCount = 0
+    @State private var paymentCount: Int?
+    @State private var excludedPaymentIDs = SettingsKey.excludedPaymentIDs
 
     var body: some View {
         NavigationStack {
             List {
-                profileSection
+                if session.isLoggedIn { profileSection } else { signInSection }
                 commuteSection
                 arrivalVibrationSection
                 appearanceSection
@@ -42,12 +58,19 @@ struct SettingsView: View {
                 dataSection
                 supportSection
                 aboutSection
-                signOutSection
+                if session.isLoggedIn { signOutSection }
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(DesignTokens.Space.xxxl)
             .navigationTitle("Settings")
             .task { await permissions.refresh() }
+            .task { await loadGraphVersion() }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TransitDataDidUpdate"))) { _ in
+                Task { await loadGraphVersion() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+                excludedPaymentIDs = SettingsKey.excludedPaymentIDs
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await permissions.refresh() } }
             }
@@ -67,6 +90,18 @@ struct SettingsView: View {
 
     // MARK: Sections
 
+    private var signInSection: some View {
+        Section {
+            Button {
+                session.requestLogin()
+            } label: {
+                Text("Sign In").frame(maxWidth: .infinity)
+            }
+        } footer: {
+            Text("Sign in to sync your saved places and trip history.")
+        }
+    }
+
     private var profileSection: some View {
         Section {
             NavigationLink {
@@ -74,10 +109,10 @@ struct SettingsView: View {
             } label: {
                 HStack(spacing: DesignTokens.Space.ml) {
                     SettingsAvatar(name: session.currentUser?.displayName ?? "", diameter: 60,
-                                   font: .title2.bold())
+                                   font: .system(.title2, weight: .bold))
                     VStack(alignment: .leading) {
-                        Text(session.currentUser?.displayName ?? "").font(.title3.weight(.semibold))
-                        Text("Name, email and account").font(.subheadline).foregroundStyle(.secondary)
+                        Text(session.currentUser?.displayName ?? "").font(.system(.title3, weight: .semibold))
+                        Text("Name, email and account").font(.system(.subheadline)).foregroundStyle(.secondary)
                     }
                 }
                 .padding(.vertical, DesignTokens.Space.xs)
@@ -90,36 +125,44 @@ struct SettingsView: View {
             NavigationLink {
                 SettingsSavedPlacesView()
             } label: {
-                valueRow("Saved Places", "mappin.and.ellipse", .vermilion, "\(savedPlaces.places.count)")
+                valueRow("Saved Places", "mappin.and.ellipse", "\(savedPlaces.places.count)")
             }
             NavigationLink {
                 SettingsChoicePage(title: "Route Preferences", selection: $routePreference)
             } label: {
-                valueRow("Route Preferences", "point.topleft.down.to.point.bottomright.curvepath", .lagoon,
+                valueRow("Route Preferences", "point.topleft.down.to.point.bottomright.curvepath",
                          routePreference.title)
             }
             NavigationLink {
                 SettingsChoicePage(title: "Fare Discount", selection: $fareDiscount)
             } label: {
-                valueRow("Fare Discount", "ticket", .jade, fareDiscount.title)
+                valueRow("Fare Discount", "ticket", fareDiscount.title)
+            }
+            NavigationLink {
+                SettingsPaymentsView()
+            } label: {
+                valueRow("Payment Methods", "creditcard", paymentsValue)
             }
             Toggle(isOn: $liveActivitiesEnabled) {
-                SettingsRowLabel(title: "Live Activities", systemImage: "platter.filled.bottom.iphone", tint: .onyx)
+                SettingsRowLabel(title: "Live Activities", systemImage: "platter.filled.bottom.iphone")
+            }
+            Toggle(isOn: $showOtherModes) {
+                SettingsRowLabel(title: "Other Modes at Stops", systemImage: "arrow.triangle.branch")
             }
         } header: {
             Text("Commute")
         } footer: {
-            Text("Fare Discount applies the 20% student, senior citizen or PWD fare to estimates. Show a valid ID when you pay.")
+            Text("Fare Discount applies the 20% student, senior citizen or PWD fare to estimates. Show a valid ID when you pay. Other Modes at Stops lists jeepneys, buses and trains that also stop at the same stops as a ride.")
         }
     }
 
     private var arrivalVibrationSection: some View {
         Section {
             Toggle(isOn: $vibrateNearDestination) {
-                SettingsRowLabel(title: "Near Destination", systemImage: "scope", tint: .jade)
+                SettingsRowLabel(title: "Near Destination", systemImage: "scope")
             }
             Toggle(isOn: $vibrateStopBeforeExit) {
-                SettingsRowLabel(title: "One Stop Before Exit", systemImage: "tram.fill", tint: .lagoon)
+                SettingsRowLabel(title: "One Stop Before Exit", systemImage: "tram")
             }
         } header: {
             Text("Arrival Vibration")
@@ -131,21 +174,24 @@ struct SettingsView: View {
     private var appearanceSection: some View {
         Section {
             Toggle(isOn: $liquidGlassEnabled) {
-                SettingsRowLabel(title: "Liquid Glass", systemImage: "drop.fill", tint: .onyx)
+                SettingsRowLabel(title: "Liquid Glass", systemImage: "drop")
+            }
+            Toggle(isOn: $use24HourTime) {
+                SettingsRowLabel(title: "24-Hour Time", systemImage: "clock")
             }
         } header: {
             Text("Appearance")
         } footer: {
-            Text("Turn off to use solid backgrounds instead of Liquid Glass on Gora's buttons and cards. System bars and sheets keep Liquid Glass.")
+            Text("Turn off to use solid backgrounds instead of Liquid Glass on Gora's buttons and cards. System bars and sheets keep Liquid Glass. 24-Hour Time shows arrival times as 13:24 instead of 1:24 PM.")
         }
     }
 
     private var permissionsSection: some View {
         Section {
-            linkRow("Location", "location.fill", .lagoon, permissions.locationValue) {
+            linkRow("Location", "location", permissions.locationValue) {
                 open(UIApplication.openSettingsURLString)
             }
-            linkRow("Notifications", "bell.fill", .vermilion, permissions.notificationsValue) {
+            linkRow("Notifications", "bell", permissions.notificationsValue) {
                 open(UIApplication.openNotificationSettingsURLString)
             }
         } header: {
@@ -158,15 +204,17 @@ struct SettingsView: View {
     private var dataSection: some View {
         Section {
             Toggle(isOn: $saveTripHistory) {
-                SettingsRowLabel(title: "Save Trip History", systemImage: "clock.arrow.circlepath", tint: .slate)
+                SettingsRowLabel(title: "Save Trip History", systemImage: "clock.arrow.circlepath")
             }
+            #if DEBUG
             Toggle(isOn: $shareUsageData) {
-                SettingsRowLabel(title: "Share Usage Data", systemImage: "chart.bar.fill", tint: .lagoon)
+                SettingsRowLabel(title: "Share Usage Data", systemImage: "chart.bar")
             }
+            #endif
             NavigationLink {
                 SettingsDownloadDataView()
             } label: {
-                SettingsRowLabel(title: "Download My Data", systemImage: "arrow.down.circle", tint: .onyx)
+                SettingsRowLabel(title: "Download My Data", systemImage: "arrow.down.circle")
             }
         } header: {
             Text("Data & Privacy")
@@ -177,14 +225,14 @@ struct SettingsView: View {
 
     private var supportSection: some View {
         Section("Support") {
-            linkRow("Help Center", "questionmark.circle", .jade, nil) { open("https://commutebeh.app/help") }
-            linkRow("Contact Support", "envelope", .lagoon, nil, showsArrow: false) {
+            linkRow("Help Center", "questionmark.circle", nil) { open("https://commutebeh.app/help") }
+            linkRow("Contact Support", "envelope", nil, showsArrow: false) {
                 open("mailto:support@commutebeh.app")
             }
             NavigationLink {
                 SettingsRouteReportView()
             } label: {
-                SettingsRowLabel(title: "Report a Route Problem", systemImage: "exclamationmark.bubble", tint: .vermilion)
+                SettingsRowLabel(title: "Report a Route Problem", systemImage: "exclamationmark.bubble")
             }
         }
     }
@@ -194,19 +242,23 @@ struct SettingsView: View {
             NavigationLink {
                 SettingsDocumentView(document: .privacyPolicy)
             } label: {
-                SettingsRowLabel(title: "Privacy Policy", systemImage: "hand.raised.fill", tint: .slate)
+                SettingsRowLabel(title: "Privacy Policy", systemImage: "hand.raised")
             }
             NavigationLink {
                 SettingsDocumentView(document: .terms)
             } label: {
-                SettingsRowLabel(title: "Terms and Conditions", systemImage: "doc.text", tint: .slate)
+                SettingsRowLabel(title: "Terms and Conditions", systemImage: "doc.text")
             }
             NavigationLink {
                 SettingsAcknowledgementsView()
             } label: {
-                SettingsRowLabel(title: "Acknowledgements", systemImage: "heart", tint: .vermilion)
+                SettingsRowLabel(title: "Acknowledgements", systemImage: "heart")
             }
-            valueRow("Version", "info.circle", .slate, Self.versionText)
+            valueRow("Version", "info.circle", versionText)
+                .contentShape(Rectangle())
+                .onLongPressGesture { checkForDataUpdate() }
+                .accessibilityAction(named: VersionCheckStrings.actionName) { checkForDataUpdate() }
+                .sensoryFeedback(.impact(weight: .heavy, intensity: 1.0), trigger: versionHapticCount)
         }
     }
 
@@ -230,27 +282,27 @@ struct SettingsView: View {
     /// A row value in one small line beside the title. It shrinks a little before it truncates.
     private func valueText(_ value: String) -> some View {
         Text(value)
-            .font(DesignTokens.TypeScale.subtitle)
+            .typeScale(.subtitle)
             .foregroundStyle(.secondary)
             .lineLimit(1)
             .minimumScaleFactor(0.85)
     }
 
-    private func valueRow(_ title: String, _ symbol: String, _ tint: Color, _ value: String) -> some View {
+    private func valueRow(_ title: String, _ symbol: String, _ value: String) -> some View {
         // An HStack, not LabeledContent: LabeledContent moves the value under the title when space is short.
         HStack {
-            SettingsRowLabel(title: title, systemImage: symbol, tint: tint)
+            SettingsRowLabel(title: title, systemImage: symbol)
                 .layoutPriority(1)
             Spacer(minLength: DesignTokens.Space.s)
             valueText(value)
         }
     }
 
-    private func linkRow(_ title: String, _ symbol: String, _ tint: Color, _ value: String?, showsArrow: Bool = true,
+    private func linkRow(_ title: String, _ symbol: String, _ value: String?, showsArrow: Bool = true,
                          action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                SettingsRowLabel(title: title, systemImage: symbol, tint: tint)
+                SettingsRowLabel(title: title, systemImage: symbol)
                     .layoutPriority(1)
                 Spacer()
                 if let value { valueText(value) }
@@ -282,10 +334,38 @@ struct SettingsView: View {
         await session.logout()
     }
 
-    private static var versionText: String {
+    private func checkForDataUpdate() {
+        guard versionCheck == .idle else { return }
+        versionCheck = .checking
+        Task {
+            defer { versionCheck = .idle }
+            if graphVersion == nil { await loadGraphVersion() }
+            guard let loadedVersion = graphVersion else { return }
+            switch await GraphService.shared.updateIfNewer(loadedVersion: loadedVersion) {
+            case .updated, .alreadyLatest: versionHapticCount += 1
+            case .failed: break
+            }
+        }
+    }
+
+    private func loadGraphVersion() async {
+        guard case .success(let graph) = await GraphStore.shared.graph() else { return }
+        graphVersion = graph.version
+        paymentCount = graph.paymentMethods.count
+    }
+
+    /// "All" when nothing is off, else "on of total". Shows "Custom" until the graph loads.
+    private var paymentsValue: String {
+        if excludedPaymentIDs.isEmpty { return "All" }
+        guard let paymentCount else { return "Custom" }
+        return "\(max(paymentCount - excludedPaymentIDs.count, 1)) of \(paymentCount)"
+    }
+
+    private var versionText: String {
         let info = Bundle.main.infoDictionary
         let version = info?["CFBundleShortVersionString"] as? String ?? ""
         let build = info?["CFBundleVersion"] as? String ?? ""
-        return "\(version) (\(build))"
+        let graph = graphVersion.map { "(\($0))" } ?? ""
+        return "\(version) (\(build))\(graph)"
     }
 }

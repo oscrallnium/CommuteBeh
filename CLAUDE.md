@@ -349,11 +349,36 @@ Rules:
   each `switch` that a new case must update.
 - Use a `String` raw value only when the value crosses a boundary, such as `Codable` storage
   or a Live Activity. `CommuteActivityAttributes.Phase` is the model to follow.
-- Use an enum only for a set that the code fixes. `TransportMode` and `PaymentMethod` are
-  closed sets, so they are enums. Lines and stations change with `transit_graph_v3.json`, so
-  keep them data, not cases.
+- Use an enum only for a set that the code fixes. `TransportMode` is a closed set, so it is
+  an enum. Lines, stations, and payment methods change with `transit_graph_v3.json`, so keep
+  them data, not cases. A payment method is a `String` ID that matches `PaymentMethodConfig.id`.
 - Existing examples: `CommuteActivityAttributes.Phase`, `CommuteCardState`,
   `SavedPlaceDragState.Phase`, `SurveyState`.
+
+### Closures in views
+
+Do not give a custom view a stored closure property for an action. The child view calls a
+method on the `@Observable` model that holds the state, such as `routeStore.clear(.origin)`.
+
+```swift
+// [Wrong] the parent passes each action down as a closure
+let onClearOrigin: () -> Void
+let onSwap: () -> Void
+
+// [Correct] the child calls the model directly
+Button { routeStore.swapEndpoints() } label: { … }
+```
+
+Rules:
+
+- Put the logic of an action in the model, not in the parent view. The model method changes
+  the model state only.
+- A child view that owns a `@FocusState.Binding` sets the focus itself after it calls the model.
+- Use a closure property only for an effect that only the parent view can do. Examples are the
+  map camera, navigation, and the dismissal of a sheet. Use two such closures at most per view.
+- Name each allowed closure after the user action, such as `onBack` or `onSearch`.
+- This rule does not cover the closures of SwiftUI API. `Button` actions, `onChange`, `task`,
+  `Binding(get:set:)`, and `ForEach` content stay as they are.
 
 ### SOLID Principles
 

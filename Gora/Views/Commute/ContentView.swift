@@ -14,11 +14,8 @@ struct ContentView: View {
     @State var routeStore = RouteStore()
     /// The in-flight search; a new search cancels it.
     @State var searchTask: Task<Void, Never>?
-    @State var originText = ""
-    @State var destinationText = ""
-    @State var mapPosition: MapCameraPosition = .region(Self.manilaRegion)
-    /// Captured once the map appears — see `moveCamera`.
-    @State var mapProxy: MapProxy?
+    /// Writes the map camera and converts between points and coordinates. See `Commute-Map.md`.
+    @State var mapController = CommuteMapController()
     @State var showSearchProgress = false
     @FocusState var focusedField: SearchField?
     @Namespace var searchNS
@@ -33,7 +30,7 @@ struct ContentView: View {
     @State var stripBottomEase: StripBottomEase?
     /// Map-ready coordinates + bounding box for `vm.routeResult`. See `RouteGeometry`.
     @State var routeGeometry: RouteGeometry?
-    /// Whether this tab is the one on screen. Gates the location dot — see `UserAnnotation`.
+    /// Whether this tab is the one on screen. Gates the location dot and MapKit's location feed.
     @State var isOnScreen = false
     /// Animated copy of `routeStore.userHorizontalAccuracy` — updated with easeInOut so
     /// the accuracy circle grows and shrinks smoothly rather than jumping between fixes.
@@ -50,26 +47,28 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     /// The commute sheet stays down while the login cover is up.
     @Environment(UserSession.self) var session
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    /// True after the rider dismisses the Location-off banner on the current route result.
+    /// A new search shows the banner again.
+    @State var isRouteBannerDismissed = false
+    /// True from the moment Location returns until the follow glide starts. The glide then lasts `locationStateDuration`.
+    @State var isResumingLiveGuidance = false
     /// Set on `.background`, cleared on the next real `.active`. See `Commute.md`.
     @State var wasBackgrounded = false
     /// Resolves the best available passenger position: real GPS when fresh, polyline-projected
     /// when fixes stop (tunnel, signal loss). See `CommutePositionResolver`.
     @State var positionResolver = CommutePositionResolver()
-    /// Glides the passenger dot between snapped positions at 30 Hz, because `Annotation`
-    /// re-places its coordinate instantly rather than animating it. See `PuckGlideInterpolator`.
+    /// Glides the passenger dot between snapped positions at 30 Hz. See `PuckGlideInterpolator`.
     @State var puckInterpolator = PuckGlideInterpolator()
-    /// Draws a freshly computed route on progressively from origin to destination.
+    /// Draws a freshly computed route on from origin to destination through `strokeEnd`.
     /// Started by `fitToRouteIfSuccessful` in `ContentView+Camera.swift`, hence internal
     /// rather than private. See `RouteDrawAnimator`.
     @State var routeDrawAnimator = RouteDrawAnimator()
-    /// Draws the newly selected route on again after the passenger picks another option.
-    /// Started by the `selectedID` observer in `ContentView+Lifecycle.swift`.
-    @State var selectionDrawAnimator = RouteDrawAnimator()
     /// Selection, sheet detail state, and per-option map data for the route-choice phase.
     /// See `RouteChoiceState`.
     @State var routeChoice = RouteChoiceState()
     /// Decides when the passenger has genuinely left the current walk leg. See `Commute.md`.
-    @State private var rerouteMonitor = CommuteRerouteMonitor()
+    @State /*private*/ var rerouteMonitor = CommuteRerouteMonitor()
 
     // MARK: Commute Mode
     //
@@ -135,11 +134,12 @@ struct ContentView: View {
     /// Beyond this the passenger is too far from the first stop to navigate from it.
     static let commuteStartRadiusMeters: Double = 500
 
-    /// True when the user is within `commuteStartRadiusMeters` of the current route's origin.
-    /// Drives the "USE THIS ROUTE" button — hidden when the user is not near the start.
+    /// True when the user is within `commuteStartRadiusMeters` of the current route's origin,
+    /// or when the user is an admin or Location is off. Drives the "USE THIS ROUTE" button.
     var canStartCommute: Bool {
-        guard let userLoc = routeStore.userLocation,
-              let firstLeg = routeStore.routeResult?.legs.first else { return false }
+        guard let firstLeg = routeStore.routeResult?.legs.first else { return false }
+        if session.isAdmin || routeStore.locationAccess == .off { return true }
+        guard let userLoc = routeStore.userLocation else { return false }
         let originCoord: Coordinates
         if firstLeg.fromStation.isPinnedLocation {
             guard let pinned = routeStore.originCoordinate else { return false }
@@ -156,13 +156,8 @@ struct ContentView: View {
         #if DEBUG
         let _ = logBodyReevaluationIfTransitioning()
         #endif
-        // Read here, not inside the map content: SwiftUI evaluates the `MapReader` closure
-        // outside the observation scope of `body`, so a read there never triggers a redraw.
-        let revealedFraction = routeDrawAnimator.revealedFraction
-        let choiceFrame = routeChoiceFrame(
-            revealedFraction: revealedFraction,
-            selectedRevealedFraction: selectionDrawAnimator.revealedFraction)
-        let screen = mapLayer(choiceFrame: choiceFrame, revealedFraction: revealedFraction)
+        let screen = mapLayer()
+            .ignoresSafeArea()
             #if DEBUG
             .overlay(alignment: .topTrailing) { debugSimulateButton }
             #endif
@@ -179,6 +174,8 @@ struct ContentView: View {
             )
             .toolbarVisibility(isCommuting ? .hidden : .visible, for: .tabBar)
             .savedPlaceDragHost()
+            .turnOnLocationAlert(isPresented: $routeStore.isTurnOnLocationAlertPresented)
+            .environment(routeStore)
         observed(screen)
     }
 
@@ -190,6 +187,7 @@ struct ContentView: View {
     /// leaves the camera where the passenger left it.
     func search() {
         focusedField = nil
+        isRouteBannerDismissed = false
         refreshAutoSetOrigin()
         routeDrawAnimator.prepareForNewRoute()
         searchTask?.cancel()
@@ -200,81 +198,31 @@ struct ContentView: View {
         }
     }
 
-    func selectOrigin(_ suggestion: LocationSuggestion) {
-        switch suggestion {
-        case .station(let station):
-            routeStore.confirmOriginStation(station)
-            originText = station.name
-            focusedField = .destination
-        case .address(let completion):
-            Task {
-                if let name = await routeStore.confirmOriginAddress(completion) {
-                    originText = name
-                    focusedField = .destination
-                }
-            }
-        }
-    }
-
-    func selectDestination(_ suggestion: LocationSuggestion) {
-        switch suggestion {
-        case .station(let station):
-            routeStore.confirmDestinationStation(station)
-            destinationText = station.name
-            focusedField = nil
-        case .address(let completion):
-            Task {
-                if let name = await routeStore.confirmDestinationAddress(completion) {
-                    destinationText = name
-                    focusedField = nil
-                }
-            }
-        }
-    }
-
-    func clearOrigin() {
-        originText = ""
-        routeStore.originID = ""
-        routeStore.originCoordinate = nil
-        routeStore.confirmedOriginLabel = nil
-        routeStore.lastOriginQuery = ""
-        routeStore.originDebounce?.cancel()
-        routeStore.originSuggestions = []
-        routeStore.showOriginSuggestions = false
-    }
-
-    func clearDestination() {
-        destinationText = ""
-        routeStore.destinationID = ""
-        routeStore.destinationCoordinate = nil
-        routeStore.confirmedDestLabel = nil
-        routeStore.lastDestQuery = ""
-        routeStore.destDebounce?.cancel()
-        routeStore.destSuggestions = []
-        routeStore.showDestSuggestions = false
-    }
-
-    func resetAll() {
+    /// Closes the route results and keeps the origin and destination for the next search.
+    func closeRouteResults() {
         focusedField = nil
-        clearOrigin(); clearDestination()
-        routeStore.routeResult = nil
-        routeStore.routeOptions = []
-        routeStore.errorMessage = nil
-        // Allow the next GPS fix to re-fill the origin field after a full reset.
-        hasAutoSetOrigin = false
+        routeStore.closeResults()
         // Back to the passenger (or the Manila default), strip-centred. The HomeTrigger
         // task fires too when a route was cleared; calling here as well covers Reset with
         // no route on screen, and the two are idempotent.
         recenterHome()
     }
 
+    func resetAll() {
+        routeStore.clear(.origin)
+        routeStore.clear(.destination)
+        // Allow the next GPS fix to re-fill the origin field after a full reset.
+        hasAutoSetOrigin = false
+        closeRouteResults()
+    }
+
     // MARK: Commute Mode
 
     /// Enters Commute Mode for `option` as of `startedAt`. Shared by `startCommute` and the
     /// launch restore in `ContentView+CommutePersistence.swift`. See `Commute.md`.
-    func enterCommuteMode(with option: RouteOption, startedAt: Date) {
+    func enterCommuteMode(with option: RouteOption, startedAt: Date, legIndex: Int = 0) {
         #if DEBUG
-        print("[CameraDebug] startCommute BEGIN mapPositionWasRegion=\(mapPosition.region != nil) visibleTop=\(visibleTop) visibleBottom=\(visibleBottom) userLocation=\(String(describing: routeStore.userLocation)) commuteCameraMode=\(commuteCameraMode) t=\(startedAt.timeIntervalSince1970)")
+        print("[CameraDebug] startCommute BEGIN visibleTop=\(visibleTop) visibleBottom=\(visibleBottom) userLocation=\(String(describing: routeStore.userLocation)) commuteCameraMode=\(commuteCameraMode) t=\(startedAt.timeIntervalSince1970)")
         #endif
         // Holds the follow loop off until the `.fit` correction below has had time to
         // land, so it can't restart that glide mid-flight. See `Commute.md`.
@@ -293,10 +241,12 @@ struct ContentView: View {
             routeStore.selectRoute(option)
             commuteStartedAt = startedAt
             commuteEngine = CommuteProgressEngine(result: option.result, startedAt: startedAt)
+            if legIndex > 0 { commuteEngine?.setCurrentLeg(legIndex) }
             isCommuting = true
         }
-        // A new commute always starts attached, whatever the last one ended on.
-        isFollowingPassenger = true
+        // A new commute starts attached, whatever the last one ended on. With Location off nothing
+        // is there to follow, so the camera frames the whole route.
+        isFollowingPassenger = routeStore.locationAccess != .off
         // No top panel during Commute Mode — clears whatever the search pill last
         // measured, so `visibleStrip` doesn't reserve space for a panel that's gone.
         visibleTop = 0
@@ -305,21 +255,27 @@ struct ContentView: View {
         rerouteMonitor.reset()
         // Seeds the engine with wherever the passenger already is, instead of waiting
         // for the next GPS fix. See `Commute.md`.
-        if let userLocation = routeStore.userLocation {
+        if routeStore.locationAccess != .off, let userLocation = routeStore.userLocation {
             positionResolver.recordFix(userLocation, speed: routeStore.userSpeed, at: startedAt)
             commuteEngine?.update(location: userLocation, now: startedAt)
         }
         // Glides from wherever the camera already sat to the ride's starting pose.
         // See `Commute.md`.
-        #if DEBUG
-        if !routeStore.isLocationSimulated { updateCommuteCamera(.start) }
-        #else
-        updateCommuteCamera(.start)
-        #endif
+        if routeStore.locationAccess == .off {
+            fitMap(to: option.result)
+        } else {
+            #if DEBUG
+            if !routeStore.isLocationSimulated { updateCommuteCamera(.start) }
+            #else
+            updateCommuteCamera(.start)
+            #endif
+        }
         Task {
             try? await Task.sleep(for: .seconds(DesignTokens.Motion.cameraFitDuration))
             guard commuteEntryToken == entryToken else { return }
             isEnteringCommute = false
+            // The commute card is on screen now, so the strip above it is known.
+            if routeStore.locationAccess == .off, let result = commuteEngine?.result { fitMap(to: result) }
         }
         #if DEBUG
         print("[CameraDebug] startCommute END t=\(Date().timeIntervalSince1970)")
@@ -328,8 +284,7 @@ struct ContentView: View {
 
     #if DEBUG
     // Temporary — remove once the 2D/3D transition stutter is confirmed fixed. Proves
-    // whether `body` (and so the `Map` value it produces) re-evaluates during a
-    // transition for reasons other than the camera write itself.
+    // whether `body` re-evaluates during a transition for reasons other than the camera write itself.
     private func logBodyReevaluationIfTransitioning() {
         if isCameraTransitioning {
             print("[CameraDebug] body re-evaluated while transitioning t=\(Date().timeIntervalSince1970)")
@@ -385,45 +340,15 @@ struct ContentView: View {
         }
     }
 
-    func swapOriginDestination() {
-        let tempText  = originText
-        let tempID    = routeStore.originID
-        let tempCoord = routeStore.originCoordinate
-        let tempLabel = routeStore.confirmedOriginLabel
-
-        originText              = destinationText
-        routeStore.originID             = routeStore.destinationID
-        routeStore.originCoordinate     = routeStore.destinationCoordinate
-        routeStore.confirmedOriginLabel = routeStore.confirmedDestLabel
-
-        destinationText          = tempText
-        routeStore.destinationID         = tempID
-        routeStore.destinationCoordinate = tempCoord
-        routeStore.confirmedDestLabel    = tempLabel
-
-        // Normalise virtual IDs after the swap
-        if routeStore.originID == RouteRequest.virtualDestID       { routeStore.originID = RouteRequest.virtualOriginID }
-        if routeStore.destinationID == RouteRequest.virtualOriginID { routeStore.destinationID = RouteRequest.virtualDestID }
-
-        routeStore.originDebounce?.cancel()
-        routeStore.destDebounce?.cancel()
-        routeStore.lastOriginQuery       = ""
-        routeStore.lastDestQuery         = ""
-        routeStore.showOriginSuggestions = false
-        routeStore.showDestSuggestions   = false
-        routeStore.originSuggestions     = []
-        routeStore.destSuggestions       = []
-    }
-
     /// Long-press handler: sets the tapped coordinate as origin if unset, destination otherwise.
     func handleMapLongPress(at coord: Coordinates) {
         if routeStore.originID.isEmpty {
             routeStore.setOriginCoordinate(coord)
-            originText = "Pinned Location"
+            routeStore.originText = "Pinned Location"
             routeStore.showOriginSuggestions = false
         } else {
             routeStore.setDestinationCoordinate(coord)
-            destinationText = "Pinned Location"
+            routeStore.destinationText = "Pinned Location"
             routeStore.showDestSuggestions = false
         }
     }

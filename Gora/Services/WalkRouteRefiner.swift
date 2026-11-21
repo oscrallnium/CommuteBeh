@@ -111,7 +111,7 @@ extension RouteStore {
             return
         }
 
-        routeOptions = survivors
+        routeOptions = survivors.labeledByResult()
         routeResult = shownRefined?.result ?? survivors.first?.result
     }
 
@@ -142,6 +142,13 @@ extension RouteStore {
             let arriving  = index > 0 ? allLegs[index - 1].direction : nil
             let departing = index + 1 < allLegs.count ? allLegs[index + 1].direction : nil
 
+            // A dashboard transfer with a staff-drawn path keeps its time, distance and polyline.
+            if leg.rawSteps.first?.edge.isDashboardTransfer == true,
+               leg.rawSteps.first?.edge.hasCustomPath == true {
+                legs.append(leg.shiftingArrival(byMinutes: shiftMinutes))
+                continue
+            }
+
             guard let measurement = await measureWalk(
                 for: leg,
                 arrivingDirection: arriving,
@@ -165,6 +172,16 @@ extension RouteStore {
                 return nil
             }
 
+            // A dashboard transfer keeps its own time and distance; only its drawn path changes.
+            if leg.rawSteps.first?.edge.isDashboardTransfer == true {
+                legs.append(leg.shiftingArrival(byMinutes: shiftMinutes).copy(
+                    polylineCoordinates: leg.pinningStationEnds(
+                        of: measurement.coordinates,
+                        to: (measurement.from, measurement.to))
+                ))
+                continue
+            }
+
             shiftMinutes += measurement.minutes - leg.effectiveTravelMinutes
             legs.append(leg.replacingWalk(
                 minutes: measurement.minutes,
@@ -178,9 +195,7 @@ extension RouteStore {
         // Same option, sharper geometry — so it keeps its id. The panel keys its
         // selection, its open detail view and its summary cache on that id; see
         // `RouteOption.id` for what a fresh one did to the results panel's height.
-        return RouteOption(result: option.result.replacingLegs(legs),
-                           label: option.label,
-                           id: option.id)
+        return option.replacing(result: option.result.replacingLegs(legs))
     }
 
     // MARK: Measurement
@@ -217,10 +232,14 @@ extension RouteStore {
         // Each end is resolved against the *other* station's centroid, so of several
         // doors the pair chosen is the one facing the walk. Stations with no recorded
         // doors return their centroid and behave exactly as before.
-        let from = leg.fromStation.accessPoint(
-            kind: .exit, direction: arrivingDirection, nearestTo: leg.toStation.coordinates)
-        let to = leg.toStation.accessPoint(
-            kind: .entrance, direction: departingDirection, nearestTo: leg.fromStation.coordinates)
+        // A dashboard transfer names its own doors; a missing or unknown ID uses the door rule.
+        let edge = leg.rawSteps.first?.edge
+        let from = leg.fromStation.accessPoints?.first { $0.id == edge?.fromAccessPointId }?.coordinates
+            ?? leg.fromStation.accessPoint(
+                kind: .exit, direction: arrivingDirection, nearestTo: leg.toStation.coordinates)
+        let to = leg.toStation.accessPoints?.first { $0.id == edge?.toAccessPointId }?.coordinates
+            ?? leg.toStation.accessPoint(
+                kind: .entrance, direction: departingDirection, nearestTo: leg.fromStation.coordinates)
         let key = String(format: "%.5f,%.5f>%.5f,%.5f", from.lat, from.lng, to.lat, to.lng)
         if let cached = cache[key] { return cached }
 
@@ -352,7 +371,8 @@ extension RouteLeg {
         effectiveTravelMinutes: Double? = nil,
         distanceKm: Double? = nil,
         polylineCoordinates: [Coordinates]? = nil,
-        estimatedArrival: Date? = nil
+        estimatedArrival: Date? = nil,
+        alternativeLines: [LineAlternative]? = nil
     ) -> RouteLeg {
         RouteLeg(
             id: id,
@@ -368,7 +388,10 @@ extension RouteLeg {
             polylineCoordinates: polylineCoordinates ?? self.polylineCoordinates,
             estimatedArrival: estimatedArrival ?? self.estimatedArrival,
             instruction: instruction,
-            rawSteps: rawSteps
+            rawSteps: rawSteps,
+            alternativeLines: alternativeLines ?? self.alternativeLines,
+            scheduledDeparture: scheduledDeparture,
+            waitMinutes: waitMinutes
         )
     }
 }
@@ -379,7 +402,7 @@ extension RouteResult {
     func replacingLegs(_ legs: [RouteLeg]) -> RouteResult {
         RouteResult(
             legs: legs,
-            totalTimeMinutes: legs.reduce(0) { $0 + $1.effectiveTravelMinutes },
+            totalTimeMinutes: legs.reduce(0) { $0 + $1.effectiveTravelMinutes + ($1.waitMinutes ?? 0) },
             totalFare: legs.reduce(0) { $0 + $1.fare },
             totalDistanceKm: legs.reduce(0) { $0 + $1.distanceKm },
             transfers: transfers,

@@ -63,7 +63,7 @@ struct ARSurveyHUD: View {
             statusRow(title: "Images", value: "\(vm.imageAnchors.count)")
             ForEach(vm.imageAnchors) { anchor in
                 Text(anchor.name)
-                    .font(DesignTokens.TypeScale.subtitle)
+                    .typeScale(.subtitle)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
@@ -71,7 +71,7 @@ struct ARSurveyHUD: View {
                 statusRow(title: "Found in", value: seconds.formatted(.number.precision(.fractionLength(1))) + " s")
             }
         }
-        .font(DesignTokens.TypeScale.subtitleEmphasis)
+        .typeScale(.subtitleEmphasis)
         .padding(DesignTokens.Space.m)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.control))
     }
@@ -92,7 +92,7 @@ struct ARSurveyPlacementHint: View {
 
     var body: some View {
         Text(text)
-            .font(DesignTokens.TypeScale.subtitleEmphasis)
+            .typeScale(.subtitleEmphasis)
             .padding(DesignTokens.Space.m)
             .background(.regularMaterial, in: Capsule())
     }
@@ -142,7 +142,7 @@ struct ARSignImageCaptureBar: View {
     var body: some View {
         VStack(spacing: DesignTokens.Space.m) {
             Text("Frame a permanent sign. Do not use an ad lightbox.")
-                .font(DesignTokens.TypeScale.subtitleEmphasis)
+                .typeScale(.subtitleEmphasis)
                 .multilineTextAlignment(.center)
             HStack(spacing: DesignTokens.Space.m) {
                 Button("Cancel", action: onCancel)
@@ -150,7 +150,7 @@ struct ARSignImageCaptureBar: View {
                 Button(isCapturing ? "Checking…" : "Capture", systemImage: "camera.fill", action: onCapture)
                     .buttonStyle(.borderedProminent)
                     .tint(DesignTokens.Colors.action)
-                    .foregroundStyle(Color.licorice)
+                    .foregroundStyle(DesignTokens.Colors.onAction)
                     .disabled(isCapturing)
             }
             .controlSize(.large)
@@ -165,7 +165,7 @@ struct ARSignImageCaptureBar: View {
 struct ARSurveyCoachingCard: View {
     var body: some View {
         Label("Move your iPhone slowly around the area you scanned", systemImage: "iphone.gen3.radiowaves.left.and.right")
-            .font(DesignTokens.TypeScale.controlLabel)
+            .typeScale(.controlLabel)
             .multilineTextAlignment(.center)
             .padding(DesignTokens.Space.l)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.Radius.card))

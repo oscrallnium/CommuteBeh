@@ -13,7 +13,9 @@ struct CommuteLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CommuteActivityAttributes.self) { context in
             CommuteLockScreenView(attributes: context.attributes, state: context.state, isStale: context.isStale)
+                .environment(\.colorScheme, .dark)
                 .activityBackgroundTint(LiveActivityPalette.background)
+                .activitySystemActionForegroundColor(LiveActivityPalette.primary)
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {

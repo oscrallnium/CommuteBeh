@@ -21,7 +21,8 @@ multiplier for road legs only. Each later leg arrival moves by the same differen
 
 | Entry point | Use |
 |---|---|
-| `RouteStore.applyTrafficToRoadLegs()` | Runs after `refineWalkLegs()` in the same task. Retimes every option, then re-sorts with `sortedByDuration()`. |
+| `RouteStore.refineZoneRideLegs()` | Runs after `refineWalkLegs()` and before `refineRideETAs()` in the same task. Sets the polyline of each tricycle zone ride from Apple Maps driving directions. A failed request leaves the polyline empty. |
+| `RouteStore.refineRideETAs()` | Runs after `refineZoneRideLegs()` in the same task. Sets each road leg to its Apple driving ETA in `RideETARefiner.swift`. It keeps the option order and labels. |
 | `RoadTraffic.retimed(_:legIndex:live:metersInto:metersRemaining:)` | Commute mode. Measures the current leg from the live position and keeps the elapsed time. |
 
 The log category `Directions` shows the now time, the free-flow time, and the factor for each leg. Use it

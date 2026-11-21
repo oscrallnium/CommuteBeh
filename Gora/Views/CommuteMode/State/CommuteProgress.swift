@@ -37,6 +37,8 @@ final class CommuteProgressEngine {
     private(set) var currentLegAheadBearing: CLLocationDirection = 0
 
     private(set) var result: RouteResult
+    /// The step the rider chose by tap. GPS never moves the current leg before it.
+    private var minimumLegIndex = 0
     private let startedAt: Date
     private var legGeometries: [LegGeometry]
     /// Corrects the dot onto the actual rail alignment for train legs, whose polyline
@@ -161,6 +163,22 @@ final class CommuteProgressEngine {
         max(0, totalPlannedSeconds - plannedElapsedSeconds)
     }
 
+    /// Makes leg `index` the current leg without a GPS fix, for a rider who steps by tap with Location off.
+    /// It clears the per-leg snap state like a normal leg switch, so progress, time left and the Live Activity follow the step.
+    func setCurrentLeg(_ index: Int) {
+        guard legGeometries.indices.contains(index) else { return }
+        currentLegIndex = index
+        minimumLegIndex = index
+        metersIntoCurrentLeg = 0
+        metersRemainingOnCurrentLeg = legGeometries[index].totalMeters
+        currentLegOffRouteMeters = 0
+        snappedLocation = nil
+        lastConfirmedLegProgress = nil
+        trainProgress = nil
+        trainSnapTask?.cancel()
+        recomputeOnTimeStatus(now: .now, metersIntoLeg: 0)
+    }
+
     /// Adopts a route patched mid-ride — currently only `CommuteRerouter`, which rewrites
     /// the current walk leg's geometry and shifts every later leg's ETA. Keeps `startedAt`
     /// and `currentLegIndex`: the leg count and order are unchanged, only this leg's own
@@ -263,6 +281,7 @@ final class CommuteProgressEngine {
         } else {
             chosenIndex = currentLegIndex
         }
+        chosenIndex = max(chosenIndex, min(minimumLegIndex, result.legs.count - 1))
         if hasFinishedWalk(legIndex: chosenIndex, at: point) {
             chosenIndex += 1
         }

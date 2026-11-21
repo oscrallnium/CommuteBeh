@@ -20,13 +20,9 @@ enum RouteAnnotationScale {
 struct RouteStopMarker: View {
     let marker: RouteChoiceFrame.Marker
     let isSelected: Bool
-    let zoomScale: Double
     let onTap: () -> Void
 
     private var isDestination: Bool { marker.kind == .destination }
-
-    /// The destination pin shrinks with zoom, anchored at its tip. Other markers keep their size.
-    private var scale: Double { isDestination ? max(zoomScale, RouteAnnotationScale.floor) : 1 }
 
     var body: some View {
         Button(action: onTap) {
@@ -35,10 +31,8 @@ struct RouteStopMarker: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .scaleEffect(scale, anchor: isDestination ? .bottom : .center)
         .opacity(isSelected ? 1 : 0.5)
         .animation(.snappy(duration: 0.25), value: isSelected)
-        .animation(.snappy(duration: 0.25), value: scale)
         .accessibilityLabel("\(kindName), \(marker.name)")
         .accessibilityHint("Selects this route")
     }

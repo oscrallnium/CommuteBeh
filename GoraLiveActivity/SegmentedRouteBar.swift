@@ -24,7 +24,7 @@ struct SegmentedRouteBar: View {
             height: 18, trackHeight: 6, markerSize: 18, markerBorder: 4,
             track: LiveActivityPalette.track, walk: LiveActivityPalette.tertiary,
             done: LiveActivityPalette.done, markerFill: LiveActivityPalette.background,
-            segmentColor: { .adaptive(light: $0.colorLight, dark: $0.colorDark) })
+            segmentColor: { Color(hex: $0.colorDark) })
 
         static let island = Style(
             height: 16, trackHeight: 4, markerSize: 16, markerBorder: 3,

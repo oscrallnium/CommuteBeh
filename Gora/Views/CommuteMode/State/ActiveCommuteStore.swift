@@ -14,6 +14,10 @@ struct SavedCommute: Codable {
     let originText: String
     let destinationText: String
     let savedAt: Date
+    /// Nil in a commute saved before the leg index existed. It restores as step 0.
+    let legIndex: Int?
+
+    var restoredLegIndex: Int { legIndex ?? 0 }
 
     /// Seconds after the planned trip time during which a saved commute still counts as active.
     private static let graceSeconds: TimeInterval = 3600

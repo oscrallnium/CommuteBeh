@@ -33,28 +33,10 @@ nonisolated enum TransportMode: String, Codable, CaseIterable, Hashable {
     case train
     case bus
     case jeepney
+    case modernJeepney = "modern_jeepney"
     case uvExpress = "uv_express"
     case tricycle
     case walk        // interchange transfers; always allowed
-}
-
-/// Maps to the accepted payment strings in the JSON data.
-nonisolated enum PaymentMethod: String, Codable, CaseIterable, Hashable {
-    case cash       = "cash"
-    case gcash      = "gcash"
-    case maya       = "maya"
-    case card       = "card"
-    case beepCard   = "beep_card"
-
-    var displayName: String {
-        switch self {
-        case .cash:     return "Cash"
-        case .gcash:    return "GCash"
-        case .maya:     return "Maya"
-        case .card:     return "Card"
-        case .beepCard: return "Beep Card"
-        }
-    }
 }
 
 // MARK: - Data Models (mirror the JSON schema)
@@ -93,6 +75,11 @@ nonisolated struct PaymentMethodConfig: Codable {
     let notes: String
 }
 
+nonisolated struct TollPlaza: Codable, Hashable {
+    let id: String
+    let name: String
+}
+
 /// Decoded from `lines` in the JSON — the human-readable name for a line key like
 /// "UPLB_KANAN" or "EDSA_BUS". Train lines (MRT-3, LRT-1, LRT-2) read fine as their raw
 /// key and are included here too, so callers never need a mode-specific exception.
@@ -107,6 +94,12 @@ nonisolated struct LineConfig: Codable {
     let lastStopNumber: Int?
     /// `#RRGGBB`. Absent when the line has no own color or the graph predates the field.
     let colorHex: String?
+    /// Riders that share one vehicle toll. Nil adds no toll share to the fare.
+    let tollLoadFactor: Int?
+    /// Free distance covered by the base fare. Absent in graphs cached before the field existed.
+    let baseKm: Double?
+    /// Fare distance rounds up to a multiple of this step. Nil or 0 keeps the exact distance.
+    let fareStepKm: Double?
 }
 
 /// A stop, or one of the two synthetic nodes the engine injects for a pinned coordinate
@@ -116,7 +109,7 @@ nonisolated struct Station: Codable, Identifiable, Hashable {
     let name: String
     let shortName: String
     let line: String
-    let type: String            // "train" | "bus" | "jeepney" | "uv_express" | "tricycle"
+    let type: String            // "train" | "bus" | "jeepney" | "modern_jeepney" | "uv_express" | "tricycle"
     let coordinates: Coordinates
     let isTerminal: Bool
     let isInterchange: Bool
@@ -139,10 +132,14 @@ nonisolated struct Station: Codable, Identifiable, Hashable {
     /// Absent means passengers may board and alight.
     let boarding: Boarding?
 
+    /// Fare distance from the start terminal of the line. Absent means the measured distance applies.
+    var fareKm: Double?
+
     /// Decoded leniently: an unrecognised value becomes `.both`.
     nonisolated enum Boarding: String, Codable, Hashable {
         case both
         case alightOnly = "alight_only"
+        case boardOnly = "board_only"
 
         init(from decoder: Decoder) throws {
             let raw = try decoder.singleValueContainer().decode(String.self)
@@ -152,6 +149,9 @@ nonisolated struct Station: Codable, Identifiable, Hashable {
 
     /// True when a vehicle stops here only to let passengers off.
     var isAlightOnly: Bool { boarding == .alightOnly }
+
+    /// True when a vehicle stops here only to pick passengers up.
+    var isBoardOnly: Bool { boarding == .boardOnly }
 
     nonisolated struct OperatingHours: Codable, Hashable {
         let open: String
@@ -261,7 +261,7 @@ nonisolated struct TransitEdge: Codable, Identifiable {
     let id: String
     let from: StationID
     let to: StationID
-    let mode: String            // raw string from JSON ("train" | "bus" | "jeepney" | "uv_express" | "tricycle" | "walk")
+    let mode: String            // raw string from JSON ("train" | "bus" | "jeepney" | "modern_jeepney" | "uv_express" | "tricycle" | "walk")
     let line: String
     let travelTimeMinutes: Double
     let distanceKm: Double
@@ -292,6 +292,22 @@ nonisolated struct TransitEdge: Codable, Identifiable {
     /// ExploreView skips its own road-snapping pass for these edges to avoid re-routing on
     /// a sparser set of waypoints that may produce a different path.
     let isRoadSnapped: Bool?
+
+    /// IDs of the access points at the `from` and `to` stations that a dashboard transfer joins.
+    /// Both are nil when the edge names no door.
+    var fromAccessPointId: String? = nil
+    var toAccessPointId: String? = nil
+
+    /// True when staff drew the path of this transfer in the dashboard. The key is absent otherwise.
+    var customPath: Bool? = nil
+    var hasCustomPath: Bool { customPath == true }
+
+    /// Expressway plazas where the vehicle enters or leaves on this edge. Nil when absent.
+    var tollEntryPlaza: String? = nil
+    var tollExitPlaza: String? = nil
+
+    /// True for a walking transfer that staff set in the dashboard, not an automatic `TRANSFER_` walk.
+    var isDashboardTransfer: Bool { line == "INTERCHANGE" && !id.hasPrefix("TRANSFER_") }
 
     var transportMode: TransportMode {
         TransportMode(rawValue: mode) ?? .walk
@@ -334,11 +350,26 @@ nonisolated struct TransitGraph: Codable, Sendable {
     /// Backend-controlled flag. When false, A* ignores station operating hours entirely.
     /// Defaults to true for backwards compatibility with cached graphs that lack this key.
     let enforceOperatingHours: Bool
+    /// Tricycle zones. Empty for a cached graph downloaded before this field existed.
+    let serviceAreas: [ServiceArea]
+    /// Longest wait for a scheduled trip, in minutes. 60 for a cached graph that lacks the key.
+    let scheduledMaxWaitMinutes: Int
+    /// Keyed by line id. Empty for a cached graph that lacks the key.
+    let serviceSchedules: [String: [ServiceScheduleRule]]
+    let serviceScheduleExceptions: [String: [ServiceScheduleException]]
+    /// Empty for a cached graph that lacks the key.
+    let tollPlazas: [TollPlaza]
+    /// Toll amount keyed by entry plaza id, then exit plaza id. Empty when the key is absent.
+    let tollFares: [String: [String: Double]]
 
     init(version: String, stations: [Station], edges: [TransitEdge],
          peakHourMultipliers: PeakHours, transportModes: [String: TransportModeConfig],
          paymentMethods: [String: PaymentMethodConfig], lines: [String: LineConfig] = [:],
-         enforceOperatingHours: Bool = true) {
+         enforceOperatingHours: Bool = true, serviceAreas: [ServiceArea] = [],
+         scheduledMaxWaitMinutes: Int = 60,
+         serviceSchedules: [String: [ServiceScheduleRule]] = [:],
+         serviceScheduleExceptions: [String: [ServiceScheduleException]] = [:],
+         tollPlazas: [TollPlaza] = [], tollFares: [String: [String: Double]] = [:]) {
         self.version = version
         self.stations = stations
         self.edges = edges
@@ -347,6 +378,12 @@ nonisolated struct TransitGraph: Codable, Sendable {
         self.paymentMethods = paymentMethods
         self.lines = lines
         self.enforceOperatingHours = enforceOperatingHours
+        self.serviceAreas = serviceAreas
+        self.scheduledMaxWaitMinutes = scheduledMaxWaitMinutes
+        self.serviceSchedules = serviceSchedules
+        self.serviceScheduleExceptions = serviceScheduleExceptions
+        self.tollPlazas = tollPlazas
+        self.tollFares = tollFares
     }
 
     init(from decoder: Decoder) throws {
@@ -365,6 +402,13 @@ nonisolated struct TransitGraph: Codable, Sendable {
         paymentMethods       = try c.decode([String: PaymentMethodConfig].self,   forKey: .paymentMethods)
         lines                = try c.decodeIfPresent([String: LineConfig].self,   forKey: .lines) ?? [:]
         enforceOperatingHours = try c.decodeIfPresent(Bool.self, forKey: .enforceOperatingHours) ?? true
+        serviceAreas = try c.decodeIfPresent([ServiceArea].self, forKey: .serviceAreas) ?? []
+        scheduledMaxWaitMinutes = try c.decodeIfPresent(Int.self, forKey: .scheduledMaxWaitMinutes) ?? 60
+        serviceSchedules = try c.decodeIfPresent([String: [ServiceScheduleRule]].self, forKey: .serviceSchedules) ?? [:]
+        serviceScheduleExceptions = try c.decodeIfPresent([String: [ServiceScheduleException]].self,
+                                                          forKey: .serviceScheduleExceptions) ?? [:]
+        tollPlazas = try c.decodeIfPresent([TollPlaza].self, forKey: .tollPlazas) ?? []
+        tollFares = try c.decodeIfPresent([String: [String: Double]].self, forKey: .tollFares) ?? [:]
     }
 
     /// The graph color of a line, or nil when the line has no `colorHex`.
@@ -376,7 +420,7 @@ nonisolated struct TransitGraph: Codable, Sendable {
 // MARK: - Route Request / Result
 
 struct RouteRequest {
-    enum CostStrategy { case balanced, fastest, cheapest }
+    enum CostStrategy { case balanced, fastest, cheapest, timetable }
 
     /// Virtual station IDs injected when routing from/to a raw coordinate.
     nonisolated static let virtualOriginID: StationID = "__ORIGIN__"
@@ -390,20 +434,23 @@ struct RouteRequest {
     /// Non-nil when the user tapped the map or used GPS for the end point.
     /// When set, destinationID must equal `virtualDestID`.
     let destinationCoordinate: Coordinates?
-    let preferredPayments: Set<PaymentMethod>   // empty = accept any
+    let preferredPayments: Set<String>   // empty = accept any
     let allowedModes: Set<TransportMode>         // empty = allow all (except walk is always allowed)
     let departureTime: Date                      // used for peak-hour factor
     let costStrategy: CostStrategy
+    /// Ride lines whose search cost is multiplied by `RouteDiversityPolicy.linePenaltyFactor`.
+    let penalizedLines: Set<String>
 
     init(
         from originID: StationID,
         to destinationID: StationID,
         originCoordinate: Coordinates? = nil,
         destinationCoordinate: Coordinates? = nil,
-        preferredPayments: Set<PaymentMethod> = [],
+        preferredPayments: Set<String> = [],
         allowedModes: Set<TransportMode> = [],
         departureTime: Date = .now,
-        costStrategy: CostStrategy = .balanced
+        costStrategy: CostStrategy = .balanced,
+        penalizedLines: Set<String> = []
     ) {
         self.originID = originID
         self.destinationID = destinationID
@@ -413,6 +460,7 @@ struct RouteRequest {
         self.allowedModes = allowedModes
         self.departureTime = departureTime
         self.costStrategy = costStrategy
+        self.penalizedLines = penalizedLines
     }
 }
 
@@ -427,6 +475,10 @@ struct RawStep: Codable {
     let edge: TransitEdge
     let effectiveTravelMinutes: Double
     let estimatedArrival: Date
+    /// Wait before this ride edge and the time the vehicle leaves the boarding stop. Both are
+    /// nil unless the edge starts a boarding on a timetable line.
+    var waitMinutes: Double? = nil
+    var scheduledDeparture: Date? = nil
 }
 
 // MARK: - User-facing leg (one continuous ride on a single line/vehicle)
@@ -483,6 +535,14 @@ struct RouteLeg: Identifiable, Codable {
     /// Retained for per-segment MKDirections ETA calls and AR navigation.
     let rawSteps: [RawStep]
 
+    /// Other lines that serve the same boarding and alighting stops. Empty for a walk leg.
+    var alternativeLines: [LineAlternative] = []
+
+    /// Time the vehicle leaves the boarding stop. Nil unless the line runs on a timetable.
+    var scheduledDeparture: Date? = nil
+    /// Minutes the passenger waits at the boarding stop before the ride. Nil for an unscheduled leg.
+    var waitMinutes: Double? = nil
+
     /// True for the synthetic walk between the user's pinned coordinate and the first/last
     /// stop — as opposed to an `INTERCHANGE` walk between two platforms inside the network.
     var isAccessWalk: Bool { line == "ACCESS_WALK" }
@@ -504,7 +564,32 @@ struct RouteLeg: Identifiable, Codable {
     /// `id` is transient and absent from the saved form.
     private enum CodingKeys: String, CodingKey {
         case fromStation, toStation, mode, line, direction, stops, effectiveTravelMinutes, fare
-        case distanceKm, polylineCoordinates, estimatedArrival, instruction, rawSteps
+        case distanceKm, polylineCoordinates, estimatedArrival, instruction, rawSteps, alternativeLines
+        case scheduledDeparture, waitMinutes
+    }
+}
+
+/// An extension keeps the memberwise initializer. A saved leg without `alternativeLines`
+/// decodes with an empty list.
+extension RouteLeg {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        fromStation = try c.decode(Station.self, forKey: .fromStation)
+        toStation = try c.decode(Station.self, forKey: .toStation)
+        mode = try c.decode(TransportMode.self, forKey: .mode)
+        line = try c.decode(String.self, forKey: .line)
+        direction = try c.decodeIfPresent(String.self, forKey: .direction)
+        stops = try c.decode([Station].self, forKey: .stops)
+        effectiveTravelMinutes = try c.decode(Double.self, forKey: .effectiveTravelMinutes)
+        fare = try c.decode(Double.self, forKey: .fare)
+        distanceKm = try c.decode(Double.self, forKey: .distanceKm)
+        polylineCoordinates = try c.decode([Coordinates].self, forKey: .polylineCoordinates)
+        estimatedArrival = try c.decode(Date.self, forKey: .estimatedArrival)
+        instruction = try c.decode(String.self, forKey: .instruction)
+        rawSteps = try c.decode([RawStep].self, forKey: .rawSteps)
+        alternativeLines = try c.decodeIfPresent([LineAlternative].self, forKey: .alternativeLines) ?? []
+        scheduledDeparture = try c.decodeIfPresent(Date.self, forKey: .scheduledDeparture)
+        waitMinutes = try c.decodeIfPresent(Double.self, forKey: .waitMinutes)
     }
 }
 
@@ -549,11 +634,20 @@ struct RouteOption: Identifiable {
     let id: UUID
     let result: RouteResult
     let label: Label
+    /// True for the extra option that holds a timetable route. It stays last and never takes
+    /// the fastest or cheapest label.
+    let isTimetableExtra: Bool
 
-    init(result: RouteResult, label: Label, id: UUID = UUID()) {
+    init(result: RouteResult, label: Label, id: UUID = UUID(), isTimetableExtra: Bool = false) {
         self.result = result
         self.label = label
         self.id = id
+        self.isTimetableExtra = isTimetableExtra
+    }
+
+    /// The same option with another result. The id, the label and the extra flag stay.
+    func replacing(result: RouteResult) -> RouteOption {
+        RouteOption(result: result, label: label, id: id, isTimetableExtra: isTimetableExtra)
     }
 }
 
@@ -700,16 +794,16 @@ actor TransitGraphEngine {
 
     // Adjacency list: stationID → outgoing edges
     // Built once; reused across all route calculations.
-    private let adjacency: [StationID: [EngineEdge]]
-    private let stationMap: [StationID: Station]
-    private let peakTable: PeakHourTable
+    let adjacency: [StationID: [EngineEdge]]
+    let stationMap: [StationID: Station]
+    let peakTable: PeakHourTable
     /// Distinct edge mode ids; an `EngineEdge.modeSlot` indexes this list.
     private let modeNames: [String]
     private let walkSlot: Int
-    private let openWindows: [StationID: OpenWindow]
+    let openWindows: [StationID: OpenWindow]
     /// One entry per station id, in graph order; `stationGrid` indexes this list.
-    private let stationList: [Station]
-    private let stationGrid: StationGrid
+    let stationList: [Station]
+    let stationGrid: StationGrid
     private let sortedStations: [Station]
     private let searchIndex: [(station: Station, name: String, shortName: String)]
 
@@ -720,6 +814,7 @@ actor TransitGraphEngine {
     /// Decoded from JSON — line id → display name, e.g. "UPLB_KANAN" → "UPLB Kanan".
     /// Read by `buildLegInstruction`; never a raw line key hardcoded into instruction text.
     let lines: [String: LineConfig]
+    private let tollFares: [String: [String: Double]]
 
     /// Mode IDs where `isAlwaysAllowed = true` (e.g. "walk").
     /// Derived once at init from JSON so A* never hard-codes mode strings.
@@ -727,7 +822,12 @@ actor TransitGraphEngine {
     /// ID of the always-allowed walk mode (used for synthetic access-walk edges).
     private let walkModeID: String
     /// When false, all station operating-hours checks are skipped entirely.
-    private let enforceOperatingHours: Bool
+    let enforceOperatingHours: Bool
+    private let serviceAreas: [ServiceArea]
+    /// Timetable rules per line, built once from the graph.
+    let timetable: ServiceTimetable
+    /// Ride offsets and wait rules of the timetable lines, built once from the graph.
+    let scheduledBoarding: ScheduledBoarding
 
     // MARK: Init
 
@@ -736,6 +836,9 @@ actor TransitGraphEngine {
     init(graph: TransitGraph) {
         let signpost = EngineSignpost.signposter.beginInterval("EngineInit")
         defer { EngineSignpost.signposter.endInterval("EngineInit", signpost) }
+
+        let table = ServiceTimetable(graph: graph)
+        timetable = table
 
         var adj: [StationID: [TransitEdge]] = [:]
         var stMap: [StationID: Station] = [:]
@@ -756,6 +859,7 @@ actor TransitGraphEngine {
                 case "southbound": reverseDirection = "northbound"
                 default:           reverseDirection = nil
                 }
+                // The reverse edge travels the other way, so it enters where the forward edge exits.
                 let reverse = TransitEdge(
                     id: edge.id + "_rev",
                     from: edge.to,
@@ -774,15 +878,26 @@ actor TransitGraphEngine {
                     direction: reverseDirection,
                     polylineCoordinates: edge.polylineCoordinates.reversed(),
                     mkDirectionsTransportType: edge.mkDirectionsTransportType,
-                    isRoadSnapped: edge.isRoadSnapped
+                    isRoadSnapped: edge.isRoadSnapped,
+                    fromAccessPointId: edge.toAccessPointId,
+                    toAccessPointId: edge.fromAccessPointId,
+                    customPath: edge.customPath,
+                    tollEntryPlaza: edge.tollExitPlaza,
+                    tollExitPlaza: edge.tollEntryPlaza
                 )
                 adj[edge.to, default: []].append(reverse)
             }
         }
 
         let walkMode = graph.transportModes.values.first(where: \.isAlwaysAllowed)?.id ?? "walk"
-        for transfer in TransferPolicy.edges(stations: graph.stations, existing: graph.edges, walkModeID: walkMode) {
+        let zoneTerminalIDs = Set(graph.serviceAreas.flatMap(\.terminalIds))
+        for transfer in TransferPolicy.edges(
+            stations: graph.stations, existing: graph.edges, walkModeID: walkMode, zoneTerminalIDs: zoneTerminalIDs
+        ) {
             adj[transfer.from, default: []].append(transfer)
+        }
+        for ride in ServiceAreaPolicy.edges(areas: graph.serviceAreas, stations: graph.stations) {
+            adj[ride.from, default: []].append(ride)
         }
 
         let alwaysAllowed = Set(
@@ -799,12 +914,15 @@ actor TransitGraphEngine {
             return names.count - 1
         }
         let walkModeSlot = slot(of: walkMode)
+        for area in graph.serviceAreas { _ = slot(of: area.mode) }
+        scheduledBoarding = ScheduledBoarding(timetable: table, edges: adj)
         adjacency = adj.mapValues { edges in
             edges.map { EngineEdge($0, modeSlot: slot(of: $0.mode), alwaysAllowedModes: alwaysAllowed) }
         }
         modeNames = names
         walkSlot = walkModeSlot
         stationMap = stMap
+        serviceAreas = graph.serviceAreas
         peakTable = PeakHourTable(graph.peakHourMultipliers)
         openWindows = stMap.mapValues { OpenWindow($0.operatingHours) }
 
@@ -823,6 +941,7 @@ actor TransitGraphEngine {
         transportModes = graph.transportModes
         paymentMethods = graph.paymentMethods
         lines = graph.lines
+        tollFares = graph.tollFares
 
         // Derive the always-allowed set from JSON data — no hardcoded mode strings.
         alwaysAllowedModes = alwaysAllowed
@@ -863,6 +982,9 @@ actor TransitGraphEngine {
         if let originCoord = request.originCoordinate,
            let destCoord = request.destinationCoordinate,
            haversine(from: originCoord, to: destCoord) < 0.1 {
+            #if DEBUG
+            print("[Search] empty route: endpoints \(Int(haversine(from: originCoord, to: destCoord) * 1000)) m apart")
+            #endif
             return .success(RouteResult(legs: [], totalTimeMinutes: 0, totalFare: 0,
                                         totalDistanceKm: 0, transfers: 0, modes: []))
         }
@@ -949,6 +1071,13 @@ actor TransitGraphEngine {
                                        outgoing: false, widened: widened)
             extraAdj.merge(adj) { $0 + $1 }
             extraAdj[RouteRequest.virtualDestID, default: []] = extraAdj[RouteRequest.virtualDestID] ?? []
+            for ride in ServiceAreaPolicy.destinationEdges(
+                areas: serviceAreas, stations: stationMap, destination: coord,
+                destinationID: RouteRequest.virtualDestID) {
+                extraAdj[ride.from, default: []].append(EngineEdge(
+                    ride, modeSlot: modeNames.firstIndex(of: ride.mode) ?? walkSlot,
+                    alwaysAllowedModes: alwaysAllowedModes))
+            }
         }
 
         return (extraAdj, extraStations)
@@ -1121,9 +1250,10 @@ actor TransitGraphEngine {
         let peakBySlot = modeNames.map {
             peakTable.multiplier(forMode: $0, atMinutes: departureMinutes)
         }
-        let userPayments = Set(request.preferredPayments.map { $0.rawValue })
+        let userPayments = request.preferredPayments
         let allowedModes = request.allowedModes
         let costStrategy = request.costStrategy
+        let penalizedLines = request.penalizedLines
 
         // gScore is the *search* cost (includes the access-walk discomfort weight);
         // timeScore is the cost the user is shown. They diverge only on access walks —
@@ -1132,6 +1262,9 @@ actor TransitGraphEngine {
         var gScore: [StationID: Double] = [originID: 0]
         var timeScore: [StationID: Double] = [originID: 0]
         var cameFrom: [StationID: (parent: StationID, edge: TransitEdge)] = [:]
+        var boardings: [StationID: ScheduledWait] = [:]
+        var hasRidden: [StationID: Bool] = [originID: false]
+        var hasTimetableRide: [StationID: Bool] = [originID: false]
         var closed: Set<StationID> = []
         var openHeap = MinHeap<AStarNode>()
         let originH = heuristic(from: originCoords, to: destCoords)
@@ -1144,15 +1277,17 @@ actor TransitGraphEngine {
             if closed.contains(currentID) { continue }
             closed.insert(currentID)
 
-            if currentID == destID {
-                return buildResult(
+            if currentID == destID, !endsRideAtBoardOnly(effectiveStation(currentID),
+                                                         arrivedVia: cameFrom[currentID]?.edge) {
+                return withAlternatives(buildResult(
                     destination: destID,
                     cameFrom: cameFrom,
                     gScore: timeScore,
+                    boardings: boardings,
                     stationMap: stationMap,
                     extraStations: extraStations,
                     departureTime: request.departureTime
-                )
+                ), request: request)
             }
 
             // Every edge in both lists starts at `currentID`.
@@ -1160,6 +1295,7 @@ actor TransitGraphEngine {
             let incoming = cameFrom[currentID]?.edge
             let currentG = gScore[currentID] ?? .infinity
             let currentTime = timeScore[currentID] ?? .infinity
+            let currentRidden = hasRidden[currentID] ?? false
             let realEdges = adjacency[currentID] ?? []
             let virtualEdges = extraAdj[currentID] ?? []
 
@@ -1171,6 +1307,7 @@ actor TransitGraphEngine {
                     let neighborStation = effectiveStation(neighbor)
                     guard canTraverse(item, from: currentStation, to: neighborStation,
                                       arrivedVia: incoming) else { continue }
+                    guard !reboardsAfterWalk(item, at: currentID, cameFrom: cameFrom) else { continue }
 
                     // ── Payment filter ──────────────────────────────────────
                     // Modes marked isAlwaysAllowed (e.g. walk) bypass both filters.
@@ -1197,14 +1334,14 @@ actor TransitGraphEngine {
                         effectiveMinutes = (rawMinutes * peakMultiplier) + reliabilityPenalty + crowdPenalty
                     case .fastest:
                         effectiveMinutes = rawMinutes * peakMultiplier
-                    case .cheapest:
+                    case .cheapest, .timetable:
                         effectiveMinutes = rawMinutes * peakMultiplier
                     }
 
                     // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
                     // cost only, so the shown travel time stays real minutes.
                     let fareSearchMinutes = costStrategy == .cheapest && !item.isFareFree
-                        ? (edge.baseFare + edge.farePerKm * edge.distanceKm) * 1.5
+                        ? searchFare(item, arrivedVia: incoming) * 1.5
                         : 0.0
 
                     // Access walking costs more than it takes: without this weight A* will walk
@@ -1216,12 +1353,46 @@ actor TransitGraphEngine {
                     // A train ride gets a matching search-only discount, so A* settles on rail
                     // over a bus, jeepney, or walk alternative of similar real duration.
                     let weightedMinutes = accessWeighted + fareSearchMinutes
-                    let searchMinutes = item.isTrain
+                    let discountedMinutes = item.isTrain
                         ? weightedMinutes * RoutePreference.trainDiscountFactor
                         : weightedMinutes
 
-                    let tentativeG = currentG + searchMinutes
-                    let tentativeTime = currentTime + effectiveMinutes
+                    // A penalized ride line costs more to search. Walk-like edges stay free of it.
+                    let searchMinutes = !item.isWalkLike && penalizedLines.contains(edge.line)
+                        ? discountedMinutes * RouteDiversityPolicy.linePenaltyFactor
+                        : discountedMinutes
+
+                    // A boarding on a timetable line waits for the next vehicle. The wait counts in
+                    // time and cost, and no multiplier applies to it.
+                    var boarding: ScheduledWait?
+                    if scheduledBoarding.isScheduled(line: edge.line), !item.isWalkLike,
+                       startsBoarding(edge, arrivedVia: incoming) {
+                        let arrive = request.departureTime.addingTimeInterval(currentTime * 60)
+                        guard let found = scheduledWait(for: edge, arrive: arrive) else { continue }
+                        boarding = found
+                    }
+                    let waitMinutes = boarding?.minutes ?? 0
+
+                    // A change of vehicle adds a search-only penalty. A timetable line already counts its wait.
+                    var transferMinutes = 0.0
+                    if currentRidden, !item.isWalkLike, startsBoarding(edge, arrivedVia: incoming) {
+                        transferMinutes = TransferPolicy.searchPenaltyMinutes
+                        if !scheduledBoarding.isScheduled(line: edge.line) {
+                            transferMinutes += TransferPolicy.expectedWaitMinutes(for: item.mode)
+                        }
+                    }
+
+                    // A timetable search keeps the wait out of the cost.
+                    let onTimetableLine = !item.isWalkLike && scheduledBoarding.isScheduled(line: edge.line)
+                    let timetableSearch = costStrategy == .timetable
+                    let searchWaitMinutes = timetableSearch ? 0 : waitMinutes
+                    let tentativeG = currentG + searchMinutes + searchWaitMinutes + transferMinutes
+                    let tentativeTime = currentTime + effectiveMinutes + waitMinutes
+
+                    // A zone ride starts only while its boarding terminal is open.
+                    if enforceOperatingHours, edge.isZoneRide, let window = openWindows[currentID] {
+                        guard window.contains(arrivalMinutes: departureMinutes + Int(currentTime)) else { continue }
+                    }
 
                     // ── Operating-hours filter ──────────────────────────────
                     // Virtual nodes (__ORIGIN__, __DEST__) are always passable.
@@ -1232,11 +1403,18 @@ actor TransitGraphEngine {
                                 || window.contains(arrivalMinutes: arrivalMinutes) else { continue }
                     }
 
+                    let neighborHasTimetableRide = (hasTimetableRide[currentID] ?? false) || onTimetableLine
+                    // A timetable search reaches the destination only after a timetable ride.
+                    if timetableSearch, neighbor == destID, !neighborHasTimetableRide { continue }
+
                     if tentativeG < (gScore[neighbor] ?? .infinity),
                        let neighborCoords = neighborStation?.coordinates {
                         gScore[neighbor] = tentativeG
                         timeScore[neighbor] = tentativeTime
                         cameFrom[neighbor] = (parent: currentID, edge: edge)
+                        boardings[neighbor] = boarding
+                        hasRidden[neighbor] = currentRidden || !item.isWalkLike
+                        hasTimetableRide[neighbor] = neighborHasTimetableRide
                         let h = heuristic(from: neighborCoords, to: destCoords)
                         openHeap.push(AStarNode(
                             stationID: neighbor,
@@ -1253,10 +1431,53 @@ actor TransitGraphEngine {
         return nil
     }
 
+    /// Search fare of one ride edge. The base fare counts only when the edge starts a boarding,
+    /// matching `consolidateLegs` and `computeLegFare`.
+    private func searchFare(_ item: EngineEdge, arrivedVia incoming: TransitEdge?) -> Double {
+        let edge = item.edge
+        let perKm = edge.farePerKm * edge.distanceKm
+        guard let incoming, !isWalkLikeEdge(incoming), !edge.isZoneRide,
+              incoming.line == edge.line, incoming.mode == edge.mode else {
+            return edge.baseFare + perKm
+        }
+        return perKm
+    }
+
+    func isWalkLikeEdge(_ edge: TransitEdge) -> Bool {
+        alwaysAllowedModes.contains(edge.mode)
+            || edge.line == "INTERCHANGE" || edge.line == "ACCESS_WALK"
+    }
+
+    /// True when a ride edge would board a line again after the path left that same line
+    /// through only walk-like edges.
+    private func reboardsAfterWalk(
+        _ item: EngineEdge,
+        at nodeID: StationID,
+        cameFrom: [StationID: (parent: StationID, edge: TransitEdge)]
+    ) -> Bool {
+        guard !item.isWalkLike else { return false }
+        var node = nodeID
+        var crossedWalk = false
+        while let record = cameFrom[node] {
+            if isWalkLikeEdge(record.edge) {
+                crossedWalk = true
+                node = record.parent
+                continue
+            }
+            return crossedWalk
+                && record.edge.line == item.edge.line && record.edge.mode == item.edge.mode
+        }
+        return false
+    }
+
     /// An alight-only station accepts a ride in and releases a walk out. A ride out needs a
     /// ride on the same line in, because boarding there is forbidden.
+    /// A board-only station releases a ride out only after a walk in or a ride on the same line.
     private func canTraverse(_ item: EngineEdge, from: Station?, to: Station?,
                              arrivedVia incoming: TransitEdge?) -> Bool {
+        if from?.isBoardOnly ?? false, let incoming, !isWalkLikeEdge(incoming) {
+            guard !item.isWalkLike, incoming.line == item.edge.line else { return false }
+        }
         if item.isWalkLike {
             return !(to?.isAlightOnly ?? false)
         }
@@ -1265,6 +1486,12 @@ actor TransitGraphEngine {
         return incoming.line == item.edge.line
             && !alwaysAllowedModes.contains(incoming.mode)
             && incoming.line != "ACCESS_WALK" && incoming.line != "INTERCHANGE"
+    }
+
+    /// True when a ride arrives at a board-only station, where the rider cannot get off.
+    private func endsRideAtBoardOnly(_ station: Station?, arrivedVia incoming: TransitEdge?) -> Bool {
+        guard station?.isBoardOnly ?? false, let incoming else { return false }
+        return !isWalkLikeEdge(incoming)
     }
 
     // MARK: - Heuristic
@@ -1295,6 +1522,7 @@ actor TransitGraphEngine {
         destination: StationID,
         cameFrom: [StationID: (parent: StationID, edge: TransitEdge)],
         gScore elapsedMinutes: [StationID: Double],
+        boardings: [StationID: ScheduledWait],
         stationMap: [StationID: Station],
         extraStations: [StationID: Station],
         departureTime: Date
@@ -1324,7 +1552,8 @@ actor TransitGraphEngine {
                   let toSt    = extraStations[toID]   ?? stationMap[toID] else { continue }
 
             let cumulativeMinutes = elapsedMinutes[toID] ?? 0
-            let effectiveTime     = cumulativeMinutes - (elapsedMinutes[fromID] ?? 0)
+            let boarding          = boardings[toID]
+            let effectiveTime     = cumulativeMinutes - (elapsedMinutes[fromID] ?? 0) - (boarding?.minutes ?? 0)
             let estimatedArrival  = departureTime.addingTimeInterval(cumulativeMinutes * 60)
 
             rawSteps.append(RawStep(
@@ -1332,7 +1561,9 @@ actor TransitGraphEngine {
                 toStation: toSt,
                 edge: edge,
                 effectiveTravelMinutes: effectiveTime,
-                estimatedArrival: estimatedArrival
+                estimatedArrival: estimatedArrival,
+                waitMinutes: boarding?.minutes,
+                scheduledDeparture: boarding?.departure
             ))
         }
 
@@ -1340,7 +1571,7 @@ actor TransitGraphEngine {
         let legs = consolidateLegs(rawSteps, departureTime: departureTime)
 
         // ── Step 4: aggregate totals ─────────────────────────────────────────
-        let totalTime = legs.reduce(0) { $0 + $1.effectiveTravelMinutes }
+        let totalTime = legs.reduce(0) { $0 + $1.effectiveTravelMinutes + ($1.waitMinutes ?? 0) }
         let totalFare = legs.reduce(0) { $0 + $1.fare }
         let totalDist = legs.reduce(0) { $0 + $1.distanceKm }
 
@@ -1387,6 +1618,8 @@ actor TransitGraphEngine {
             let bLine = b.edge.line
             // Walk/interchange legs are never merged with anything
             if aLine == "INTERCHANGE" || bLine == "INTERCHANGE" { return false }
+            // Each zone ride is a separate boarding with its own fare.
+            if b.edge.isZoneRide { return false }
             return aLine == bLine && a.edge.mode == b.edge.mode
         }
 
@@ -1421,6 +1654,8 @@ actor TransitGraphEngine {
             let totalTime = buffer.reduce(0) { $0 + $1.effectiveTravelMinutes }
             let totalDist = buffer.reduce(0) { $0 + $1.edge.distanceKm }
             let totalFare = computeLegFare(buffer)
+            let waits = buffer.compactMap(\.waitMinutes)
+            let wait = waits.isEmpty ? nil : waits.reduce(0, +)
 
             let mode = first.edge.transportMode
             let line = first.edge.line
@@ -1429,7 +1664,6 @@ actor TransitGraphEngine {
             let instruction = buildLegInstruction(
                 mode: mode,
                 line: line,
-                direction: legDirection,
                 from: first.fromStation,
                 to: last.toStation
             )
@@ -1449,7 +1683,9 @@ actor TransitGraphEngine {
                 polylineCoordinates: polyline,
                 estimatedArrival: last.estimatedArrival,
                 instruction: instruction,
-                rawSteps: buffer
+                rawSteps: buffer,
+                scheduledDeparture: buffer.lazy.compactMap(\.scheduledDeparture).first,
+                waitMinutes: wait
             )
         }
 
@@ -1473,7 +1709,7 @@ actor TransitGraphEngine {
     // lines (MRT-3, LRT-1, LRT-2) where the passenger pays one fare at the
     // gate regardless of how many stations are traversed.
 
-    private func computeLegFare(_ steps: [RawStep]) -> Double {
+    func computeLegFare(_ steps: [RawStep]) -> Double {
         guard let first = steps.first else { return 0 }
         let mode = first.edge.transportMode
         guard mode != .walk else { return 0 }
@@ -1485,10 +1721,18 @@ actor TransitGraphEngine {
         // Otherwise use the flat base fare from the first edge (all edges on the
         // same line share the same fare structure).
         let hasPerKm = steps.contains { $0.edge.farePerKm > 0 }
-        if hasPerKm {
-            return first.edge.baseFare + totalDist * first.edge.farePerKm
-        }
-        return first.edge.baseFare
+        let roadFare = hasPerKm
+            ? RoadFare.amount(
+                baseFare: first.edge.baseFare, farePerKm: first.edge.farePerKm,
+                baseKm: lines[first.edge.line]?.baseKm,
+                fareStepKm: lines[first.edge.line]?.fareStepKm,
+                fareKm: RoadFare.fareKm(boarding: first.fromStation,
+                                        alighting: steps[steps.count - 1].toStation,
+                                        measuredKm: totalDist))
+            : first.edge.baseFare
+        let toll = TollShare.amount(edges: steps.map(\.edge), tollFares: tollFares,
+                                    loadFactor: lines[first.edge.line]?.tollLoadFactor)
+        return roadFare + toll
     }
 
     // MARK: - Leg Instruction Builder
@@ -1496,7 +1740,6 @@ actor TransitGraphEngine {
     private func buildLegInstruction(
         mode: TransportMode,
         line: String,
-        direction: String?,
         from: Station,
         to: Station
     ) -> String {
@@ -1508,32 +1751,32 @@ actor TransitGraphEngine {
         let lineName = lines[line]?.displayName ?? line
         switch mode {
         case .train:
-            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Board \(lineName)\(dirLabel) at \(from.shortName), ride to \(to.shortName)"
+            return "Board \(lineName) at \(from.name), ride to \(to.name)"
         case .bus:
-            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Take \(lineName) bus\(dirLabel) from \(from.shortName) to \(to.shortName)"
+            return "Take \(lineName) bus from \(from.name) to \(to.name)"
         case .jeepney:
-            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Ride jeepney (\(lineName))\(dirLabel) from \(from.shortName) to \(to.shortName)"
+            return "Ride jeepney (\(lineName)) from \(from.name) to \(to.name)"
+        case .modernJeepney:
+            return "Ride modern jeepney (\(lineName)) from \(from.name) to \(to.name)"
         case .uvExpress:
-            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Ride UV Express (\(lineName))\(dirLabel) from \(from.shortName) to \(to.shortName)"
+            return "Ride UV Express (\(lineName)) from \(from.name) to \(to.name)"
         case .tricycle:
-            let dirLabel = direction.map { " (\($0.capitalized))" } ?? ""
-            return "Take tricycle\(dirLabel) from \(from.shortName) to \(to.shortName)"
+            let end = to.line == "ACCESS_WALK" ? "your destination" : to.name
+            return "Take tricycle from \(from.name) to \(end)"
         case .walk:
             // Access walks have a virtual node on one end — naming it ("Walk from Your
             // Location to Stop 1") reads as a place the user has never heard of.
             if line == "ACCESS_WALK" {
                 return from.line == "ACCESS_WALK"
-                    ? "Walk to \(to.shortName)"
-                    : "Walk from \(from.shortName) to your destination"
+                    ? "Walk to \(to.name)"
+                    : "Walk from \(from.name) to your destination"
             }
-            if from.isInterchange || to.isInterchange {
-                return "Transfer: Walk from \(from.shortName) to \(to.shortName)"
-            }
-            return "Walk from \(from.shortName) to \(to.shortName)"
+            // Two stops of different lines can share a name, so the sentence names the line.
+            let toLineName = lines[to.line]?.displayName ?? to.line
+            let sentence = from.name == to.name
+                ? "Walk to the \(toLineName) stop at \(to.name)"
+                : "Walk from \(from.name) to \(to.name)"
+            return from.isInterchange || to.isInterchange ? "Transfer: \(sentence)" : sentence
         }
     }
 
@@ -1656,12 +1899,18 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     /// hundreds of metres.
     private static let maxAcceptableHorizontalAccuracyMeters: CLLocationAccuracy = 100
 
+    /// Called on the main actor each time the access state changes.
+    var onAccessChange: ((LocationAccess) -> Void)?
+
     private let manager = CLLocationManager()
     private var latest: Coordinates?
     private var latestAt: Date = .distantPast
     private var isTracking = false
     /// Held for the whole commute so the system keeps the app running in the background.
     private var backgroundSession: CLBackgroundActivitySession?
+    /// True while a commute asks for background updates. They start only while access is allowed.
+    private var wantsBackgroundUpdates = false
+    private(set) var access: LocationAccess = .undetermined
     /// Callers of `requestOnce()` waiting on the next fix.
     ///
     /// An array, not a single slot: origin and destination can both be in flight, and
@@ -1677,13 +1926,23 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
         // block away.
         manager.desiredAccuracy = kCLLocationAccuracyBest
         // Enough to keep the resting camera and the search fields current, without a fix a
-        // second. The map's location dot is `UserAnnotation`, fed by MapKit's own service,
+        // second. The map's location dot is `MKMapView.showsUserLocation`, fed by MapKit's own service,
         // so nothing on screen is animated from this feed and a filter here costs nothing.
         manager.distanceFilter = 5
         manager.activityType = .otherNavigation
         // 1° is imperceptible on screen but cuts the update rate MapKit would otherwise
         // see from the compass's raw, sub-degree cadence.
         manager.headingFilter = 1
+        access = LocationAccess(manager.authorizationStatus)
+    }
+
+    /// Reads the current authorization again and reports a change. Call it when the app returns to the foreground.
+    @MainActor
+    func refreshAccess() {
+        let current = LocationAccess(manager.authorizationStatus)
+        guard current != access else { return }
+        access = current
+        onAccessChange?(current)
     }
 
     // MARK: Live feed
@@ -1708,6 +1967,14 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     /// Keeps GPS fixes arriving while the app is in the background. Turn it on only during a commute.
     @MainActor
     func setBackgroundUpdates(_ enabled: Bool) {
+        wantsBackgroundUpdates = enabled
+        applyBackgroundUpdates()
+    }
+
+    /// Runs the background state for `wantsBackgroundUpdates`. It asks for nothing while access is not allowed.
+    @MainActor
+    private func applyBackgroundUpdates() {
+        let enabled = wantsBackgroundUpdates && access == .allowed
         manager.allowsBackgroundLocationUpdates = enabled
         manager.showsBackgroundLocationIndicator = enabled
         manager.pausesLocationUpdatesAutomatically = !enabled
@@ -1795,6 +2062,8 @@ final class CommuteLocationFetcher: NSObject, CLLocationManagerDelegate {
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor [weak self] in
             guard let self else { return }
+            self.refreshAccess()
+            self.applyBackgroundUpdates()
             switch self.manager.authorizationStatus {
             case .authorizedWhenInUse, .authorizedAlways:
                 if self.isTracking || !self.waiters.isEmpty {
@@ -1847,7 +2116,12 @@ final class RouteStore {
     var originCoordinate: Coordinates?
     /// Non-nil when destination was set via GPS or map long-press.
     var destinationCoordinate: Coordinates?
-    var selectedPayments: Set<PaymentMethod> = [.cash]
+    /// Payment IDs the search accepts. Empty accepts any payment method.
+    var selectedPayments: Set<String> {
+        let excluded = SettingsKey.excludedPaymentIDs
+        if excluded.isEmpty { return [] }
+        return Set(availablePayments.map(\.id)).subtracting(excluded)
+    }
     var selectedModes: Set<TransportMode> = Set(TransportMode.allCases.filter { $0 != .walk })
     var departureTime: Date = .now
     var useScheduledTime: Bool = false
@@ -1879,6 +2153,9 @@ final class RouteStore {
     /// from a real user edit — see `invalidateOriginIfEdited` in LocationSearch.swift.
     var confirmedOriginLabel: String?
     var confirmedDestLabel: String?
+    /// Text shown in the origin and destination search fields.
+    var originText = ""
+    var destinationText = ""
     var lastOriginQuery: String = ""
     var lastDestQuery: String = ""
     let addressSearchOrigin = AddressSearchService()
@@ -1889,6 +2166,10 @@ final class RouteStore {
     /// In-flight MKDirections re-measurement of the current results' walk legs.
     /// Cancelled on every new search so a stale refinement can't overwrite fresh results.
     var walkRefineTask: Task<Void, Never>?
+    /// Whether the polylines of the current search can still change. Walk and zone-ride
+    /// refinement write them; the traffic step does not.
+    enum GeometryPhase { case refining, final }
+    private(set) var geometryPhase: GeometryPhase = .final
     /// Counts searches; a search that sees a newer count stops before it writes results.
     private var searchGeneration = 0
     /// Largest distance gap, in km, between the fastest and cheapest routes
@@ -1954,7 +2235,13 @@ final class RouteStore {
     #endif
 
     private var engine: TransitGraphEngine?
+    /// Version of the graph the engine holds.
+    private(set) var graphVersion: String?
     private let locationFetcher = CommuteLocationFetcher()
+    /// Whether the rider lets Gora read the location. Updates when the rider answers or returns from Settings.
+    private(set) var locationAccess: LocationAccess = .undetermined
+    /// True while the shared Turn On Location alert shows.
+    var isTurnOnLocationAlertPresented = false
 
     enum LocationTarget { case origin, destination }
 
@@ -1973,6 +2260,8 @@ final class RouteStore {
             self?.remergeDestSuggestions()
         }
         networkStatus.start()
+        locationAccess = locationFetcher.access
+        locationFetcher.onAccessChange = { [weak self] in self?.locationAccess = $0 }
         Task { await setupEngine() }
         NotificationCenter.default.addObserver(
             forName: Notification.Name("TransitDataDidUpdate"),
@@ -1989,6 +2278,7 @@ final class RouteStore {
         case .success(let graph):
             let eng = await GraphStore.makeEngine(for: graph)
             self.engine = eng
+            self.graphVersion = graph.version
             let stations = await eng.allStations()
             self.allStations = stations
             self.availableModes = await eng.selectableModes()
@@ -2021,6 +2311,7 @@ final class RouteStore {
         }
 
         walkRefineTask?.cancel()
+        geometryPhase = .final
         searchGeneration += 1
         let generation = searchGeneration
         isLoading = true
@@ -2029,6 +2320,12 @@ final class RouteStore {
         routeOptions = []
 
         let now: Date = useScheduledTime ? departureTime : .now
+        #if DEBUG
+        print("[Search] calculate origin=\(originID) label=\(confirmedOriginLabel ?? "-") "
+              + "coord=\(originCoordinate.map { "\($0.lat),\($0.lng)" } ?? "-") "
+              + "destination=\(destinationID) label=\(confirmedDestLabel ?? "-") "
+              + "coord=\(destinationCoordinate.map { "\($0.lat),\($0.lng)" } ?? "-")")
+        #endif
 
         func makeReq(_ strategy: RouteRequest.CostStrategy) -> RouteRequest {
             RouteRequest(
@@ -2054,8 +2351,6 @@ final class RouteStore {
         let (fr, cr, br) = await (r1, r2, r3)
         guard generation == searchGeneration else { return }
 
-        isLoading = false
-
         func unwrap(_ r: Result<RouteResult, TransitGraphEngine.RouteError>) -> RouteResult? {
             if case .success(let v) = r {
                 return v
@@ -2070,6 +2365,8 @@ final class RouteStore {
         let balanced = unwrap(br)
 
         guard fastest != nil || cheapest != nil || balanced != nil else {
+            isLoading = false
+            Task { await logRouteSearch(engine: engine, options: []) }
             switch fr {
             case .failure(.stationsClosed(let t)):
                 errorMessage = "Stations are closed. MRT/LRT service ends at \(formattedTime(t))."
@@ -2084,7 +2381,7 @@ final class RouteStore {
         }
 
         func routeKey(_ r: RouteResult) -> String {
-            r.legs.map { "\($0.line):\($0.fromStation.id):\($0.toStation.id)" }.joined(separator: "|")
+            RouteDiversityPolicy.routeKey(r)
         }
 
         var options: [RouteOption] = []
@@ -2110,24 +2407,44 @@ final class RouteStore {
         }
         addIfNew(balanced, label: .balanced)
 
+        // Fill the list with routes that avoid the lines already found.
+        let diverse = await engine.diverseRoutes(
+            base: options.map(\.result), request: makeReq(.balanced))
+        guard generation == searchGeneration else { return }
+        options = diverse.map { RouteOption(result: $0, label: .balanced) }
+
         // Shortest time first. Fewer transfers break a tie in time, and the index keeps the
         // insertion order after that.
         options = options.sortedByDuration()
-        routeOptions = Array(options.prefix(3))
+        let normal = Array(options.prefix(RouteDiversityPolicy.maxOptions))
+        let timetableExtra = await engine.timetableExtra(
+            besides: normal.map(\.result), request: makeReq(.timetable))
+        guard generation == searchGeneration else { return }
+        isLoading = false
+        routeOptions = normal.labeledByResult() + (timetableExtra.map {
+            [RouteOption(result: $0, label: .balanced, isTimetableExtra: true)]
+        } ?? [])
         routeResult  = routeOptions.first?.result
+        let loggedOptions = routeOptions
+        Task { await logRouteSearch(engine: engine, options: loggedOptions) }
 
         // Straight-line walks are good enough to search with, not to trust — that goes for
         // the engine's access walks and for the two-point interchange chords stored in JSON
         // alike. Re-measure the ones that survived against real pedestrian directions, off
         // the critical path, so results appear at engine speed and sharpen a moment later.
         // Implementation: WalkRouteRefiner.swift (keeps MapKit out of the domain layer).
-        // Then road legs take their time from live traffic (RoadTrafficRefiner.swift). Both run
-        // in order in one task, so the two never overwrite each other.
+        // Then zone rides get a driving path (ZoneRideRefiner.swift), and road legs take their
+        // time from the Apple driving ETA (RideETARefiner.swift). The three steps run in order in one
+        // task, so they never overwrite each other.
         walkRefineTask?.cancel()
+        geometryPhase = .refining
         walkRefineTask = Task { [weak self] in
             await self?.refineWalkLegs()
             guard !Task.isCancelled else { return }
-            await self?.applyTrafficToRoadLegs()
+            await self?.refineZoneRideLegs()
+            guard !Task.isCancelled else { return }
+            self?.geometryPhase = .final
+            await self?.refineRideETAs()
         }
     }
 
@@ -2195,6 +2512,12 @@ final class RouteStore {
         locationFetcher.startTracking()
     }
 
+    /// Reads the location authorization again. Call it when the app becomes active.
+    @MainActor
+    func refreshLocationAccess() {
+        locationFetcher.refreshAccess()
+    }
+
     @MainActor
     func setBackgroundLocationUpdates(_ enabled: Bool) {
         locationFetcher.setBackgroundUpdates(enabled)
@@ -2205,9 +2528,28 @@ final class RouteStore {
         engine?.lines[key]?.displayName ?? key
     }
 
+    /// Schedule status of the first timetable leg of `result` at `now`. Nil before the graph loads
+    /// or when the route has no timetable leg.
+    func scheduleStatus(for result: RouteResult, at now: Date) -> ScheduleStatus? {
+        guard let engine, let leg = result.legs.first(where: { $0.scheduledDeparture != nil }) else { return nil }
+        let offset = engine.scheduledBoarding.offsetMinutes(
+            line: leg.line, direction: leg.direction, station: leg.fromStation.id)
+        return ScheduleStatus(legs: result.legs, timetable: engine.timetable, offsetMinutes: offset, now: now)
+    }
+
     /// Color of a line from the loaded graph, or nil when the line has no `colorHex`.
     func lineColor(_ key: String) -> Color? {
         engine?.lines[key]?.colorHex.flatMap(Color.init(hex:))
+    }
+
+    /// Plural name of a mode from the loaded graph, or the mode's own display name before the graph loads.
+    func modePluralName(_ mode: TransportMode) -> String {
+        engine?.transportModes[mode.rawValue]?.pluralName ?? mode.displayName
+    }
+
+    /// Payment method config from the loaded graph, or nil before the graph loads.
+    func paymentConfig(_ id: String) -> PaymentMethodConfig? {
+        engine?.paymentMethods[id]
     }
 
     /// Map and rail color of a leg. Walk legs keep the walk color. A ride leg uses its line
@@ -2291,9 +2633,35 @@ extension Array where Element == RouteOption {
     func sortedByDuration() -> [RouteOption] {
         enumerated()
             .sorted {
-                ($0.element.result.totalTimeMinutes, $0.element.result.transfers, $0.offset)
-                    < ($1.element.result.totalTimeMinutes, $1.element.result.transfers, $1.offset)
+                ($0.element.isTimetableExtra ? 1 : 0, $0.element.result.totalTimeMinutes, $0.element.result.transfers, $0.offset)
+                    < ($1.element.isTimetableExtra ? 1 : 0, $1.element.result.totalTimeMinutes, $1.element.result.transfers, $1.offset)
             }
             .map(\.element)
+    }
+
+    /// Fastest is the shortest option. Cheapest is the lowest fare among the rest, and only
+    /// when it is below the fastest fare. Every other option is balanced. Order is unchanged.
+    func labeledByResult() -> [RouteOption] {
+        let extras = filter(\.isTimetableExtra).map {
+            RouteOption(result: $0.result, label: .balanced, id: $0.id, isTimetableExtra: true)
+        }
+        return filter { !$0.isTimetableExtra }.labeledWithoutExtras() + extras
+    }
+
+    private func labeledWithoutExtras() -> [RouteOption] {
+        guard let fastestIndex = sortedByDuration().first.flatMap({ first in firstIndex { $0.id == first.id } })
+        else { return self }
+        let fastestFare = self[fastestIndex].result.totalFare
+        let cheapestIndex = enumerated()
+            .filter { $0.offset != fastestIndex && $0.element.result.totalFare < fastestFare }
+            .min {
+                ($0.element.result.totalFare, $0.element.result.totalTimeMinutes, $0.offset)
+                    < ($1.element.result.totalFare, $1.element.result.totalTimeMinutes, $1.offset)
+            }?.offset
+        return enumerated().map { index, option in
+            let label: RouteOption.Label = index == fastestIndex ? .fastest
+                : index == cheapestIndex ? .cheapest : .balanced
+            return RouteOption(result: option.result, label: label, id: option.id)
+        }
     }
 }
