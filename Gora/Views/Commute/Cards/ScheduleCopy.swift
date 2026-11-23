@@ -86,7 +86,7 @@ struct ScheduleCopy {
     let detail: String?
     /// Second status line: the arrival or the next trip. Nil when the headline already says enough.
     let secondLine: String?
-    /// Why Use This Route is off. Nil when the button is on.
+    /// Why Start Commute is off. Nil when the button is on.
     let buttonReason: String?
     /// The status lines as one spoken sentence group.
     let spoken: String

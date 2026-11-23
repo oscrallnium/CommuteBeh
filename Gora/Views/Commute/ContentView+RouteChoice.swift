@@ -10,7 +10,7 @@ import MapKit
 
 // MARK: - Route choice
 // The route-choice phase runs from a finished search until the passenger taps
-// "Use This Route". These members are internal because they read `ContentView`'s stored
+// "Start Commute". These members are internal because they read `ContentView`'s stored
 // properties from another file.
 
 extension ContentView {

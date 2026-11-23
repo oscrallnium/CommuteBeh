@@ -92,7 +92,7 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
 ## Location off
 
 `RouteStore.locationAccess` is `off` when the rider did not allow Location. `ContentView` reacts in these ways.
-The route result shows the dismissible `LocationOffBanner` above the sheet, and "Use This Route" stays on.
+The route result shows the dismissible `LocationOffBanner` above the sheet, and "Start Commute" stays on.
 Commute Mode shows the banner under the status bar and moves by tap (`CommuteMode-Cards.md`). Both banners
 open the Turn On Location alert. `switchCommuteGuidance(for:)` runs when the value changes during a commute.
 Off: the engine keeps its step, the puck state clears, following stops, and the camera fits the route.

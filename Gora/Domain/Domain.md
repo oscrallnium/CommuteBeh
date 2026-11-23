@@ -30,7 +30,9 @@ The method accepts the route only when its time without the wait is at most the 
 
 ## Fare distance step
 
-`RoadFare.amount` rounds the fare km up to the next multiple of `LineConfig.fareStepKm` before it applies `baseFare`, `baseKm`, and `farePerKm`. A distance within 0.01 km above a multiple counts as that multiple. A line with a nil or 0 step keeps the exact fare km. Each line in the graph sets its own step. `searchFare` in the A* search still uses the exact distance, so the search cost is an estimate and the shown fare follows this rule. The amount then rounds to the nearest 25 centavos, as LTFRB guides do. The toll share is not rounded.
+`RoadFare.amount` rounds the fare km to a multiple of `LineConfig.fareStepKm` before it applies `baseFare`, `baseKm`, and `farePerKm`. `LineConfig.fareKmRounding` sets the direction: `up` (also when nil) rounds up, and `down` drops the part step, so a jeepney ride of 4.33 km with a 1 km step pays the 4 km fare. The 0.01 km tolerance keeps float noise from changing the step count. A line with a nil or 0 step keeps the exact fare km. The amount then rounds to the nearest 25 centavos, as LTFRB guides do. The toll share is not rounded.
+
+`searchFare` in the A* search charges the rise of the leg fare that each ride edge causes, through the same `RoadFare.amount`. A boarding edge costs the whole leg fare. A later edge of the same leg costs the difference, so a ride inside `baseKm` adds nothing. `legRideKm` walks `cameFrom` back along the open leg to get its distance. The search uses measured edge km, and `computeLegFare` uses the station `fareKm` markers when both stops have them.
 
 ## LocationAccess.swift
 

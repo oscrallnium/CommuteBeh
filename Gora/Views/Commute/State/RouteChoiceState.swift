@@ -112,6 +112,8 @@ final class RouteChoiceState {
     /// Where each route's callout sits. A route with no entry shows no callout.
     private var callouts: [RouteOption.ID: CalloutSpot] = [:]
     var isDetailExpanded = false
+    /// True while the sheet shows only the summary block. `isDetailExpanded` keeps the state to return to.
+    var isCompressed = false
     /// Camera distance of the last settled map position, in metres.
     var cameraDistance: CLLocationDistance = RouteChoiceState.zoomReferenceDistance
 
@@ -177,6 +179,7 @@ final class RouteChoiceState {
             entries = [:]
             selectedID = nil
             isDetailExpanded = false
+            isCompressed = false
             outgoingID = nil
             emphasisTask?.cancel()
             emphasis = 1

@@ -11,8 +11,8 @@ Mode starts. (The bottom card shown *during* Commute Mode, `CommuteModeView`, li
 - An overline with an icon and the option label: Fastest, Balanced, or Cheapest.
 - The duration and a fare capsule. The capsule has a `Color.jade` tint at 18% and `.primary` text. `ViewThatFits` stacks them at large text sizes.
 - "Arrive by" with the arrival time.
-- The ride list when the sheet is collapsed, or the leg timeline when it is expanded.
-- A details toggle and the "Use This Route" button.
+- The ride list when the sheet is collapsed, or the leg timeline when it is expanded. The compressed state hides both.
+- A details toggle and the "Start Commute" button.
 
 The map sets `selectedID`. The sheet shows a hint instead of the button while `canStartCommute` is false.
 The commute sheet replaces it when Commute Mode starts. The sheet reads `RouteStore` from the environment
@@ -36,6 +36,31 @@ by position.
 The glass of the sheet is a background layer (`.background { Color.clear.goraGlass(...) }`).
 Do not apply `goraGlass` to the sheet content. The system then hosts the content inside the glass view,
 lays it out from the top edge of the glass while the glass resizes, and the bottom row moves.
+
+### Compressed state
+
+`RouteChoiceState.isCompressed` adds a third state. The compressed sheet shows the grabber, the summary
+block, and the "Start Commute" button or the start hint. It hides the schedule row, the ride list or leg
+timeline, and the details toggle. `isDetailExpanded` does not change while the sheet is compressed, so an
+expand returns to the summary or the details, whichever the sheet showed before.
+
+- **Sections** — `CompressibleSection` wraps each part that hides. Its `CompressLayout` reports the natural
+  height multiplied by `1 - progress`, and the section fades with the same value. `progress` is animatable,
+  so a `withAnimation` change morphs the height and the opacity on one curve.
+- **Drag** — `RouteSheetCompressDrag` moves `progress` with the finger, in the global coordinate space. The
+  range is the sum of the natural heights of the sections. The drag works on the grabber and the summary
+  block, and on the whole sheet while it is compressed. It never works on the leg timeline, so the timeline
+  still scrolls. It starts only when the vertical movement is larger than the horizontal movement.
+- **Release** — the state changes when the finger translation or `predictedEndTranslation` reaches half of
+  the range in the direction of the change. A shorter or slower drag springs back. The release runs in
+  `withAnimation(Motion.routeDetail(reduceMotion:))`. A cancelled drag also springs back.
+- **Rubber band** — `RouteSheetCompressMath` clamps the shown progress to 0...1. A drag past an end moves
+  the sheet by 20% of the excess, up to 24 pt.
+- **Map** — `ContentView` refits the camera after `isCompressed` changes, as it does for `isDetailExpanded`.
+- **VoiceOver** — the grabber has the actions "Compress Sheet" and "Expand Sheet".
+
+`SummaryCache` is in `RouteSummaryCache.swift`, `SheetActionSize` is in `SheetActionSize.swift`, and the
+previews are in `RouteChoiceSheetPreview.swift`.
 
 ## RouteChoiceRideList.swift
 

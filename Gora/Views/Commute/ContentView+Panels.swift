@@ -79,6 +79,7 @@ extension ContentView {
                     options: routeStore.routeOptions,
                     selectedID: $routeChoice.selectedID,
                     isDetailExpanded: $routeChoice.isDetailExpanded,
+                    isCompressed: $routeChoice.isCompressed,
                     canStartCommute: canStartCommute,
                     onUse: { startCommute(with: $0) }, legColor: routeStore.legColor
                 )

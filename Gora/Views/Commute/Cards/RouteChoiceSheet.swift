@@ -15,8 +15,10 @@ struct RouteChoiceSheet: View {
     let options: [RouteOption]
     @Binding var selectedID: RouteOption.ID?
     @Binding var isDetailExpanded: Bool
+    /// True when the sheet shows only the summary block and the start action. `isDetailExpanded` keeps the state to return to.
+    @Binding var isCompressed: Bool
     /// False until the user is within 500 m of the route origin. The sheet then shows a hint
-    /// in place of the "Use This Route" button.
+    /// in place of the "Start Commute" button.
     let canStartCommute: Bool
     let onUse: (RouteOption) -> Void
     /// The color the map draws a leg in.
@@ -27,6 +29,9 @@ struct RouteChoiceSheet: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var summaryCache = SummaryCache()
+    @State private var rawProgress: CGFloat?
+    @State private var listHeight: CGFloat = 0
+    @State private var detailsHeight: CGFloat = 0
 
     private enum Layout {
         static let contentFadeOut: Animation = .easeOut(duration: 0.1)
@@ -42,6 +47,7 @@ struct RouteChoiceSheet: View {
         static let offOpacity = 0.55
         static let reasonLines = 2
         static let readyFade: Animation = .easeInOut(duration: 0.24)
+        static let startActionHeight: CGFloat = 50
     }
 
     private enum Strings {
@@ -49,9 +55,12 @@ struct RouteChoiceSheet: View {
         static let balanced = "Balanced"
         static let cheapest = "Cheapest"
         static let fare = "fare"
-        static let useRoute = "Use This Route"
+        static let useRoute = "Start Commute"
         static let showDetails = "Show Route Details"
         static let showSummary = "Show Route Summary"
+        static let handle = "Route sheet handle"
+        static let compress = "Compress Sheet"
+        static let expand = "Expand Sheet"
     }
 
     private var option: RouteOption? {
@@ -73,22 +82,17 @@ struct RouteChoiceSheet: View {
     }
 
     private func sheet(option: RouteOption, summary: RouteCardSummary) -> some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Space.m) {
-            grabber
-            summaryBlock(option: option, summary: summary)
-            if option.result.hasScheduledLeg {
-                ScheduleTicker(result: option.result) { status in
-                    if let status { ScheduleTripRow(status: status) }
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            header(option: option, summary: summary)
+            CompressibleSection(progress: progress, naturalHeight: $listHeight) {
+                listSection(option: option, summary: summary)
             }
-            if isDetailExpanded {
-                legList(option: option, summary: summary)
-                    .transition(contentTransition)
-            } else {
-                RouteChoiceRideList(summary: summary, isDetailExpanded: $isDetailExpanded)
-                    .transition(contentTransition)
+            startAction(option: option)
+                .padding(.top, DesignTokens.Space.m)
+            CompressibleSection(progress: progress, naturalHeight: $detailsHeight) {
+                detailsButton
+                    .padding(.top, Layout.actionSpacing)
             }
-            actionRow(option: option)
         }
         .padding(.horizontal, DesignTokens.Space.xl)
         .padding(.top, DesignTokens.Space.s)
@@ -100,6 +104,29 @@ struct RouteChoiceSheet: View {
                 .goraGlass(DesignTokens.Materials.routeSheetGlass, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
         }
         .background(DesignTokens.Colors.sheetDim, in: .rect(cornerRadius: DesignTokens.Radius.routeSheet))
+        .offset(y: RouteSheetCompressMath.overshoot(raw: rawProgress ?? restProgress, range: dragRange))
+        .modifier(compressDrag(isActive: isCompressed))
+    }
+
+    // MARK: Compression
+
+    private var restProgress: CGFloat { isCompressed ? 1 : 0 }
+
+    /// 0 shows the previous state and 1 shows the compressed state.
+    private var progress: CGFloat { RouteSheetCompressMath.clamped(rawProgress ?? restProgress) }
+
+    private var dragRange: CGFloat { listHeight + detailsHeight }
+
+    private func compressDrag(isActive: Bool) -> RouteSheetCompressDrag {
+        RouteSheetCompressDrag(isCompressed: $isCompressed, rawProgress: $rawProgress,
+                               range: dragRange, isActive: isActive)
+    }
+
+    private func setCompressed(_ value: Bool) {
+        guard value != isCompressed else { return }
+        withAnimation(DesignTokens.Motion.routeDetail(reduceMotion: reduceMotion)) {
+            isCompressed = value
+        }
     }
 
     /// The outgoing content fades out first, then the incoming content fades in, so the two never overlap.
@@ -110,11 +137,24 @@ struct RouteChoiceSheet: View {
 
     // MARK: Header
 
+    private func header(option: RouteOption, summary: RouteCardSummary) -> some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Space.m) {
+            grabber
+            summaryBlock(option: option, summary: summary)
+        }
+        .contentShape(.rect)
+        .modifier(compressDrag(isActive: !isCompressed))
+    }
+
     private var grabber: some View {
         RoundedRectangle(cornerRadius: DesignTokens.Radius.indicator)
             .fill(Color.faint)
             .frame(width: 40, height: 5)
             .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Strings.handle)
+            .accessibilityAction(named: Strings.compress) { setCompressed(true) }
+            .accessibilityAction(named: Strings.expand) { setCompressed(false) }
     }
 
     private func summaryBlock(option: RouteOption, summary: RouteCardSummary) -> some View {
@@ -135,6 +175,33 @@ struct RouteChoiceSheet: View {
         Text("Arrive by \([summary.arrivalTime, summary.arrivalPeriod].filter { !$0.isEmpty }.joined(separator: " "))")
             .typeScale(.subtitle)
             .foregroundStyle(.secondary)
+    }
+
+    /// The schedule row and the ride list or leg list. Each child carries its own top padding.
+    private func listSection(option: RouteOption, summary: RouteCardSummary) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if option.result.hasScheduledLeg {
+                ScheduleTicker(result: option.result) { status in
+                    if let status {
+                        ScheduleTripRow(status: status)
+                            .padding(.top, DesignTokens.Space.m)
+                    }
+                }
+            }
+            listContent(option: option, summary: summary)
+                .padding(.top, DesignTokens.Space.m)
+        }
+    }
+
+    @ViewBuilder
+    private func listContent(option: RouteOption, summary: RouteCardSummary) -> some View {
+        if isDetailExpanded {
+            legList(option: option, summary: summary)
+                .transition(contentTransition)
+        } else {
+            RouteChoiceRideList(summary: summary, isDetailExpanded: $isDetailExpanded)
+                .transition(contentTransition)
+        }
     }
 
     @ViewBuilder
@@ -226,17 +293,15 @@ struct RouteChoiceSheet: View {
 
     // MARK: Actions
 
-    private func actionRow(option: RouteOption) -> some View {
-        VStack(spacing: Layout.actionSpacing) {
-            if canStartCommute {
-                ScheduleTicker(result: option.result) { status in
-                    useButton(option: option, status: status)
-                }
-                .frame(maxWidth: .infinity)
-            } else {
-                startHint
+    @ViewBuilder
+    private func startAction(option: RouteOption) -> some View {
+        if canStartCommute {
+            ScheduleTicker(result: option.result) { status in
+                useButton(option: option, status: status)
             }
-            detailsButton
+            .frame(maxWidth: .infinity)
+        } else {
+            startHint
         }
     }
 
@@ -318,120 +383,6 @@ struct RouteChoiceSheet: View {
         }
         .foregroundStyle(.secondary)
         .frame(maxWidth: .infinity)
-        .frame(height: 50)
-    }
-}
-
-// MARK: - Summary cache
-
-/// Holds the summary of the shown option. The sheet body runs on every map-panel frame, and
-/// building a summary scans every raw step of every leg. It rebuilds only when its inputs change.
-private final class SummaryCache {
-    private struct Key: Equatable {
-        let optionID: RouteOption.ID
-        let legIDs: [UUID]
-        let totalMinutes: Double
-        let uses24HourTime: Bool
-        let includesOtherModes: Bool
-        let graphVersion: String?
-    }
-
-    private var entry: (key: Key, summary: RouteCardSummary)?
-
-    func summary(for option: RouteOption, uses24HourTime: Bool, includesOtherModes: Bool,
-                 graphVersion: String?, build: () -> RouteCardSummary) -> RouteCardSummary {
-        let key = Key(optionID: option.id, legIDs: option.result.legs.map(\.id),
-                      totalMinutes: option.result.totalTimeMinutes, uses24HourTime: uses24HourTime,
-                      includesOtherModes: includesOtherModes, graphVersion: graphVersion)
-        if let entry, entry.key == key { return entry.summary }
-        let summary = build()
-        entry = (key, summary)
-        return summary
-    }
-}
-
-// MARK: - Preview
-
-#if DEBUG
-private func previewStation(_ id: String, _ name: String, line: String, type: String) -> Station {
-    Station(
-        id: id, name: name, shortName: name, line: line, type: type,
-        coordinates: Coordinates(lat: 14.5763, lng: 121.0194),
-        isTerminal: false, isInterchange: false, interchangesWith: nil, amenities: [],
-        operatingHours: .init(open: "05:30", close: "23:00"), accessPoints: nil, sequence: nil, boarding: nil
-    )
-}
-
-private func previewLeg(
-    _ from: Station, _ to: Station, mode: TransportMode, line: String,
-    minutes: Double, fare: Double, instruction: String
-) -> RouteLeg {
-    RouteLeg(
-        fromStation: from, toStation: to, mode: mode, line: line, direction: nil,
-        stops: [from, to], effectiveTravelMinutes: minutes, fare: fare, distanceKm: 3,
-        polylineCoordinates: [], estimatedArrival: Date().addingTimeInterval(minutes * 60),
-        instruction: instruction, rawSteps: []
-    )
-}
-
-private func previewOptions() -> [RouteOption] {
-    let dela = previewStation("BUS_DELA_ROSA", "Dela Rosa", line: "EDSA_BUS", type: "bus")
-    let gil = previewStation("LRT1_GIL", "Gil Puyat", line: "LRT-1", type: "train")
-    let buendia = previewStation("LRT1_BUENDIA", "LRT Buendia", line: "LRT-1", type: "train")
-    let legs = [
-        previewLeg(dela, dela, mode: .walk, line: "ACCESS_WALK", minutes: 8, fare: 0,
-                   instruction: "Walk to Dela Rosa"),
-        previewLeg(dela, gil, mode: .bus, line: "EDSA_BUS", minutes: 18, fare: 22,
-                   instruction: "Ride the bus northbound"),
-        previewLeg(gil, buendia, mode: .train, line: "LRT-1", minutes: 12, fare: 26,
-                   instruction: "LRT-1 southbound"),
-    ]
-    let result = RouteResult(legs: legs, totalTimeMinutes: 38, totalFare: 48,
-                             totalDistanceKm: 9, transfers: 1, modes: [.bus, .train])
-    return [RouteOption(result: result, label: .fastest)]
-}
-
-private struct RouteChoiceSheetPreview: View {
-    @State private var selected: RouteOption.ID?
-    @State var expanded: Bool
-
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            Color(.systemGray4).ignoresSafeArea()
-            RouteChoiceSheet(options: previewOptions(), selectedID: $selected,
-                             isDetailExpanded: $expanded, canStartCommute: true,
-                             onUse: { _ in }, legColor: { $0.mode.color })
-                .environment(RouteStore())
-                .padding(.horizontal, DesignTokens.Space.sm)
-        }
-    }
-}
-
-#Preview("Route Choice Sheet · light") {
-    RouteChoiceSheetPreview(expanded: true).preferredColorScheme(.light)
-}
-
-#Preview("Route Choice Sheet · dark") {
-    RouteChoiceSheetPreview(expanded: true).preferredColorScheme(.dark)
-}
-
-#Preview("Route Choice Sheet · collapsed") {
-    RouteChoiceSheetPreview(expanded: false)
-}
-#endif
-
-/// Size shared by the two sheet action buttons. The height scales with the same text style as the label.
-private struct SheetActionSize: ViewModifier {
-    private enum Layout {
-        static let height: CGFloat = 53
-        static let horizontalPadding: CGFloat = 20
-    }
-
-    @ScaledMetric(relativeTo: .body) private var height = Layout.height
-
-    func body(content: Content) -> some View {
-        content
-            .padding(.horizontal, Layout.horizontalPadding)
-            .frame(maxWidth: .infinity, minHeight: height)
+        .frame(height: Layout.startActionHeight)
     }
 }

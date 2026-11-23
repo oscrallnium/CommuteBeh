@@ -200,7 +200,8 @@ private struct RouteChoicePreviewScreen: View {
             RouteChoiceSheet(
                 options: options,
                 selectedID: Binding(get: { routeChoice.selectedID }, set: { routeChoice.selectedID = $0 }),
-                isDetailExpanded: $routeChoice.isDetailExpanded, canStartCommute: true,
+                isDetailExpanded: $routeChoice.isDetailExpanded,
+                isCompressed: $routeChoice.isCompressed, canStartCommute: true,
                 onUse: { _ in }, legColor: Self.legColor)
                 .environment(RouteStore())
                 .padding(.horizontal, DesignTokens.Space.sm)

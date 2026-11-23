@@ -304,6 +304,9 @@ extension ContentView {
             .onChange(of: routeChoice.isDetailExpanded) { _, _ in
                 Task { await refitForDetailToggle() }
             }
+            .onChange(of: routeChoice.isCompressed) { _, _ in
+                Task { await refitForDetailToggle() }
+            }
     }
 
     // MARK: Screen

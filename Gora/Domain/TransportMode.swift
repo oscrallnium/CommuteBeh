@@ -100,6 +100,14 @@ nonisolated struct LineConfig: Codable {
     let baseKm: Double?
     /// Fare distance rounds up to a multiple of this step. Nil or 0 keeps the exact distance.
     let fareStepKm: Double?
+    /// Direction of the fare distance step. Nil rounds up.
+    let fareKmRounding: FareKmRounding?
+}
+
+/// `up` rounds the fare distance up to a multiple of `fareStepKm`. `down` drops the part step.
+nonisolated enum FareKmRounding: String, Codable {
+    case up
+    case down
 }
 
 /// A stop, or one of the two synthetic nodes the engine injects for a pinned coordinate
@@ -1341,7 +1349,7 @@ actor TransitGraphEngine {
                     // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
                     // cost only, so the shown travel time stays real minutes.
                     let fareSearchMinutes = costStrategy == .cheapest && !item.isFareFree
-                        ? searchFare(item, arrivedVia: incoming) * 1.5
+                        ? searchFare(item, at: currentID, cameFrom: cameFrom) * 1.5
                         : 0.0
 
                     // Access walking costs more than it takes: without this weight A* will walk
@@ -1431,16 +1439,52 @@ actor TransitGraphEngine {
         return nil
     }
 
-    /// Search fare of one ride edge. The base fare counts only when the edge starts a boarding,
-    /// matching `consolidateLegs` and `computeLegFare`.
-    private func searchFare(_ item: EngineEdge, arrivedVia incoming: TransitEdge?) -> Double {
+    /// Search fare of one ride edge: the rise of the leg fare that this edge causes. A boarding
+    /// edge costs the whole leg fare, so the search and `computeLegFare` follow one rule.
+    private func searchFare(
+        _ item: EngineEdge,
+        at nodeID: StationID,
+        cameFrom: [StationID: (parent: StationID, edge: TransitEdge)]
+    ) -> Double {
         let edge = item.edge
-        let perKm = edge.farePerKm * edge.distanceKm
-        guard let incoming, !isWalkLikeEdge(incoming), !edge.isZoneRide,
-              incoming.line == edge.line, incoming.mode == edge.mode else {
-            return edge.baseFare + perKm
+        guard edge.farePerKm > 0 else {
+            return continuesLeg(edge, at: nodeID, cameFrom: cameFrom) ? 0 : edge.baseFare
         }
-        return perKm
+        let line = lines[edge.line]
+        func legFare(_ km: Double) -> Double {
+            RoadFare.amount(baseFare: edge.baseFare, farePerKm: edge.farePerKm, baseKm: line?.baseKm,
+                            fareStepKm: line?.fareStepKm, rounding: line?.fareKmRounding, fareKm: km)
+        }
+        guard !edge.isZoneRide, let before = legRideKm(of: edge, at: nodeID, cameFrom: cameFrom) else {
+            return legFare(edge.distanceKm)
+        }
+        return max(0, legFare(before + edge.distanceKm) - legFare(before))
+    }
+
+    private func continuesLeg(
+        _ edge: TransitEdge,
+        at nodeID: StationID,
+        cameFrom: [StationID: (parent: StationID, edge: TransitEdge)]
+    ) -> Bool {
+        !edge.isZoneRide && legRideKm(of: edge, at: nodeID, cameFrom: cameFrom) != nil
+    }
+
+    /// Ride distance of the open leg that `edge` extends, or nil when `edge` boards a new leg.
+    /// The walk back follows consecutive edges of the same line and mode, and costs one step per
+    /// edge of the leg.
+    private func legRideKm(
+        of edge: TransitEdge,
+        at nodeID: StationID,
+        cameFrom: [StationID: (parent: StationID, edge: TransitEdge)]
+    ) -> Double? {
+        var node = nodeID
+        var km: Double?
+        while let record = cameFrom[node], !isWalkLikeEdge(record.edge), !record.edge.isZoneRide,
+              record.edge.line == edge.line, record.edge.mode == edge.mode {
+            km = (km ?? 0) + record.edge.distanceKm
+            node = record.parent
+        }
+        return km
     }
 
     func isWalkLikeEdge(_ edge: TransitEdge) -> Bool {
@@ -1726,6 +1770,7 @@ actor TransitGraphEngine {
                 baseFare: first.edge.baseFare, farePerKm: first.edge.farePerKm,
                 baseKm: lines[first.edge.line]?.baseKm,
                 fareStepKm: lines[first.edge.line]?.fareStepKm,
+                rounding: lines[first.edge.line]?.fareKmRounding,
                 fareKm: RoadFare.fareKm(boarding: first.fromStation,
                                         alighting: steps[steps.count - 1].toStation,
                                         measuredKm: totalDist))
