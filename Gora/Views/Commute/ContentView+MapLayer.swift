@@ -27,6 +27,10 @@ extension ContentView {
                 cameraSettled(distance: camera.centerCoordinateDistance)
                 recordObservedCamera(camera)
                 #if DEBUG
+                // The line helps choose `CommuteCameraMode.distance`.
+                if isCommuting {
+                    print("[CommuteZoom] distance=\(Int(camera.centerCoordinateDistance.rounded())) m mode=\(commuteCameraMode == .threeD ? "3D" : "2D") pitch=\(camera.pitch) following=\(isFollowingPassenger)")
+                }
                 if !isCommuting, !debugTrainSimulator.isBusy { debugSimAnchor = camera.centerCoordinate }
                 #endif
             },
@@ -48,6 +52,7 @@ extension ContentView {
             addRoute(result, geometry: geometry, to: &scene)
         }
         addPassenger(to: &scene)
+        scene.locksCamera = isCommuting && isFollowingPassenger
         return scene
     }
 

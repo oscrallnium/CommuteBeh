@@ -34,6 +34,13 @@ struct CommuteSearchPanel: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var swapPhase: SwapPhase = .idle
+    /// Counts the swaps. It turns the swap symbol and triggers the haptic.
+    @State private var swapCount = 0
+    /// Counts the Search Route taps. It triggers the heavy haptic.
+    @State private var searchTapCount = 0
+    /// The query whose empty result list has lasted `Motion.noResultsDelay`. "No Results" shows only
+    /// then, so it does not flash while the address search is still running.
+    @State private var settledEmptyQuery: String?
     @State private var rowDistance: CGFloat = 0
     /// Measured sizes of the card and the pill. The surface takes its frame from these, so the
     /// frame animates between them instead of following content that is fading in or out.
@@ -83,6 +90,12 @@ struct CommuteSearchPanel: View {
             settledMode = mode
         }
         .animation(DesignTokens.Motion.suggestEnter, value: suggestionsVisible)
+        .animation(editingMotion, value: isEditing)
+        .task(id: pendingEmptyQuery) {
+            guard let query = pendingEmptyQuery,
+                  (try? await Task.sleep(for: .seconds(Motion.noResultsDelay))) != nil else { return }
+            settledEmptyQuery = query
+        }
         .animation(
             .spring(response: Motion.springResponse, dampingFraction: Motion.springDamping),
             value: mode
@@ -166,7 +179,9 @@ struct CommuteSearchPanel: View {
         case .expanded:
             searchCard
                 .fixedSize(horizontal: false, vertical: true)
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                    withAnimation(editingMotion) { cardHeight = height }
+                }
                 .transition(contentTransition)
         case .collapsed:
             CommuteRoutePill(
@@ -223,21 +238,53 @@ struct CommuteSearchPanel: View {
         suggestionLists
     }
 
+    /// Search Route folds away while a field has focus. The results list takes its place.
     private var searchCard: some View {
         VStack(spacing: 0) {
-            originRow
-                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
-                    rowDistance = $0 + SearchDashedDivider.height
-                }
-
-            SearchDashedDivider().padding(.horizontal, Layout.fieldHorizontalPadding)
-
-            destinationRow
-
-            actionRow
+            fieldsGroup
+            if !isEditing {
+                actionRow
+                    .transition(.opacity)
+            }
         }
         .padding(.top, Layout.cardTopPadding)
         .coordinateSpace(name: CoordinateSpaces.card)
+    }
+
+    /// The two rows share one trailing control. The swap button sits on the divider and acts on both rows.
+    /// While a field has focus, the swap button hides and that field shows its clear button.
+    private var fieldsGroup: some View {
+        VStack(spacing: 0) {
+            originRow
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                    rowDistance = $0 + SearchFieldSeparator.height
+                }
+
+            SearchFieldSeparator()
+                .padding(.leading, Layout.dividerLeadingInset)
+                .padding(.trailing, Layout.dividerTrailingInset)
+
+            destinationRow
+        }
+        .overlay(alignment: .leading) {
+            SearchFieldRail(length: max(rowDistance - Layout.markerColumnWidth - 2 * Layout.railGap, 0))
+                .padding(.leading, Layout.fieldHorizontalPadding + (Layout.markerColumnWidth - SearchFieldRail.width) / 2)
+        }
+        .overlay(alignment: .trailing) {
+            swapButton
+                .padding(.trailing, Layout.swapTrailingInset)
+                .opacity(showsSwap ? 1 : 0)
+                .allowsHitTesting(showsSwap)
+                .accessibilityHidden(!showsSwap)
+        }
+        .animation(.easeOut(duration: Motion.fadeDuration), value: showsSwap)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Strings.routeGroup)
+    }
+
+    /// Only one trailing control shows at a time: the swap button, a clear button, or a progress view.
+    private var showsSwap: Bool {
+        focusedField == nil && !routeStore.isResolvingOrigin && !routeStore.isResolvingDestination
     }
 
     private var originRow: some View {
@@ -250,7 +297,7 @@ struct CommuteSearchPanel: View {
             contentOffset: swapPhase == .sliding ? rowDistance : 0,
             accessory: SearchFieldAccessory(
                 isResolving: routeStore.isResolvingOrigin,
-                hasText: !routeStore.originText.isEmpty,
+                hasText: focusedField == .origin && !routeStore.originText.isEmpty,
                 onClear: { routeStore.clear(.origin) }
             ),
             onTextChange: { routeStore.updateOriginSuggestions($0) }
@@ -267,7 +314,7 @@ struct CommuteSearchPanel: View {
             contentOffset: swapPhase == .sliding ? -rowDistance : 0,
             accessory: SearchFieldAccessory(
                 isResolving: routeStore.isResolvingDestination,
-                hasText: !routeStore.destinationText.isEmpty,
+                hasText: focusedField == .destination && !routeStore.destinationText.isEmpty,
                 onClear: { routeStore.clear(.destination) }
             ),
             onTextChange: { routeStore.updateDestSuggestions($0) }
@@ -290,8 +337,10 @@ struct CommuteSearchPanel: View {
             marker
                 .frame(width: Layout.markerColumnWidth)
             TextField(placeholder, text: text)
-                .font(.system(.body, weight: .semibold))
+                .font(.body)
                 .autocorrectionDisabled()
+                .submitLabel(.done)
+                .onSubmit(closeResults)
                 .focused($focusedField, equals: field)
                 .onChange(of: text.wrappedValue) { _, val in onTextChange(val) }
                 .reportsFrame(textID, in: CoordinateSpaces.card, to: $cardFrames)
@@ -305,17 +354,18 @@ struct CommuteSearchPanel: View {
     }
 
     private var actionRow: some View {
-        HStack(spacing: Layout.actionRowSpacing) {
-            searchButton
-            swapButton
-        }
+        searchButton
         .padding(.horizontal, Layout.actionRowHorizontalPadding)
         .padding(.top, Layout.actionRowTopPadding)
         .padding(.bottom, Layout.actionRowBottomPadding)
     }
 
+    /// A heavy haptic confirms the main action.
     private var searchButton: some View {
-        Button(action: onSearch) {
+        Button {
+            searchTapCount += 1
+            onSearch()
+        } label: {
             Text(Strings.searchRoute)
                 .typeScale(.controlLabel)
                 .opacity(showSearchProgress ? 0 : 1)
@@ -334,21 +384,27 @@ struct CommuteSearchPanel: View {
         .disabled(!routeStore.canCalculate || routeStore.isLoading)
         .opacity(!routeStore.canCalculate ? Layout.disabledOpacity : 1)
         .animation(DesignTokens.Motion.disclose, value: routeStore.canCalculate)
+        .sensoryFeedback(.impact(weight: .heavy, intensity: 1), trigger: searchTapCount)
     }
 
+    /// A secondary control: a gray circle with a blue symbol, and a 44 pt touch target.
+    /// The symbol turns 180 degrees on each swap. Reduce Motion keeps it still.
     private var swapButton: some View {
         Button(action: swap) {
             Image(systemName: Symbol.swap)
-                .font(.system(size: Layout.swapIconSize, weight: .medium))
-                .foregroundStyle(.primary)
-                .frame(width: Layout.swapButtonSize, height: Layout.swapButtonSize)
-                .background(
-                    Circle().stroke(Color.onyx, lineWidth: Layout.swapBorderWidth)
-                )
+                .font(.system(size: Layout.swapIconSize, weight: .semibold))
+                .foregroundStyle(DesignTokens.Colors.secondaryAction)
+                .rotationEffect(.degrees(reduceMotion ? 0 : Double(swapCount) * 180))
+                .frame(width: Layout.swapCircleSize, height: Layout.swapCircleSize)
+                .background(DesignTokens.Colors.secondaryActionFill, in: .circle)
+                .frame(width: Layout.controlSize, height: Layout.controlSize)
+                .contentShape(.circle)
         }
         .buttonStyle(.plain)
         .disabled(!canSwap || swapPhase != .idle)
         .opacity(canSwap ? 1 : Layout.disabledOpacity)
+        .sensoryFeedback(.impact(weight: .light), trigger: swapCount)
+        .accessibilityLabel(Strings.swap)
     }
 
     private var canSwap: Bool {
@@ -363,15 +419,18 @@ struct CommuteSearchPanel: View {
         // An unfocused field shows the start of a long text; a focused field scrolls to its end.
         focusedField = nil
         if reduceMotion {
+            swapCount += 1
             withAnimation(.easeOut(duration: Motion.fadeDuration)) {
                 swapPhase = .fading
             } completion: {
                 routeStore.swapEndpoints()
+                announceSwap()
                 withAnimation(.easeIn(duration: Motion.fadeDuration)) { swapPhase = .idle }
             }
         } else {
             withAnimation(.snappy(duration: Motion.swapDuration)) {
                 swapPhase = .sliding
+                swapCount += 1
             } completion: {
                 var transaction = Transaction()
                 transaction.disablesAnimations = true
@@ -379,8 +438,15 @@ struct CommuteSearchPanel: View {
                     routeStore.swapEndpoints()
                     swapPhase = .idle
                 }
+                announceSwap()
             }
         }
+    }
+
+    /// VoiceOver confirms the swap, so the motion is not the only signal.
+    private func announceSwap() {
+        let message = String(localized: "Swapped. Start, \(routeStore.originText). Destination, \(routeStore.destinationText).")
+        AccessibilityNotification.Announcement(message).post()
     }
 
     @ViewBuilder
@@ -395,9 +461,10 @@ struct CommuteSearchPanel: View {
         }
     }
 
+    /// Saved places stay while a field has focus. They hide only while the results list or No Results shows.
     @ViewBuilder
     private var savedPlaces: some View {
-        if !suggestionsVisible {
+        if !suggestionsVisible && !showsNoResults {
             SavedPlacesRow(
                 routeStore: routeStore,
                 focusedField: $focusedField
@@ -410,23 +477,61 @@ struct CommuteSearchPanel: View {
     @ViewBuilder
     private var suggestionLists: some View {
         if routeStore.showOriginSuggestions && !routeStore.originSuggestions.isEmpty {
-            suggestionDropdown(routeStore.originSuggestions, field: .origin)
+            suggestionDropdown(routeStore.originSuggestions, query: routeStore.originText, field: .origin)
         } else if routeStore.showDestSuggestions && !routeStore.destSuggestions.isEmpty {
-            suggestionDropdown(routeStore.destSuggestions, field: .destination)
+            suggestionDropdown(routeStore.destSuggestions, query: routeStore.destinationText, field: .destination)
+        } else if showsNoResults {
+            SearchSuggestionDropdown.noResults
+                .transition(SearchSuggestionDropdown.transition(reduceMotion: reduceMotion))
         }
     }
 
     private func suggestionDropdown(
         _ suggestions: [LocationSuggestion],
+        query: String,
         field: SearchField
     ) -> some View {
         SearchSuggestionDropdown(
             suggestions: suggestions,
-            lineName: routeStore.lineDisplayName,
-            lineColor: routeStore.lineColor
+            query: query,
+            userLocation: routeStore.userLocation,
+            lineName: routeStore.lineDisplayName
         ) { suggestion in
             select(suggestion, for: field)
         }
+        .transition(SearchSuggestionDropdown.transition(reduceMotion: reduceMotion))
+    }
+
+    /// The Done key drops the focus and removes the results list. The field keeps its text.
+    private func closeResults() {
+        focusedField = nil
+        routeStore.showOriginSuggestions = false
+        routeStore.showDestSuggestions = false
+    }
+
+    /// True while a field has focus. The card hides Search Route, and the screen hides the tab bar.
+    private var isEditing: Bool { focusedField != nil }
+
+    private var editingMotion: Animation {
+        reduceMotion ? .easeInOut(duration: Motion.fadeDuration) : .spring(duration: Motion.resultsDuration)
+    }
+
+    /// The focused field's text when its search is open and has no rows. Nil otherwise.
+    private var pendingEmptyQuery: String? {
+        switch focusedField {
+        case .origin where routeStore.showOriginSuggestions && routeStore.originSuggestions.isEmpty:
+            routeStore.originText
+        case .destination where routeStore.showDestSuggestions && routeStore.destSuggestions.isEmpty:
+            routeStore.destinationText
+        default:
+            nil
+        }
+    }
+
+    /// True while the No Results view shows: the empty query has settled.
+    private var showsNoResults: Bool {
+        guard let query = pendingEmptyQuery else { return false }
+        return query == settledEmptyQuery
     }
 
     /// Origin selection moves focus to the destination. Destination selection drops focus.
@@ -453,6 +558,9 @@ private enum Motion {
     static let fadeDuration: Double = 0.15
     static let springResponse: Double = 0.45
     static let springDamping: Double = 0.85
+    /// The results list and Search Route move with this spring when a field gains or loses focus.
+    static let resultsDuration: Double = 0.38
+    static let noResultsDelay: Double = 0.8
     /// Time the spring needs to come to rest.
     static let settleDuration: Double = springResponse * 1.5
     /// Wait before inserted content fades in: about half the spring response, when the surface is nearly full size.
@@ -472,15 +580,22 @@ private enum Layout {
     static let fieldVerticalPadding: CGFloat = 15
     static let cardTopPadding: CGFloat = 8
     static let errorHorizontalPadding: CGFloat = 18
-    static let actionRowSpacing: CGFloat = 12
-    static let actionRowHorizontalPadding: CGFloat = 14
-    static let actionRowTopPadding: CGFloat = 4
-    static let actionRowBottomPadding: CGFloat = 14
+    static let actionRowHorizontalPadding: CGFloat = 8
+    static let actionRowTopPadding: CGFloat = 8
+    static let actionRowBottomPadding: CGFloat = 8
     static let searchButtonVerticalPadding: CGFloat = 15
     static let disabledOpacity: Double = 0.55
-    static let swapButtonSize: CGFloat = 46
-    static let swapIconSize: CGFloat = 13
-    static let swapBorderWidth: CGFloat = 1.5
+    static let swapCircleSize: CGFloat = 36
+    static let swapIconSize: CGFloat = 17
+    /// The swap target's gap to the card edge. The row's trailing padding, accessory, and spacing
+    /// (18 + 22 + 14 = 54 pt) keep the text clear of the 44 pt target.
+    static let swapTrailingInset: CGFloat = 8
+    /// The divider starts under the text: row padding, marker column, and spacing.
+    static let dividerLeadingInset: CGFloat = fieldHorizontalPadding + markerColumnWidth + fieldSpacing
+    /// The divider ends before the swap target.
+    static let dividerTrailingInset: CGFloat = swapTrailingInset + controlSize + 2
+    /// Space between a marker and each end of the dotted rail.
+    static let railGap: CGFloat = 6
 }
 
 private enum Strings {
@@ -488,6 +603,8 @@ private enum Strings {
     static let destinationPlaceholder: LocalizedStringKey = "Destination"
     static let searchRoute: LocalizedStringKey = "Search Route"
     static let back: LocalizedStringKey = "Back"
+    static let swap: LocalizedStringKey = "Swap start and destination"
+    static let routeGroup: LocalizedStringKey = "Route"
 }
 
 private enum CoordinateSpaces {

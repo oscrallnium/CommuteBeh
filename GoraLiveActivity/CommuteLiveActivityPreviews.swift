@@ -59,11 +59,6 @@ private func islandExpanded(_ state: CommuteState, stale: Bool = false) -> some 
         HStack {
             IslandExpandedLeading(state: state)
             Spacer()
-            if state.phase != .arrived {
-                CommuteETATimer(eta: state.eta, isStale: stale)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
         }
         IslandExpandedBody(attributes: PreviewData.attributes, state: state, isStale: stale)
     }

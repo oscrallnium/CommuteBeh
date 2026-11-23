@@ -73,6 +73,10 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
   writing a new camera position once per GPS fix. A per-fix write can't read as continuous
   motion on its own: fixes land at whatever cadence `distanceFilter` produces, which varies by
   mode and pace.
+- **Camera lock** — while Commute Mode follows the passenger, `CommuteMapScene.locksCamera` turns off
+  pan, zoom, rotate, and pitch, so only the follow loop moves the map. Route Overview stops following
+  and gives the gestures back. 2D opens at 2,500 m, and 3D at 450 m with a 60° pitch (`CommuteCameraMode.distance`).
+  DEBUG builds print `[CommuteZoom]` with the camera distance each time the camera settles in Commute Mode.
 - **`onChange(of: commuteCameraMode)`** — starts a `followPassenger` transition while tracked.
   While untracked it starts a `keepCenter` transition, which keeps the camera centre.
 - **`startCommute(with:)`** — seeds `positionResolver`/`commuteEngine` with the passenger's
@@ -165,8 +169,8 @@ Keeps the commute across backgrounding and app termination.
 
 ## ContentView+CameraPose.swift
 
-- **Poses** — `twoD` is north-up, flat, 800 m, puck at 0.5 of the strip. `threeD` faces the route
-  direction, pitch 65, 300 m, puck at 0.7 of the strip.
+- **Poses** — `twoD` is north-up, flat, 2,500 m, puck at 0.5 of the strip. `threeD` faces the route
+  direction, pitch 60, 450 m, puck at 0.7 of the strip.
 - **Route heading** — `routeHeading(along:at:)` gives the bearing to the point 40 m ahead of the
   puck. `advanceSmoothedRouteHeading()` low-passes it once per 30 Hz follow tick and holds it
   while the puck stands still.

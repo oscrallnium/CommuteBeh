@@ -162,50 +162,6 @@
             endingLineNumber = "598"
             landmarkName = "fetchRoadRoute(from:to:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - ec604b9b36c16734"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
-                  moduleName = "Gora.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "601"
-                  endingLineNumber = "601">
-               </Location>
-               <Location
-                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - ba7a0131c1aa3109"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(2) await resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
-                  moduleName = "Gora.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "601"
-                  endingLineNumber = "601">
-               </Location>
-               <Location
-                  uuid = "E34C75B0-77DE-49B3-84F2-C72F26A4AD57 - 97bbec554c1e2b32"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(3) suspend resume partial function for Gora.CreateLoopViewModel.fetchRoadRoute(from: __C.CLLocationCoordinate2D, to: __C.CLLocationCoordinate2D) async -&gt; Swift.Optional&lt;Swift.Array&lt;__C.CLLocationCoordinate2D&gt;&gt;"
-                  moduleName = "Gora.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/obiee/Desktop/proj/gora/Gora/Views/Record/LoopCreatorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "601"
-                  endingLineNumber = "601">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

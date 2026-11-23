@@ -41,19 +41,22 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             Tab("Commute", systemImage: "arrow.triangle.swap") {
-                ContentView()
+                ContentView().tint(Color?.none)
             }
             if session.isAdmin {
                 Tab("Routes", systemImage: "map.fill") {
-                    ExploreView()
+                    ExploreView().tint(Color?.none)
                 }
                 Tab("Admin", systemImage: "gear.badge") {
-                    AdminRoutesView()
+                    AdminRoutesView().tint(Color?.none)
                 }
             }
             Tab("Settings", systemImage: "gearshape") {
-                SettingsView()
+                SettingsView().tint(Color?.none)
             }
         }
+        // The selected tab uses the primary action blue. Each tab clears the tint, so its content keeps
+        // the system colors: the accent color for controls and green for toggles.
+        .tint(DesignTokens.Colors.action)
     }
 }

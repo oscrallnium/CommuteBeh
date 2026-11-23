@@ -18,9 +18,11 @@ nonisolated enum RoadFare {
 
     /// The base fare covers the line's free distance. Each km past it costs the per-km rate.
     /// The fare km rounds up to the line's step first.
+    /// The amount then rounds to the nearest 25 centavos, as LTFRB fare guides do.
     static func amount(baseFare: Double, farePerKm: Double, baseKm: Double?, fareStepKm: Double?,
                        fareKm: Double) -> Double {
-        baseFare + max(0, chargedKm(fareKm, stepKm: fareStepKm) - (baseKm ?? 0)) * farePerKm
+        let raw = baseFare + max(0, chargedKm(fareKm, stepKm: fareStepKm) - (baseKm ?? 0)) * farePerKm
+        return (raw / Rounding.fareStepPesos).rounded(.toNearestOrAwayFromZero) * Rounding.fareStepPesos
     }
 
     /// Rounds up to the next multiple of the step. The tolerance keeps float noise, such as
@@ -32,5 +34,6 @@ nonisolated enum RoadFare {
 
     private enum Rounding {
         static let toleranceKm = 0.01
+        static let fareStepPesos = 0.25
     }
 }

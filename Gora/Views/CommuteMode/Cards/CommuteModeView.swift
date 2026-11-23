@@ -15,8 +15,9 @@ enum CommuteCameraMode {
     case twoD
     case threeD
 
-    var pitch: Double { self == .threeD ? 65 : 0 }
-    var distance: CLLocationDistance { self == .threeD ? 300 : 800 }
+    var pitch: Double { self == .threeD ? 60 : 0 }
+    /// Metres from the camera to the map center. Commute Mode opens in 2D at this distance.
+    var distance: CLLocationDistance { self == .threeD ? 450 : 2500 }
     var puckFraction: CGFloat { self == .threeD ? 0.7 : 0.5 }
 }
 

@@ -172,7 +172,9 @@ struct ContentView: View {
                 onSheetTopChange: followSheetTop,
                 card: commuteCard
             )
-            .toolbarVisibility(isCommuting ? .hidden : .visible, for: .tabBar)
+            // The tab bar hides while a search field has focus, so the results have the room.
+            .toolbarVisibility(isCommuting || focusedField != nil ? .hidden : .visible, for: .tabBar)
+            .animation(DesignTokens.Motion.disclose, value: focusedField != nil)
             .savedPlaceDragHost()
             .turnOnLocationAlert(isPresented: $routeStore.isTurnOnLocationAlertPresented)
             .environment(routeStore)

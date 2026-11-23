@@ -30,7 +30,7 @@ The method accepts the route only when its time without the wait is at most the 
 
 ## Fare distance step
 
-`RoadFare.amount` rounds the fare km up to the next multiple of `LineConfig.fareStepKm` before it applies `baseFare`, `baseKm`, and `farePerKm`. A distance within 0.01 km above a multiple counts as that multiple. A line with a nil or 0 step keeps the exact fare km. Each line in the graph sets its own step. `searchFare` in the A* search still uses the exact distance, so the search cost is an estimate and the shown fare follows this rule.
+`RoadFare.amount` rounds the fare km up to the next multiple of `LineConfig.fareStepKm` before it applies `baseFare`, `baseKm`, and `farePerKm`. A distance within 0.01 km above a multiple counts as that multiple. A line with a nil or 0 step keeps the exact fare km. Each line in the graph sets its own step. `searchFare` in the A* search still uses the exact distance, so the search cost is an estimate and the shown fare follows this rule. The amount then rounds to the nearest 25 centavos, as LTFRB guides do. The toll share is not rounded.
 
 ## LocationAccess.swift
 

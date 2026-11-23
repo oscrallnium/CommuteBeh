@@ -171,8 +171,8 @@ through the virtual-node path ([4. Routing Engine](04-routing-engine.md#virtual-
 ### Commute Mode — `Views/CommuteMode/`
 
 `CommuteProgressEngine` tracks which leg the passenger is on and metres remaining.
-`CommuteCameraMode` offers two fixed poses — `twoD` (pitch 0, distance 800) and `threeD`
-(pitch 60, distance 300). Neither follows heading: `RouteStore.userLocation` carries no course,
+`CommuteCameraMode` offers two fixed poses — `twoD` (pitch 0, distance 2500) and `threeD`
+(pitch 60, distance 450). Neither follows heading: `RouteStore.userLocation` carries no course,
 so a heading-aligned camera is future work.
 
 ### Explore tab — `ExploreView.swift`

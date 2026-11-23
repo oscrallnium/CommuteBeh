@@ -101,11 +101,34 @@ size change.
 - `SearchMovingLayer.swift` — the layer that moves the markers and texts between the card and the pill.
 - `SearchPanelMode.swift` — the `expanded` and `collapsed` panel modes, with the surface radius and tint of each.
 - `SearchFieldAccessory.swift` — the trailing spinner or clear button of a search field row.
-- `SearchDashedDivider.swift` — the dashed line between the origin and destination rows.
-- `SearchSuggestionDropdown.swift` — a `SuggestionList` on a material card with a shadow, below the search card.
+- `SearchFieldSeparator.swift` — the hairline between the origin and destination rows, and the dotted rail between their markers.
+- `SearchSuggestionDropdown.swift` — the search results in a Liquid Glass list below the search card, and the "No Results" state.
 
 The expanded card is a Liquid Glass rounded rectangle (`DesignTokens.Materials.cardGlass`, `Radius.card`). The
 `SavedPlacesRow` sits 12 pt under it.
+
+The card has two parts: the fields group and Search Route.
+
+- The swap button sits in the fields group, on the trailing edge, centered on the divider. It is a
+  secondary control: a 36 pt `secondaryActionFill` circle with a `secondaryAction` symbol, in a 44 pt
+  target. Search Route is the only filled button, and it fills the card width.
+- One trailing control shows at a time. With no focus, the swap button shows. A focused field shows its
+  clear button, and the swap button fades out. A resolving field shows its spinner, and the swap button
+  also fades out.
+- While a field has focus, Search Route folds away, and the tab bar and Simulate MRT fade out. The
+  saved-place chips stay, and Add Place fades out so the chips use its space. The whole saved-places row
+  hides only while the results list or No Results shows. The results list grows from the card (opacity, 97 % scale, 10 pt from above, 0.38 s spring).
+  Reduce Motion fades only.
+- Each result row shows a symbol in a 28 pt circle with the destination marker colors (`Color.onyx` fill,
+  `Color.canvas` symbol: black and white in light mode, the reverse in dark mode), the name
+  in 15 pt type-scale Body with the typed letters in semibold, and the distance and line or area in 13 pt Subtitle. The list shows up to 8 rows and
+  scrolls when they do not fit. A tap plays a light haptic. Search Route plays a heavy haptic.
+- The keyboard key reads Done. Done drops the focus and removes the results list. The field keeps its text.
+- "No Results" shows when the field text has had no rows for 0.8 s, so it does not flash while the
+  address search runs.
+- A swap slides the two texts past each other and turns the symbol 180 degrees. Reduce Motion
+  cross-fades the texts, and the symbol does not turn. Each swap plays a light haptic, and VoiceOver
+  announces the new start and destination.
 
 The panel binds its fields to `routeStore.originText` and `routeStore.destinationText`. The swap,
 clear, and suggestion actions call `RouteStore` methods in `../State/RouteStore+Endpoints.swift`

@@ -45,5 +45,12 @@ struct CommuteMapView: UIViewRepresentable {
     func updateUIView(_ mapView: MKMapView, context: Context) {
         context.coordinator.events = events
         context.coordinator.apply(scene)
+        let allowsGestures = !scene.locksCamera
+        if mapView.isScrollEnabled != allowsGestures {
+            mapView.isScrollEnabled = allowsGestures
+            mapView.isZoomEnabled = allowsGestures
+            mapView.isRotateEnabled = allowsGestures
+            mapView.isPitchEnabled = allowsGestures
+        }
     }
 }

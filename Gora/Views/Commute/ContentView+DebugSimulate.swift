@@ -20,7 +20,7 @@ extension ContentView {
 
     @ViewBuilder
     var debugSimulateButton: some View {
-        if !isCommuting || debugTrainSimulator.isActive {
+        if (!isCommuting || debugTrainSimulator.isActive) && focusedField == nil {
             Button {
                 Task { await toggleDebugSimulation() }
             } label: {

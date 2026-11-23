@@ -42,6 +42,8 @@ struct PaymentMethodIcon: View {
         static let symbolFraction: CGFloat = 0.6
         static let customSymbolWidthFraction: CGFloat = 0.7
         static let badgeRadius: CGFloat = 4
+        static let borderOpacity: Double = 0.12
+        static let borderWidth: CGFloat = 1
     }
 
     private var badge: RoundedRectangle {
@@ -55,6 +57,9 @@ struct PaymentMethodIcon: View {
             .frame(width: size * Layout.aspect, height: size)
             .background(PaymentIconCatalog.background(forPaymentID: paymentID) ?? Color.haze, in: badge)
             .clipShape(badge)
+            // A light badge on a light surface loses its edge, and only the logo shows. The hairline
+            // keeps every badge the same visible size.
+            .overlay(badge.strokeBorder(Color.primary.opacity(Layout.borderOpacity), lineWidth: Layout.borderWidth))
             .accessibilityLabel(config?.displayName ?? paymentID)
     }
 

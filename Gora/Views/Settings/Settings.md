@@ -14,7 +14,7 @@ navigation bar, back button, toggles and alerts, so no view in this folder draws
 | `SettingsChoicePage.swift` | `SettingsChoice` protocol, `RoutePriority`, `FareDiscount`, the checkmark list page |
 | `SettingsPaymentsView.swift` | Payment Methods page: one toggle row per payment method of the graph, and its view model |
 | `SettingsSavedPlacesView.swift` | Saved places list with swipe to delete |
-| `SettingsDocument.swift`, `SettingsDocumentView.swift` | Terms text, and the page that shows it. The Privacy Policy row opens `SettingsWebPageView`, which shows the published web page |
+| `SafariView.swift` | `LegalLinks` (Privacy Policy, Terms, Help Center and support email addresses) and `SafariView`, which shows one web page in `SFSafariViewController`. The Privacy Policy, Terms and Help Center rows open it in a sheet |
 | `SettingsInfoPages.swift` | Download My Data, Report a Route Problem and Acknowledgements pages |
 | `SettingsPermissions.swift` | Location and notification access as text |
 | `SettingsKey.swift` | Storage keys of the settings |
@@ -34,6 +34,8 @@ navigation bar, back button, toggles and alerts, so no view in this folder draws
 | Save Trip History | Stored only. |
 | Share Usage Data | Works. Calls `Analytics.setAnalyticsCollectionEnabled`. `AppDelegate` applies the stored value at launch. |
 | Download My Data, Report a Route Problem | Placeholder pages. |
-| Help Center, Contact Support | Open a URL with `openURL`. |
+| Help Center | Opens `LegalLinks.support` in a `SafariView` sheet. |
+| Contact Support | Opens `LegalLinks.supportEmail` (a `mailto:` link) with `openURL`. |
+| Terms and Conditions | Opens `LegalLinks.terms` in a `SafariView` sheet. |
 | Profile name | Saves with `UserSession.updateDisplayName` (`PATCH /api/v1/me`). |
 | Delete Account | `UserSession.deleteAccount` (`DELETE /api/v1/auth/account`), then clears the session. |

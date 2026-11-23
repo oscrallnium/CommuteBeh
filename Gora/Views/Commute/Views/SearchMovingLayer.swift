@@ -43,7 +43,7 @@ struct SearchMovingLayer: View {
         if let card = cardFrames[id], let pill = pillFrames[id] {
             let scale = pillScale(card: card, pill: pill)
             Text(text)
-                .font(.system(.body, weight: .semibold))
+                .font(.body)
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .snapsOpacity(movesContent)

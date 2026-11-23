@@ -116,7 +116,9 @@ extension ContentView {
     // MARK: Observed camera
 
     /// Stores the camera the map shows after a pan or a zoom, so a later transition starts
-    /// from it. Our own writes already update the stored camera.
+    /// from it. Our own writes already update the stored camera. While following, the map takes
+    /// no gestures (`CommuteMapScene.locksCamera`), because the follow tick skips a target equal
+    /// to the stored camera and would leave a moved camera where it is.
     func recordObservedCamera(_ camera: MKMapCamera) {
         guard isCommuting, !isFollowingPassenger, !isCameraTransitioning else { return }
         lastCommuteCameraCenter = camera.centerCoordinate

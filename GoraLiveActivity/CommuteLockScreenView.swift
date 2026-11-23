@@ -28,16 +28,17 @@ struct CommuteLockScreenView: View {
         .foregroundStyle(LiveActivityPalette.primary)
     }
 
+    /// The top-right area stays empty. A hidden placeholder keeps the width that the ETA timer used.
     private var headline: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(state.actionText)
                 .font(.system(size: 15, weight: .semibold))
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            if state.phase != .arrived {
-                CommuteETATimer(eta: state.eta, isStale: isStale)
-                    .font(.system(size: 17, weight: .semibold))
-            }
+            Text(verbatim: "00:00")
+                .font(.system(size: 17, weight: .semibold))
+                .hidden()
+                .accessibilityHidden(true)
         }
     }
 

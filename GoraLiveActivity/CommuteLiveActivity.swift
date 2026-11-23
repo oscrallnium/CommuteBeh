@@ -21,12 +21,9 @@ struct CommuteLiveActivity: Widget {
                 DynamicIslandExpandedRegion(.leading) {
                     IslandExpandedLeading(state: context.state)
                 }
+                // The trailing region stays empty.
                 DynamicIslandExpandedRegion(.trailing) {
-                    if context.state.phase != .arrived {
-                        CommuteETATimer(eta: context.state.eta, isStale: context.isStale)
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(LiveActivityPalette.islandText)
-                    }
+                    Color.clear
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     IslandExpandedBody(attributes: context.attributes, state: context.state,

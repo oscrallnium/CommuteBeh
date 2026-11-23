@@ -17,6 +17,21 @@ private enum VersionCheckStrings {
     static let actionName = "Check for Data Update"
 }
 
+/// The web pages that Settings opens in a Safari sheet.
+private enum SafariPage: Identifiable {
+    case help, privacy, terms
+
+    var id: Self { self }
+
+    var url: URL {
+        switch self {
+        case .help: LegalLinks.support
+        case .privacy: LegalLinks.privacyPolicy
+        case .terms: LegalLinks.terms
+        }
+    }
+}
+
 /// The Settings tab: profile, commute options, permissions, data, support and about.
 struct SettingsView: View {
     @Environment(UserSession.self) private var session
@@ -46,6 +61,7 @@ struct SettingsView: View {
     @State private var versionHapticCount = 0
     @State private var paymentCount: Int?
     @State private var excludedPaymentIDs = SettingsKey.excludedPaymentIDs
+    @State private var safariPage: SafariPage?
 
     var body: some View {
         NavigationStack {
@@ -79,6 +95,9 @@ struct SettingsView: View {
             }
             .onChange(of: vibrateNearDestination) { _, isOn in requestNotificationAccess(ifOn: isOn) }
             .onChange(of: vibrateStopBeforeExit) { _, isOn in requestNotificationAccess(ifOn: isOn) }
+            .sheet(item: $safariPage) { page in
+                SafariView(url: page.url).ignoresSafeArea()
+            }
             .alert("Sign Out?", isPresented: $showSignOutAlert) {
                 Button("Cancel", role: .cancel) {}
                 Button("Sign Out", role: .destructive) { Task { await logout() } }
@@ -225,9 +244,9 @@ struct SettingsView: View {
 
     private var supportSection: some View {
         Section("Support") {
-            linkRow("Help Center", "questionmark.circle", nil) { open("https://commutebeh.app/help") }
+            linkRow("Help Center", "questionmark.circle", nil) { safariPage = .help }
             linkRow("Contact Support", "envelope", nil, showsArrow: false) {
-                open("mailto:support@commutebeh.app")
+                open(LegalLinks.supportEmail.absoluteString)
             }
             NavigationLink {
                 SettingsRouteReportView()
@@ -239,16 +258,8 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section("About") {
-            NavigationLink {
-                SettingsWebPageView(title: "Privacy Policy", url: LegalLinks.privacyPolicy)
-            } label: {
-                SettingsRowLabel(title: "Privacy Policy", systemImage: "hand.raised")
-            }
-            NavigationLink {
-                SettingsDocumentView(document: .terms)
-            } label: {
-                SettingsRowLabel(title: "Terms and Conditions", systemImage: "doc.text")
-            }
+            linkRow("Privacy Policy", "hand.raised", nil) { safariPage = .privacy }
+            linkRow("Terms and Conditions", "doc.text", nil) { safariPage = .terms }
             NavigationLink {
                 SettingsAcknowledgementsView()
             } label: {

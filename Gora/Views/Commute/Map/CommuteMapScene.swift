@@ -35,6 +35,9 @@ struct CommuteMapScene {
     /// A change from one route to another starts the draw-on in the coordinator.
     var selectedRouteID: RouteOption.ID?
     var routeIDs: Set<RouteOption.ID> = []
+    /// True while Commute Mode follows the passenger. Pan, zoom, rotate, and pitch are off, so only
+    /// the follow camera moves the map. Route Overview turns following off and gives them back.
+    var locksCamera = false
 }
 
 // MARK: - Lines

@@ -8,7 +8,8 @@
 import SwiftUI
 
 /// The row of saved-place chips under the search card. The Add Place chip stays pinned at the
-/// trailing edge. The saved places scroll behind it, newest on the left and oldest next to it.
+/// trailing edge and hides while a search field has focus. The saved places scroll behind it,
+/// newest on the left and oldest next to it.
 /// A chip counts as selected while the origin or the destination holds that place's name and
 /// coordinates. A tap fills the origin when it has focus, and the destination otherwise.
 struct SavedPlacesRow: View {
@@ -56,7 +57,9 @@ struct SavedPlacesRow: View {
             .background(panInstaller)
         }
         .contentMargins(.leading, Self.bleed, for: .scrollContent)
-        .contentMargins(.trailing, addChipWidth + DesignTokens.Space.xs + Self.bleed, for: .scrollContent)
+        .contentMargins(.trailing, showsAddChip ? addChipWidth + DesignTokens.Space.xs + Self.bleed : Self.bleed,
+                        for: .scrollContent)
+        .animation(DesignTokens.Motion.disclose, value: showsAddChip)
         .defaultScrollAnchor(.trailing)
         .scrollIndicators(.hidden)
         .scrollClipDisabled()
@@ -98,7 +101,14 @@ struct SavedPlacesRow: View {
         .animation(DesignTokens.Motion.disclose, value: hasChipBehindAdd)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { addChipWidth = $0 }
         .padding(.trailing, Self.bleed)
+        .opacity(showsAddChip ? 1 : 0)
+        .allowsHitTesting(showsAddChip)
+        .accessibilityHidden(!showsAddChip)
+        .animation(DesignTokens.Motion.disclose, value: showsAddChip)
     }
+
+    /// The Add Place chip shows only while no search field has focus.
+    private var showsAddChip: Bool { focusedField == nil }
 
     // MARK: Lift
 
