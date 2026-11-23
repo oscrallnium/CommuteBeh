@@ -189,7 +189,9 @@ enum DesignTokens {
     // MARK: Motion patterns
     enum Motion {
         /// motion.cardEnter — result card slide-in: "the answer arrived".
-        static let cardEnter: Animation = .spring(response: 0.35, dampingFraction: 0.85)
+        static let cardEnter: Animation = .spring(cardEnterSpring)
+        /// motion.cardEnterSpring — spring behind `cardEnter`; the map strip follows the same curve.
+        static let cardEnterSpring = Spring(response: 0.35, dampingRatio: 0.85)
         /// motion.suggestEnter — suggestion list appear/disappear.
         static let suggestEnter: Animation = .easeOut(duration: 0.2)
         /// motion.cameraFitDuration — length of one camera glide, in seconds. Named because

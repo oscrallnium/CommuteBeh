@@ -14,6 +14,7 @@ enum APIEndpoint {
     case signOut
     case refreshToken
     case deleteAccount
+    case socialSignIn(provider: String, idToken: String, nonce: String?, authorizationCode: String?, fullName: String?)
 
     // User
     case me
@@ -70,6 +71,7 @@ enum APIEndpoint {
         case .signOut:                     return "/auth/sign_out"
         case .refreshToken:                return "/api/v1/auth/refresh"
         case .deleteAccount:               return "/api/v1/auth/account"
+        case .socialSignIn:                return "/api/v1/auth/social"
         case .me:                          return "/api/v1/me"
         case .updateMe:                    return "/api/v1/me"
         case .graphVersion:                return "/api/v1/graph/version"
@@ -97,7 +99,7 @@ enum APIEndpoint {
 
     private var method: String {
         switch self {
-        case .register, .signIn, .refreshToken, .createSavedRoute, .reportIncident, .logRoutePlan, .createRoute, .insertStation:
+        case .register, .signIn, .socialSignIn, .refreshToken, .createSavedRoute, .reportIncident, .logRoutePlan, .createRoute, .insertStation:
             return "POST"
         case .updateMe, .updateStation, .updateEdge, .updateAdminSettings:
             return "PATCH"
@@ -124,6 +126,12 @@ enum APIEndpoint {
                              "password_confirmation": confirmation, "display_name": displayName]]
         case .signIn(let email, let password):
             return ["user": ["email": email, "password": password]]
+        case .socialSignIn(let provider, let idToken, let nonce, let authorizationCode, let fullName):
+            var body: [String: Any] = ["provider": provider, "id_token": idToken]
+            body["nonce"] = nonce
+            body["authorization_code"] = authorizationCode
+            body["full_name"] = fullName
+            return body
         case .updateMe(let displayName, let homeStationId):
             var user: [String: Any] = [:]
             if let d = displayName { user["display_name"] = d }

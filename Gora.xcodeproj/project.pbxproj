@@ -12,6 +12,7 @@
 		4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000002 /* FirebaseAnalytics */; };
 		4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000003 /* FirebaseFirestore */; };
 		4CF1A0000000000000000014 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000004 /* FirebaseCrashlytics */; };
+		4CF1A0000000000000000015 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 4CF1A0000000000000000005 /* GoogleSignIn */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		4CC335F12FD00000000000C1 /* Exceptions for "Gora" folder in "Gora" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Gora.entitlements,
 				Info.plist,
 			);
 			target = 4CC335B92FC60F7500D967F3 /* Gora */;
@@ -97,6 +99,7 @@
 				4CF1A0000000000000000012 /* FirebaseAnalytics in Frameworks */,
 				4CF1A0000000000000000013 /* FirebaseFirestore in Frameworks */,
 				4CF1A0000000000000000014 /* FirebaseCrashlytics in Frameworks */,
+				4CF1A0000000000000000015 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,6 +158,7 @@
 				4CF1A0000000000000000002 /* FirebaseAnalytics */,
 				4CF1A0000000000000000003 /* FirebaseFirestore */,
 				4CF1A0000000000000000004 /* FirebaseCrashlytics */,
+				4CF1A0000000000000000005 /* GoogleSignIn */,
 			);
 			productName = Gora;
 			productReference = 4CC335BA2FC60F7500D967F3 /* Gora.app */;
@@ -211,6 +215,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				4CF1A0000000000000000006 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4CC335BB2FC60F7500D967F3 /* Products */;
@@ -424,6 +429,7 @@
 				DEVELOPMENT_TEAM = HXW4W3DD76;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				CODE_SIGN_ENTITLEMENTS = Gora/Gora.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Gora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
@@ -477,6 +483,7 @@
 				DEVELOPMENT_TEAM = HXW4W3DD76;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				CODE_SIGN_ENTITLEMENTS = Gora/Gora.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Gora/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Gora;
@@ -615,6 +622,14 @@
 				minimumVersion = 13.0.1;
 			};
 		};
+		4CF1A0000000000000000006 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -637,6 +652,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4C9E4DB0307E0CC300485114 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCrashlytics;
+		};
+		4CF1A0000000000000000005 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4CF1A0000000000000000006 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

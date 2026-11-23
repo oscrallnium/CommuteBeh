@@ -159,8 +159,9 @@ Keeps the commute across backgrounding and app termination.
 - **Strip bottom** — the commute sheet measures its own top edge in window coordinates.
   `followSheetTop(_:)` stores it in `commuteStripBottom` and in `visibleBottom`.
   `startCommute` clears it, and clears `visibleTop`, which commuting does not use.
-- **`StripBottomEase`** — eases the strip bottom from its last value to a new measured value
-  over `DesignTokens.Motion.discloseDuration`, with an ease-in-out shape. Each 30 Hz camera
+- **`StripBottomEase`** — moves the strip bottom from its last value to a new measured value
+  along `DesignTokens.Motion.cardEnterSpring`, the spring that animates the commute card. The
+  sheet reports an expand or collapse at once and a drag frame after 120 ms. Each 30 Hz camera
   write reads the eased value, so the puck offset follows the sheet with no jump.
 - **Follow writes** — `.followTick` and every transition tick write with no animation. Each runs its
   own 30 Hz interpolation, and an animated write restarts MapKit's animation every tick, which

@@ -180,6 +180,7 @@ The app uses Swift Package Manager. It uses no CocoaPods and no Carthage.
 | Package | Version rule | Products | Target |
 |---|---|---|---|
 | `firebase-ios-sdk` | Up to next major from 13.0.1 | `FirebaseCore`, `FirebaseAnalytics`, `FirebaseFirestore`, `FirebaseCrashlytics` | `Gora` only. `GoraLiveActivity` links no package. |
+| `GoogleSignIn-iOS` | Up to next major from 10.1.0 | `GoogleSignIn` | `Gora` only. It reads `GIDClientID` from `Info.plist`. |
 
 Rules:
 

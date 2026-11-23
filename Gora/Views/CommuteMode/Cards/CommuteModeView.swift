@@ -50,9 +50,9 @@ struct CommuteModeView: View {
         }
     }
 
-    /// With Location off, the arrival is `now` plus the planned time left from the current step.
+    /// The arrival is `now` plus the planned time left from the current step.
+    /// The Live Activity uses the same rule, so both show the same time.
     private func estimated(_ base: CommuteSheetModel, at now: Date, secondsLeft: Double) -> CommuteSheetModel {
-        guard base.manualStep != nil else { return base }
         var estimate = base
         let parts = RouteCardSummary.clockParts(now.addingTimeInterval(secondsLeft), uses24HourTime: use24HourTime)
         estimate.arrivalTime = parts.time

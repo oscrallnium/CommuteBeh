@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import GoogleSignIn
 
 @main
 struct GoraApp: App {
@@ -23,6 +24,7 @@ struct GoraApp: App {
                 .environment(session)
                 .environment(savedPlaces)
                 .task { await savedPlaces.load() }
+                .onOpenURL { url in GIDSignIn.sharedInstance.handle(url) }
                 .fullScreenCover(isPresented: Binding(
                     get: { session.isLoginPresented },
                     set: { _ in }

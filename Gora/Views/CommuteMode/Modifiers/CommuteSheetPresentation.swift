@@ -108,9 +108,10 @@ struct CommuteSheetPresentation<Card: View>: ViewModifier {
                 card($cardState, $showEndAlert)
                     .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                         let isFirstMeasure = sheetTop == 0
+                        let isJump = !isFirstMeasure && abs(top - sheetTop) > jumpThreshold
                         moveColumn(toTop: top, isFirstMeasure: isFirstMeasure)
                         updateMerge(forTop: top)
-                        reportSettledTop(top, immediately: isFirstMeasure)
+                        reportSettledTop(top, immediately: isFirstMeasure || isJump)
                     }
                     .padding(.horizontal, DesignTokens.Space.l)
                     .padding(.bottom, DesignTokens.Space.l)
@@ -138,8 +139,8 @@ struct CommuteSheetPresentation<Card: View>: ViewModifier {
         }
     }
 
-    /// Reports the top once it stops changing for `settleDelay`, so the camera and the map do
-    /// not update on every frame of a state animation.
+    /// Reports the first measure and a jump at once, so the map moves with the card. Reports a
+    /// drag frame once it stays unchanged for `settleDelay`, because each report re-evaluates the map.
     private func reportSettledTop(_ top: CGFloat, immediately: Bool) {
         settleTask?.cancel()
         if immediately { onSheetTopChange(top) }

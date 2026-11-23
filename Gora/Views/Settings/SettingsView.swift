@@ -342,6 +342,7 @@ struct SettingsView: View {
 
     private func logout() async {
         isLoggingOut = true
+        defer { isLoggingOut = false }
         await session.logout()
     }
 

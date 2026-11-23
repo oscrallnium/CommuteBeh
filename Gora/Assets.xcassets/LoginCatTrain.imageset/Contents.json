@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "login-cat-train.jpg",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

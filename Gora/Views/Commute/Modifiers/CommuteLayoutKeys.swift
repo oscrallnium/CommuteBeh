@@ -30,8 +30,8 @@ struct VisibleTopKey: PreferenceKey {
     }
 }
 
-/// A strip-bottom value that eases from its previous value to a new target over the card's
-/// disclosure duration, using the same ease-in-out shape as the card animation.
+/// A strip-bottom value that moves from its previous value to a new target along the commute
+/// card spring, so the map and the card settle together.
 struct StripBottomEase {
     private var from: CGFloat
     private var to: CGFloat
@@ -44,10 +44,11 @@ struct StripBottomEase {
     }
 
     func value(at now: Date) -> CGFloat {
-        let duration = DesignTokens.Motion.discloseDuration
-        let fraction = min(1, max(0, now.timeIntervalSince(start) / duration))
-        let eased = fraction * fraction * (3 - 2 * fraction)
-        return from + (to - from) * CGFloat(eased)
+        let spring = DesignTokens.Motion.cardEnterSpring
+        let elapsed = max(0, now.timeIntervalSince(start))
+        guard elapsed < spring.settlingDuration else { return to }
+        let progress = spring.value(target: 1.0, initialVelocity: 0.0, time: elapsed)
+        return from + (to - from) * CGFloat(progress)
     }
 
     /// Starts a new ease from the current value when `target` differs from the last target.
