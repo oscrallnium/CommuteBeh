@@ -22,8 +22,8 @@ extension ContentView {
         ArrivalAlerts.shared.reset()
         guard SettingsKey.isLiveActivitiesEnabled, let engine = commuteEngine else { return }
         CommuteLiveActivityController.shared.start(
-            result: engine.result, engine: engine, destinationName: routeStore.destinationText,
-            now: startedAt, lineName: routeStore.lineDisplayName,
+            result: engine.result, engine: engine, originName: routeStore.originText,
+            destinationName: routeStore.destinationText, now: startedAt, lineName: routeStore.lineDisplayName,
             legColor: routeStore.legColor)
     }
 

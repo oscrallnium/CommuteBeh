@@ -101,9 +101,9 @@ struct RouteGeometry {
             guard let coords = polylines[legID], let nextCoords = polylines[result.legs[i + 1].id],
                   coords.count >= 2, nextCoords.count >= 2
             else { continue }
-            sharedWithNextMask[legID] = coords.map {
+            sharedWithNextMask[legID] = Self.trailingRun(of: coords.map {
                 Self.minDistance(from: $0, toPolyline: nextCoords) <= Self.overlapThresholdMeters
-            }
+            })
         }
 
         self.polylines = polylines
@@ -142,6 +142,13 @@ struct RouteGeometry {
     /// untrimmed polyline this was measured against.
     func sharedWithNextMask(leg legID: RouteLeg.ID) -> [Bool]? {
         sharedWithNextMask[legID]
+    }
+
+    /// Keeps only the `true` values at the end of `mask`. A leg runs beside the next leg at its
+    /// end, so a stretch at its start always draws solid and the line begins at the boarding stop.
+    private static func trailingRun(of mask: [Bool]) -> [Bool] {
+        let tailStart = (mask.lastIndex(of: false) ?? -1) + 1
+        return mask.indices.map { $0 >= tailStart }
     }
 
     /// Shortest distance from `point` to any segment of `coords`.

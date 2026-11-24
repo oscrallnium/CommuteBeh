@@ -20,7 +20,6 @@ private enum PreviewData {
         ],
         boundaryLabels: [
             .init(position: 0, text: "Origin"),
-            .init(position: 0.55, text: "Transfer stop"),
             .init(position: 1, text: "Destination")
         ],
         destinationName: "Destination")

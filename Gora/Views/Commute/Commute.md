@@ -62,15 +62,16 @@ tracking wiring. Subfolders have their own docs — `Cards/`, `Modifiers/`, `Sta
   and `endCommute()` alongside `positionResolver`.
 - **Snap → glide handoff** (`onChange(of: commuteEngine?.snappedLocation)`) — every new snap
   target, synchronous for every mode but train and asynchronous once `TrackSnapper` resolves
-  for train, starts the puck's own glide toward it. This is the only place a new position is
+  for train, starts a puck glide toward it. This is the only place a new position is
   handed to `PuckGlideInterpolator`.
 - **Dead-reckoning tick** (1 Hz `.task(id: isCommuting)`) — once no GPS fix has arrived for
   more than `CommutePositionResolver.deadReckonAfterSeconds`, projects the passenger forward
   along the leg polyline using their last known speed. Train legs use `TrackSnapper`'s own
   nil-coordinate path; other modes get the projected coordinate as a synthetic fix.
-- **Continuous camera follow** (30 Hz `.task(id: isCommuting)`) — ticks at the same cadence as
-  `PuckGlideInterpolator` and samples its already-smooth position every frame, rather than
-  writing a new camera position once per GPS fix. A per-fix write can't read as continuous
+- **Continuous camera follow** (30 Hz `.task(id: isCommuting)`) — the one clock of the puck and the
+  camera. Each tick calls `advancePuck(now:)`, which samples `PuckGlideInterpolator` at one time and
+  moves the puck annotation, then writes the camera from the same position. It never writes a new
+  camera position once per GPS fix. A per-fix write can't read as continuous
   motion on its own: fixes land at whatever cadence `distanceFilter` produces, which varies by
   mode and pace.
 - **Camera lock** — while Commute Mode follows the passenger, `CommuteMapScene.locksCamera` turns off

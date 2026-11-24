@@ -90,7 +90,7 @@ extension ContentView {
         scene.userDot = snappedPuck == nil ? .shown : .covered
         if let snappedPuck {
             scene.annotations.append(MapAnnotationDescriptor(
-                id: "snappedPuck", coordinate: snappedPuck, title: nil,
+                id: CommuteMapController.snappedPuckID, coordinate: snappedPuck, title: nil,
                 content: .passengerPuck(speed: routeStore.userSpeed, isHidden: false)))
         }
         if !isCommuting, let userCoord = routeStore.userLocation, let radius = displayedAccuracyRadius {

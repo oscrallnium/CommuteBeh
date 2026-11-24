@@ -23,28 +23,28 @@ enum CommuteActivitySnapshot {
     private static let progressStep = 0.01
     private static let etaStepSeconds: TimeInterval = 60
 
-    static func attributes(result: RouteResult, destinationName: String,
+    /// The start label shows `originName`, or the first station's full name when `originName` is empty.
+    static func attributes(result: RouteResult, originName: String, destinationName: String,
                            legColor: (RouteLeg) -> Color) -> Attributes {
         let weights = result.legs.map { max($0.effectiveTravelMinutes, 0) }
-        let total = weights.reduce(0, +)
-        var labels: [Attributes.BoundaryLabel] = []
-        var elapsed = 0.0
-        for (index, leg) in result.legs.enumerated() {
-            let position = total > 0 ? elapsed / total : 0
-            if index == 0 || leg.line == "INTERCHANGE" {
-                labels.append(.init(position: position, text: leg.fromStation.shortName))
-            }
-            elapsed += weights[index]
-        }
-        labels.append(.init(position: 1, text: destinationName))
+        let startName = originName.isEmpty ? (result.legs.first?.fromStation.name ?? "") : originName
         return Attributes(
             segments: zip(result.legs, weights).map { leg, weight in
                 let color = legColor(leg)
+                let dark = rgb(color, style: .dark)
                 return .init(isWalk: isWalkLike(leg), weight: weight,
-                             colorLight: rgb(color, style: .light), colorDark: rgb(color, style: .dark))
+                             colorLight: rgb(color, style: .light), colorDark: dark,
+                             markerInkDark: markerInk(onFill: dark))
             },
-            boundaryLabels: labels,
+            boundaryLabels: [.init(position: 0, text: startName), .init(position: 1, text: destinationName)],
             destinationName: destinationName)
+    }
+
+    /// 0xFFFFFF or 0x000000, whichever has the higher WCAG contrast on the 0xRRGGBB fill.
+    private static func markerInk(onFill fill: UInt32) -> UInt32 {
+        func channel(_ shift: UInt32) -> Double { Double((fill >> shift) & 0xFF) / 255 }
+        let luminance = Color.relativeLuminance(red: channel(16), green: channel(8), blue: channel(0))
+        return Color.inkLuminance(onFillLuminance: luminance) == .white ? 0xFFFFFF : 0x000000
     }
 
     static func state(result: RouteResult, engine: CommuteProgressEngine, destinationName: String,

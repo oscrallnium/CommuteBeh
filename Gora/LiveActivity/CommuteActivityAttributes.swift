@@ -14,11 +14,14 @@ nonisolated struct CommuteActivityAttributes: ActivityAttributes {
 
     /// One leg of the route. `weight` is the planned minutes of the leg and sets its width on the bar.
     /// `colorLight` and `colorDark` are the 0xRRGGBB leg color in light and dark mode.
+    /// `markerInkDark` is 0xFFFFFF or 0x000000, whichever contrasts more with `colorDark`. Nil in an
+    /// activity that an older build started.
     nonisolated struct Segment: Codable, Hashable {
         var isWalk: Bool
         var weight: Double
         var colorLight: UInt32
         var colorDark: UInt32
+        var markerInkDark: UInt32?
     }
 
     /// A station name under the bar. `position` runs from 0 (start) to 1 (end) along the bar.

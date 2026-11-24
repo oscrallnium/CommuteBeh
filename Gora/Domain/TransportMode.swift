@@ -796,6 +796,14 @@ nonisolated enum RoutePreference {
     static let trainDiscountFactor: Double = 0.85
 }
 
+/// Search weights of the Cheapest strategy. They change search cost only, never the shown time.
+nonisolated enum CheapestPolicy {
+    /// Search minutes per peso of a boarding fare, so Cheapest prefers cheap modes and fewer paid rides.
+    static let boardingMinutesPerPeso: Double = 1.5
+    /// Search minutes per peso of a per-km fare rise inside one ride, so walking distance picks the boarding stop.
+    static let distanceMinutesPerPeso: Double = 0.25
+}
+
 // MARK: - Transit Graph Engine (actor for thread safety)
 
 actor TransitGraphEngine {
@@ -1346,11 +1354,13 @@ actor TransitGraphEngine {
                         effectiveMinutes = rawMinutes * peakMultiplier
                     }
 
-                    // Cheapest search adds 1.5 min per peso of fare. The weight changes the search
-                    // cost only, so the shown travel time stays real minutes.
-                    let fareSearchMinutes = costStrategy == .cheapest && !item.isFareFree
-                        ? searchFare(item, at: currentID, cameFrom: cameFrom) * 1.5
-                        : 0.0
+                    // A new paid ride weighs 1.5 minutes per peso. A per-km rise within a ride weighs
+                    // 0.25, so a small fare step never buys a longer walk.
+                    let rideFare = costStrategy == .cheapest && !item.isFareFree
+                        ? searchFare(item, at: currentID, cameFrom: cameFrom)
+                        : SearchFare(boarding: 0, distance: 0)
+                    let fareSearchMinutes = rideFare.boarding * CheapestPolicy.boardingMinutesPerPeso
+                        + rideFare.distance * CheapestPolicy.distanceMinutesPerPeso
 
                     // Access walking costs more than it takes: without this weight A* will walk
                     // 1.2 km to a stop to shave two riding minutes off, which no passenger does.
@@ -1439,16 +1449,24 @@ actor TransitGraphEngine {
         return nil
     }
 
+    /// Fare rise of one ride edge, split by cause: `boarding` is the whole leg fare of a new ride,
+    /// `distance` is the per-km rise of an open leg.
+    private struct SearchFare {
+        let boarding: Double
+        let distance: Double
+    }
+
     /// Search fare of one ride edge: the rise of the leg fare that this edge causes. A boarding
     /// edge costs the whole leg fare, so the search and `computeLegFare` follow one rule.
     private func searchFare(
         _ item: EngineEdge,
         at nodeID: StationID,
         cameFrom: [StationID: (parent: StationID, edge: TransitEdge)]
-    ) -> Double {
+    ) -> SearchFare {
         let edge = item.edge
         guard edge.farePerKm > 0 else {
-            return continuesLeg(edge, at: nodeID, cameFrom: cameFrom) ? 0 : edge.baseFare
+            let boarding = continuesLeg(edge, at: nodeID, cameFrom: cameFrom) ? 0 : edge.baseFare
+            return SearchFare(boarding: boarding, distance: 0)
         }
         let line = lines[edge.line]
         func legFare(_ km: Double) -> Double {
@@ -1456,9 +1474,9 @@ actor TransitGraphEngine {
                             fareStepKm: line?.fareStepKm, rounding: line?.fareKmRounding, fareKm: km)
         }
         guard !edge.isZoneRide, let before = legRideKm(of: edge, at: nodeID, cameFrom: cameFrom) else {
-            return legFare(edge.distanceKm)
+            return SearchFare(boarding: legFare(edge.distanceKm), distance: 0)
         }
-        return max(0, legFare(before + edge.distanceKm) - legFare(before))
+        return SearchFare(boarding: 0, distance: max(0, legFare(before + edge.distanceKm) - legFare(before)))
     }
 
     private func continuesLeg(

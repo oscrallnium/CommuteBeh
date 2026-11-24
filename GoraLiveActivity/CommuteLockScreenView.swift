@@ -9,6 +9,10 @@ import SwiftUI
 
 /// Lock Screen and banner card of the commute Live Activity.
 struct CommuteLockScreenView: View {
+    private enum Layout {
+        static let labelWidthShare: CGFloat = 0.4
+    }
+
     let attributes: CommuteActivityAttributes
     let state: CommuteState
     let isStale: Bool
@@ -42,12 +46,12 @@ struct CommuteLockScreenView: View {
         }
     }
 
-    /// First label at the left edge, last at the right edge, transfer labels centered on their boundary.
+    /// The start label sits at the left edge and the destination label at the right edge.
     private var stationLabels: some View {
         GeometryReader { geo in
             let width = geo.size.width
             ZStack(alignment: .topLeading) {
-                ForEach(Array(visibleLabels.enumerated()), id: \.offset) { _, label in
+                ForEach(Array(endLabels.enumerated()), id: \.offset) { _, label in
                     labelView(label, width: width)
                 }
             }
@@ -57,19 +61,18 @@ struct CommuteLockScreenView: View {
         .foregroundStyle(LiveActivityPalette.tertiary)
     }
 
-    /// Interior labels near an end label are hidden so the text never overlaps.
-    private var visibleLabels: [CommuteActivityAttributes.BoundaryLabel] {
-        attributes.boundaryLabels.filter { $0.position <= 0 || $0.position >= 1 || (0.3...0.7).contains($0.position) }
+    /// Only the start and destination labels draw. Interior labels from an older activity are skipped.
+    private var endLabels: [CommuteActivityAttributes.BoundaryLabel] {
+        attributes.boundaryLabels.filter { $0.position <= 0 || $0.position >= 1 }
     }
 
     @ViewBuilder
     private func labelView(_ label: CommuteActivityAttributes.BoundaryLabel, width: CGFloat) -> some View {
-        let boxWidth = width * (label.position <= 0 || label.position >= 1 ? 0.4 : 0.3)
-        let alignment: Alignment = label.position <= 0 ? .leading : (label.position >= 1 ? .trailing : .center)
-        let originX = label.position <= 0 ? 0 : (label.position >= 1 ? width - boxWidth : label.position * width - boxWidth / 2)
+        let isStart = label.position <= 0
+        let boxWidth = width * Layout.labelWidthShare
         Text(label.text)
             .lineLimit(1)
-            .frame(width: boxWidth, alignment: alignment)
-            .offset(x: originX)
+            .frame(width: boxWidth, alignment: isStart ? .leading : .trailing)
+            .offset(x: isStart ? 0 : width - boxWidth)
     }
 }

@@ -199,10 +199,18 @@ extension ContentView {
             try? await Task.sleep(for: .seconds(isSuspended ? 1 : DesignTokens.Motion.headingTickInterval))
             guard !Task.isCancelled, isCommuting else { return }
             guard !puckInterpolator.isSuspended else { continue }
+            advancePuck(now: .now)
             advanceSmoothedRouteHeading()
             guard isFollowingPassenger, !isCameraTransitioning, !isEnteringCommute else { continue }
             updateCommuteCamera(.followTick)
         }
+    }
+
+    /// Samples the puck glide at `now`, publishes it, and moves the map's puck annotation in the
+    /// same tick. The camera pose and the heading read the value published here.
+    private func advancePuck(now: Date) {
+        guard let puck = puckInterpolator.advance(to: now) else { return }
+        mapController.movePuck(to: CLLocationCoordinate2D(latitude: puck.lat, longitude: puck.lng))
     }
 
     /// Pauses the 30 Hz visual loops in the background. On return to active, the puck, heading,

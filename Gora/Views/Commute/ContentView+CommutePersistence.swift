@@ -77,8 +77,8 @@ extension ContentView {
         routeStore.setBackgroundLocationUpdates(true)
         guard let engine = commuteEngine else { return }
         CommuteLiveActivityController.shared.reattach(
-            result: engine.result, engine: engine, destinationName: saved.destinationText,
-            startedAt: saved.startedAt, lineName: routeStore.lineDisplayName,
+            result: engine.result, engine: engine, originName: saved.originText,
+            destinationName: saved.destinationText, startedAt: saved.startedAt, lineName: routeStore.lineDisplayName,
             legColor: routeStore.legColor)
         commuteLog.info("restored commute started \(saved.startedAt, privacy: .public)")
     }

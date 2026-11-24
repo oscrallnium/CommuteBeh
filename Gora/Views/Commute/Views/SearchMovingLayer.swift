@@ -16,13 +16,14 @@ struct SearchMovingLayer: View {
     let cardFrames: [String: CGRect]
     let pillFrames: [String: CGRect]
     let movesContent: Bool
+    let collapsedTextWidths: CommuteRoutePill.TextWidths
 
     var body: some View {
         ZStack(alignment: .topLeading) {
             movingMarker(.origin, id: SearchGeometryID.originDot)
-            movingLabel(originText, id: SearchGeometryID.originText)
+            movingLabel(originText, id: SearchGeometryID.originText, collapsedWidth: collapsedTextWidths.origin)
             movingMarker(.destination, id: SearchGeometryID.destinationDot)
-            movingLabel(destinationText, id: SearchGeometryID.destinationText)
+            movingLabel(destinationText, id: SearchGeometryID.destinationText, collapsedWidth: collapsedTextWidths.destination)
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
@@ -39,7 +40,7 @@ struct SearchMovingLayer: View {
 
     /// Draws the card font. The scale brings it to the pill font size when collapsed.
     @ViewBuilder
-    private func movingLabel(_ text: String, id: String) -> some View {
+    private func movingLabel(_ text: String, id: String, collapsedWidth: CGFloat) -> some View {
         if let card = cardFrames[id], let pill = pillFrames[id] {
             let scale = pillScale(card: card, pill: pill)
             Text(text)
@@ -47,7 +48,7 @@ struct SearchMovingLayer: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .snapsOpacity(movesContent)
-                .frame(maxWidth: labelMaxWidth(card: card, scale: scale), alignment: .leading)
+                .frame(maxWidth: labelMaxWidth(card: card, collapsedWidth: collapsedWidth, scale: scale), alignment: .leading)
                 .frame(height: card.height)
                 .modifier(morph(from: card, to: pill, scale: scale))
         }
@@ -71,10 +72,10 @@ struct SearchMovingLayer: View {
 
     /// The card text width when expanded and the pill text width when collapsed, so the text
     /// truncates the same way as the field and the pill, and the spring interpolates the width.
-    private func labelMaxWidth(card: CGRect, scale: CGFloat) -> CGFloat {
+    private func labelMaxWidth(card: CGRect, collapsedWidth: CGFloat, scale: CGFloat) -> CGFloat {
         switch mode {
         case .expanded: card.width
-        case .collapsed: CommuteRoutePill.textMaxWidth / scale
+        case .collapsed: collapsedWidth / scale
         }
     }
 }

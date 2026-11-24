@@ -11,8 +11,11 @@ because the app target uses `MainActor` as the default isolation and ActivityKit
 `Codable` types.
 
 - **Static values**: `segments` (one per leg; `weight` is the planned minutes; `colorLight` and
-  `colorDark` are the leg color from `RouteStore.legColor`, resolved in the app), `boundaryLabels`
-  (station names under the bar), and `destinationName`.
+  `colorDark` are the leg color from `RouteStore.legColor`, resolved in the app; `markerInkDark` is
+  black or white, whichever contrasts more with `colorDark`, from `Color.inkLuminance`),
+  `boundaryLabels` (two labels under the bar: the origin text at 0 and the destination at 1), and
+  `destinationName`. The origin label is `RouteStore.originText`, such as a saved place name, or the
+  full name of the first stop when that text is empty.
 - **`ContentState`**: `phase`, `progress`, `eta`, `lastFixAt`, `actionText`, `legLabel`,
   `stopsLeft`, `nextLineName`, `legIndex`.
 - **`Phase`**: `live`, `waiting` (the current leg is a walk between two ride legs), `arrived`.

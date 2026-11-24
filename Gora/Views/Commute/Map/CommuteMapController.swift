@@ -16,6 +16,9 @@ final class CommuteMapController {
 
     @ObservationIgnored weak var mapView: MKMapView?
 
+    /// The annotation id of the snapped passenger puck.
+    static let snappedPuckID = "snappedPuck"
+
     private static let animationOptions: UIView.AnimationOptions = [
         .curveEaseInOut, .allowUserInteraction, .beginFromCurrentState
     ]
@@ -65,6 +68,16 @@ final class CommuteMapController {
             return
         }
         UIView.animate(withDuration: duration, delay: 0, options: Self.animationOptions, animations: change)
+    }
+
+    // MARK: Puck
+
+    /// Moves the snapped puck annotation to `coordinate` at once, with no scene rebuild. The
+    /// follow tick calls it beside `setCamera`, so the puck and the camera reach the map together.
+    func movePuck(to coordinate: CLLocationCoordinate2D) {
+        guard let coordinator = mapView?.delegate as? CommuteMapCoordinator,
+              let puck = coordinator.annotationsByID[Self.snappedPuckID] else { return }
+        puck.coordinate = coordinate
     }
 
     // MARK: Conversion

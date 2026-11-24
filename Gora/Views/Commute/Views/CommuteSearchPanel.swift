@@ -46,6 +46,11 @@ struct CommuteSearchPanel: View {
     /// frame animates between them instead of following content that is fading in or out.
     @State private var cardHeight: CGFloat = Layout.initialCardHeight
     @State private var pillSize: CGSize = .zero
+    /// Width the panel offers its row, and the one-line width of each pill text. They set how
+    /// wide each pill text grows before it truncates. An unmeasured text counts as unbounded.
+    @State private var rowWidth: CGFloat = 0
+    @State private var originIdealWidth: CGFloat = .infinity
+    @State private var destinationIdealWidth: CGFloat = .infinity
     /// Frames of the markers and texts in the card and in the pill, keyed by `SearchGeometryID`.
     /// The moving layer travels between the two sets.
     @State private var cardFrames: [String: CGRect] = [:]
@@ -85,6 +90,7 @@ struct CommuteSearchPanel: View {
             }
         }
         .background(alignment: .topLeading) { pillSizer }
+        .background(alignment: .topLeading) { idealTextSizer }
         .task(id: mode) {
             guard (try? await Task.sleep(for: .seconds(Motion.settleDuration))) != nil else { return }
             settledMode = mode
@@ -116,6 +122,7 @@ struct CommuteSearchPanel: View {
             surface
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { rowWidth = $0 }
     }
 
     private var backButton: some View {
@@ -149,7 +156,8 @@ struct CommuteSearchPanel: View {
                     destinationText: routeStore.destinationText,
                     cardFrames: cardFrames,
                     pillFrames: pillFrames,
-                    movesContent: movesContent
+                    movesContent: movesContent,
+                    collapsedTextWidths: pillTextWidths
                 )
             }
             .goraGlass(DesignTokens.Materials.cardGlass, in: shape)
@@ -187,6 +195,7 @@ struct CommuteSearchPanel: View {
             CommuteRoutePill(
                 originText: routeStore.originText,
                 destinationText: routeStore.destinationText,
+                textWidths: pillTextWidths,
                 hidesMovingContent: movesContent,
                 frames: .constant([:])
             )
@@ -200,6 +209,7 @@ struct CommuteSearchPanel: View {
         CommuteRoutePill(
             originText: routeStore.originText,
             destinationText: routeStore.destinationText,
+            textWidths: pillTextWidths,
             hidesMovingContent: false,
             frames: $pillFrames
         )
@@ -207,6 +217,29 @@ struct CommuteSearchPanel: View {
         .hidden()
         .accessibilityHidden(true)
         .onGeometryChange(for: CGSize.self) { $0.size } action: { pillSize = $0 }
+    }
+
+    /// Invisible one-line texts that measure how wide each pill text wants to be.
+    private var idealTextSizer: some View {
+        HStack {
+            CommuteRoutePill.label(routeStore.originText)
+                .fixedSize()
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { originIdealWidth = $0 }
+            CommuteRoutePill.label(routeStore.destinationText)
+                .fixedSize()
+                .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { destinationIdealWidth = $0 }
+        }
+        .hidden()
+        .accessibilityHidden(true)
+    }
+
+    /// The row width minus the back button and its gap is all the pill can use.
+    private var pillTextWidths: CommuteRoutePill.TextWidths {
+        CommuteRoutePill.textWidths(
+            availablePillWidth: rowWidth - Layout.controlSize - DesignTokens.Space.sm,
+            originIdeal: originIdealWidth,
+            destinationIdeal: destinationIdealWidth
+        )
     }
 
     private var originMarker: some View {

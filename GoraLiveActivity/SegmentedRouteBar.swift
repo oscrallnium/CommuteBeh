@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Route bar: ride segments as capsules, walk segments as dotted lines, a progress fill and a marker.
+/// Route bar: ride segments as capsules, walk segments as thinner solid capsules, a progress fill and a marker.
 struct SegmentedRouteBar: View {
     struct Style {
         var height: CGFloat
@@ -41,6 +41,8 @@ struct SegmentedRouteBar: View {
 
     /// Gap between a ride segment and a walk segment, as a share of the bar width.
     private static let gapShare: CGFloat = 0.01
+    /// Height of a walk segment as a share of the ride track, the same 4 to 6 ratio as the app's map lines.
+    private static let walkHeightRatio: CGFloat = 2.0 / 3.0
     private static let progressAnimation = Animation.timingCurve(0.2, 0.8, 0.2, 1, duration: 0.8)
 
     var body: some View {
@@ -86,11 +88,11 @@ struct SegmentedRouteBar: View {
     private func segmentShape(_ span: Span) -> some View {
         let length = max(span.end - span.start, 0)
         if span.isWalk {
-            Path { path in
-                path.move(to: CGPoint(x: span.start, y: style.height / 2))
-                path.addLine(to: CGPoint(x: span.end, y: style.height / 2))
-            }
-            .stroke(style.walk, style: StrokeStyle(lineWidth: 2, lineCap: .round, dash: [0.1, 4]))
+            let walkHeight = style.trackHeight * Self.walkHeightRatio
+            Capsule()
+                .fill(style.walk)
+                .frame(width: length, height: walkHeight)
+                .offset(x: span.start, y: (style.height - walkHeight) / 2)
         } else {
             Capsule()
                 .fill(style.track)
@@ -111,10 +113,17 @@ struct SegmentedRouteBar: View {
         segments.indices.contains(legIndex) ? style.segmentColor(segments[legIndex]) : style.done
     }
 
+    private var markerFillColor: Color {
+        guard segments.indices.contains(legIndex), let ink = segments[legIndex].markerInkDark else {
+            return style.markerFill
+        }
+        return Color(hex: ink)
+    }
+
     private func marker(x: CGFloat, width: CGFloat) -> some View {
         let center = min(max(x, style.markerSize / 2), width - style.markerSize / 2)
         return Circle()
-            .fill(style.markerFill)
+            .fill(markerFillColor)
             .overlay {
                 Circle().strokeBorder(
                     markerColor,

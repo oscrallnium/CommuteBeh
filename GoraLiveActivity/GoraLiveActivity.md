@@ -11,7 +11,7 @@ from `Gora/LiveActivity/`. It holds no app logic.
 - **CommuteLockScreenView.swift**: the Lock Screen and banner card.
 - **CommuteIslandViews.swift**: compact bar, compact time, minimal ring, expanded leading and body.
 - **CommuteStatusViews.swift**: the time-left timer and the footer status line.
-- **SegmentedRouteBar.swift**: ride capsules, dotted walk lines, progress fill and marker.
+- **SegmentedRouteBar.swift**: ride capsules, thinner solid walk capsules (two thirds of the track height, as on the app map), progress fill and marker.
 - **LiveActivityPalette.swift**: the monochrome colors of the Lock Screen card and the island. Both
   always use dark colors, whatever the phone's appearance is.
 - **CommuteLiveActivityPreviews.swift**: one preview per state and presentation.
@@ -22,7 +22,10 @@ from `Gora/LiveActivity/`. It holds no app logic.
 - The fill and the marker both draw at `state.progress`. They move on each update with an
   0.8 second ease.
 - The marker border uses the color of the leg at `state.legIndex`. The Lock Screen and the island
-  both use the dark value. An index out of range uses the `done` color.
+  both use the dark value. An index out of range uses the `done` color. The marker fill is the
+  segment's `markerInkDark`, black or white by contrast with the border. A segment without it,
+  from an activity that an older build started, uses the style's `markerFill`.
+- The Lock Screen shows only the start label (left) and the destination label (right).
 - The Lock Screen card sets `.environment(\.colorScheme, .dark)` and a dark background tint, so it
   stays dark in light mode.
 - The timer text counts down to `eta` and updates without an app update.

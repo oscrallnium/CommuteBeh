@@ -108,16 +108,20 @@ real fix returns.
 
 ## PuckGlideInterpolator.swift
 
-**`PuckGlideInterpolator`** — moves the passenger dot continuously between two snapped
-positions via its own 30 Hz tick loop. Exists because MapKit's `Annotation` re-places its
-coordinate instantly on every write rather than interpolating it, the same reason
-`ContentView.beginCameraTransition()` hand-rolls its own interpolation loop for the camera
-instead of relying on `withAnimation`. `ContentView`'s puck `Annotation` reads
-`displayedCoordinate` from this class, not `CommuteProgressEngine.snappedLocation` directly.
+**`PuckGlideInterpolator`** — moves the passenger dot along a straight glide between two snapped
+positions. The position is a pure function of time, `coordinate(at:)`. The class has no loop of its
+own. Each camera follow tick calls `advance(to:)`, which publishes `displayedCoordinate`, and
+`ContentView.advancePuck(now:)` then moves the puck annotation with
+`CommuteMapController.movePuck(to:)`. The puck and the camera reach `MKMapView` in the same tick,
+so the camera never samples the dot one step early or late.
 
-`ContentView.updateCommuteCamera(_:)` reads this same `displayedCoordinate` as the camera's
-first-priority center, so the dot and the camera it's centered under are always driven by the
-one continuously-moving value and can never visibly disagree.
+- **Pace** — each glide lasts `smoothedGap`, an exponential moving average (weight 0.3) of the gaps
+  between `move(to:)` calls, clamped to 0.2...12 s. A jittery fix interval, such as a train's GPS,
+  then does not change the dot's speed from glide to glide.
+- **Jumps** — a first fix, or a move above `maxGlideMeters` (120 m), sets the position at once.
+- **Background** — `suspend()` and `resume()` end the glide and jump to the newest target.
+
+`ContentView.updateCommuteCamera(_:)` reads the same `displayedCoordinate` as the camera centre.
 
 ## ActiveCommuteStore.swift
 

@@ -34,7 +34,7 @@ final class CommuteLiveActivityController {
         lastFixAt = date
     }
 
-    func start(result: RouteResult, engine: CommuteProgressEngine, destinationName: String,
+    func start(result: RouteResult, engine: CommuteProgressEngine, originName: String, destinationName: String,
                now: Date, lineName: @escaping (String) -> String,
                legColor: (RouteLeg) -> Color) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
@@ -42,7 +42,8 @@ final class CommuteLiveActivityController {
         self.destinationName = destinationName
         self.lineName = lineName
         lastFixAt = now
-        let attributes = Snapshot.attributes(result: result, destinationName: destinationName, legColor: legColor)
+        let attributes = Snapshot.attributes(result: result, originName: originName,
+                                          destinationName: destinationName, legColor: legColor)
         let state = Snapshot.state(result: result, engine: engine, destinationName: destinationName,
                                    lastFixAt: now, now: now, lineName: lineName)
         let previous = pending
@@ -57,13 +58,13 @@ final class CommuteLiveActivityController {
 
     /// Adopts the activity an earlier app run left and ends any extra ones. Starts a new activity
     /// when none is active. The next `update` sends fresh content.
-    func reattach(result: RouteResult, engine: CommuteProgressEngine, destinationName: String,
-                  startedAt: Date, lineName: @escaping (String) -> String,
+    func reattach(result: RouteResult, engine: CommuteProgressEngine, originName: String,
+                  destinationName: String, startedAt: Date, lineName: @escaping (String) -> String,
                   legColor: (RouteLeg) -> Color) {
         let existing = Activity<CommuteActivityAttributes>.activities.filter { $0.activityState == .active }
         guard let adopted = existing.first else {
-            return start(result: result, engine: engine, destinationName: destinationName,
-                         now: startedAt, lineName: lineName, legColor: legColor)
+            return start(result: result, engine: engine, originName: originName,
+                         destinationName: destinationName, now: startedAt, lineName: lineName, legColor: legColor)
         }
         isRunning = true
         activity = adopted
